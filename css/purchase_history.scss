@@ -1,0 +1,21 @@
+
+.order {
+  background: #f9f9f9;
+  transition: 0.3s;
+  cursor: pointer;
+  .order-info {
+    display: inline-block;
+  }
+  .order-status-container {
+    padding: 3px 15px;
+    min-width: 110px;
+    text-align: center;
+    width: fit-content;
+    border-radius: 2px;
+  }
+}
+
+.order:hover {
+  background: white;
+  box-shadow: 0 .3rem 1rem rgba(black, .15) !important;
+}

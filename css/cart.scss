@@ -1,0 +1,29 @@
+.cart-continue {
+  background: #306bf5;
+  color: white;
+  padding: 8px 35px;
+  border-radius: 2px;
+}
+
+@media only screen and (max-width: 992px) and (min-width: 768px) {
+  .cart-item {
+    img {
+      height: 90px;
+      width: 90px;
+    }
+  }
+  .quantity-picker-container {
+    .minus, .plus {
+      width: 30px;
+    }
+    input.form-control {
+      width: 40px;
+    }
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .product-title {
+    font-weight: bold;
+  }
+}

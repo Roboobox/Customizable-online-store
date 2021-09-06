@@ -1,0 +1,29 @@
+.btn-contact-send {
+  height: 40px;
+  background: #306bf5;
+  color: white;
+  outline: none;
+  border: none;
+  width: 50%;
+}
+
+.contact-form-container {
+  width: 80%;
+  display: flex;
+  flex-direction: column;
+  padding: 45px;
+}
+
+.contact-form-footer {
+  background: #ededed;
+  padding-bottom: 15px;
+}
+
+@media only screen and (max-width: 768px) {
+  .contact-form-container {
+    width: 100%;
+    padding: 35px;
+  }
+}
+
+/*# sourceMappingURL=contact.css.map */
