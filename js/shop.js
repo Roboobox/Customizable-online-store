@@ -29,6 +29,22 @@ function ShopScript()
         this.productSearch(false);
     }
     
+    this.updateCartPreview = function()
+    {
+        $.ajax({
+            url: "get_cart.php",
+            method: "POST",
+            dataType: "json",
+            success: function (data) {
+                $('.cart-info-container .cart-count-container').text(Object.keys(data['cart_items']).length);
+            },
+            error: function()
+            {
+                
+            }
+        });
+    }
+    
     this.validateQuantity = function(productId)
     {
         var product = this.products[productId];

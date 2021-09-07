@@ -39,6 +39,7 @@ var objShop;
     $( function()
     {
         objShop = new ShopScript();
+        objShop.updateCartPreview();
     } );
 </script>
 
@@ -162,7 +163,7 @@ if (isset($_SESSION['sign_error']))
                     </div>
                     <div class="cart-info-container">
                         <div class="cart-count-container fw-bold">
-                            <?=$cartItemCount?>
+<!--                            --><?//=$cartItemCount?>
                         </div>
                         <div class="cart-text-container fw-bold">
                             17.30

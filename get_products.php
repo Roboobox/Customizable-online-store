@@ -16,59 +16,40 @@ $productSql = "
 ";
 
 $specFilters = array();
-
-// Select product ids that match filters that user has selected
+// Check if there are any filters applied
 if (isset($_POST['filterParams'])) {
-    $specificationsSql = "SELECT product_id FROM product_specification WHERE ";
-    $specSqlAdditions = 0;
     foreach ($_POST['filterParams'] as $param) {
-    
+        // Check if valid filter
         if (empty($param[1]) || strlen($param[0]) < 6) {
             continue;
         }
-        $specSqlAdditions++;
         // Removes 'fs_' from start and '_X' numbering from end
         $dbLabel = substr(urldecode($param[0]), 3, -2);
-        if ($specSqlAdditions > 1) {
-            if (isset($specFilters[$dbLabel])) {
-                $specificationsSql .= ' OR ';
-            } else {
-                $specificationsSql .= ' AND ';
-            }
-        }
+        // Adds filter to array {['label'] = array(infos)}
         $specFilters[$dbLabel][] = urldecode($param[1]);
-        // Create template for filter values to be inserted as parameters in sql
-        $specificationsSql .= '(label = ? AND info = ?)';
     }
-    if ($specSqlAdditions > 0) {
-        // Add filter sql in product sql
-        $productSql .= ' AND P.id IN (';
-        $stmtSpecs = $conn->prepare($specificationsSql);
-        // Fill template with values
-        $i = 1;
+    
+    if (!empty($specFilters)) {
+        // Creates placeholders in sql for binding filter values
+        $productSql .= ' AND ';
+        $counter = 1;
+        $i = 0;
         foreach ($specFilters as $label => $infos) {
+            if ($i > 0) {
+                $productSql .= ' AND ';
+            }
+            $productSql .= 'EXISTS (SELECT id FROM product_specification PS WHERE P.id = PS.product_id AND (';
+            $i++;
+            $k = 0;
             foreach ($infos as $info) {
-                $stmtSpecs->bindValue($i, $label);
-                $stmtSpecs->bindValue($i + 1, $info);
-                $i += 2;
-            }
-        }
-        $stmtSpecs->execute();
-        if ($stmtSpecs->rowCount() > 0) {
-            // Adds another placeholder for id for every product id found "IN (:id1, :id2:, :id3,..."
-            $i = 1;
-            foreach ($stmtSpecs->fetchAll() as $row) {
-                if ($i > 1) {
-                    $productSql .= ',';
+                if ($k > 0) {
+                    $productSql .= ' OR ';
                 }
-                $specMatchProductIds[] = $row['product_id'];
-                $productSql .= ':id' . $i;
-                $i++;
+                $productSql .= '(PS.label = :spec'.$counter.' AND PS.info = :spec'.($counter+1).')';
+                $counter += 2;
+                $k++;
             }
-            $productSql .= ')';
-        }
-        else {
-            $productSql .= 'NULL)';
+            $productSql .= ')) ';
         }
     }
 }
@@ -76,7 +57,7 @@ if (isset($_POST['filterParams'])) {
 $productSql .= ' ORDER BY P.name';
 $stmt = $conn->prepare($productSql);
 $stmtLite = $conn->prepare($liteProductSql);
-
+// Binds search input value to placeholder
 if (isset($_POST['q']) && !empty($_POST['q'])) {
     $filteredSearch = filter_input(INPUT_POST, 'q', FILTER_SANITIZE_SPECIAL_CHARS);
     $stmtLite->bindParam(':productName', $filteredSearch);
@@ -85,12 +66,15 @@ if (isset($_POST['q']) && !empty($_POST['q'])) {
     $stmtLite->bindValue(':productName', null);
     $stmt->bindValue(':productName', null);
 }
-// Set filter placeholder value with product ids
-if (isset($stmtSpecs, $specMatchProductIds) && $stmtSpecs->rowCount() > 0) {
-    $i = 1;
-    foreach ($specMatchProductIds as $id) {
-        $stmt->bindValue((':id'. $i), $id, PDO::PARAM_INT);
-        $i++;
+// Binds filter values to placeholders
+if (!empty($specFilters)) {
+    $cnt = 1;
+    foreach ($specFilters as $label => $infos) {
+        foreach ($infos as $info) {
+            $stmt->bindValue(':spec' . $cnt, $label);
+            $stmt->bindValue(':spec' . ($cnt+1), $info);
+            $cnt += 2;
+        }
     }
 }
 $stmt->execute();
@@ -99,8 +83,7 @@ $productRows = $stmt->fetchAll();
 
 $products = array();
 $productSpecs = array();
-
-
+// Gets product data and stores it into product object
 foreach ($productRows as $row) {
     $product = new Product();
     $product->getProductDataFromRow($row);
@@ -115,13 +98,6 @@ foreach ($productRows as $row) {
     $specifications = $stmt->fetchAll();
 
     $product->getSpecifactions($specifications);
-
-//    // Create array with specifications for filters
-//    foreach ($product->specifications as $spec => $value) {
-//        if (!isset($productSpecs[$spec]) || !in_array($value, $productSpecs[$spec], false)) {
-//            $productSpecs[$spec][] = $value;
-//        }
-//    }
 
     $products[$row['id']] = $product;
 }
