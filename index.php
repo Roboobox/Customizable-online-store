@@ -236,13 +236,13 @@ include_once 'header.php';
             <div class="modal-content">
                 <div class="modal-body pb-4 pt-4 h-100">
                     <div class="row h-100">
-                        <div class="col-5 align-items-center d-none d-lg-flex product-images">
+                        <div class="col-5 align-items-center d-none d-lg-block my-auto product-images">
                         </div>
                         <div class="col border-start info-column">
                             <button type="button" class="btn-close-modal d-block fw-bold p-0 mb-2" data-bs-dismiss="modal" aria-label="Close"><i class="fas fa-arrow-left"></i> Return to products</button>
                             <span class="card-subtitle fw-light text-uppercase text-muted"></span>
                             <h5 class="card-title mb-3"></h5>
-                            <div class="col d-flex align-items-center d-lg-none product-images">
+                            <div class="col d-block d-lg-none product-images-mobile">
                             </div>
                             <div class="card-price pb-3">
                                 <div class="retail-price-container">

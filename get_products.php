@@ -8,7 +8,7 @@ const PRODUCT_TAB_NAME_SPECIFICATIONS = "specifications";
 $liteProductSql = "SELECT id FROM product P WHERE (P.name LIKE CONCAT('%', :productName, '%') OR :productName is NULL)";
 
 $productSql = "
-        SELECT P.*, I.quantity, D.discount_percent, C.name AS category, (SELECT photo_path FROM product_photo PP WHERE P.id = PP.product_id LIMIT 1) AS photo_path  FROM `product` P
+        SELECT P.*, I.quantity, D.discount_percent, C.name AS category FROM `product` P
         LEFT JOIN product_inventory I ON P.inventory_id = I.id
         LEFT JOIN product_category C ON P.category_id = C.id
         LEFT JOIN product_discount D ON D.id = (SELECT MAX(PD.id) FROM product_discount PD WHERE PD.product_id = P.id AND PD.is_active = 1 AND (NOW() between PD.starting_at AND PD.ending_at))
@@ -89,15 +89,20 @@ foreach ($productRows as $row) {
     $product->getProductDataFromRow($row);
 
     $productSpecsSql = "SELECT label, info FROM product_specification WHERE product_id = :productId";
-
+    $productPhotoSql = "SELECT photo_path FROM product_photo WHERE product_id = :productId";
 
     $stmt = $conn->prepare($productSpecsSql);
     $stmt->bindParam(':productId', $row['id']);
+    $stmtPhoto = $conn->prepare($productPhotoSql);
+    $stmtPhoto->bindParam(':productId', $row['id']);
 
     $stmt->execute();
     $specifications = $stmt->fetchAll();
+    $stmtPhoto->execute();
+    $photos = $stmtPhoto->fetchAll();
 
     $product->getSpecifactions($specifications);
+    $product->getPhotos($photos);
 
     $products[$row['id']] = $product;
 }
@@ -152,7 +157,7 @@ function generateProductHtml(array $products): string {
         foreach ($products as $product) {
             $productsHtml .= '<div class="col mb-2 mb-sm-3 px-1 px-sm-2">';
             $productsHtml .= '<div class="card product-card h-100 shadow-sm" data-product-id="' . $product->id . '">';
-            $productsHtml .= '<div class="card-image-container p-1 p-sm-3">';
+            $productsHtml .= '<div class="card-image-container p-1 p-sm-3" onclick="objShop.openProductModal(' . $product->id . ')" data-bs-toggle="modal" data-bs-target="#productModal">';
             $productsHtml .= '<img src="test_images/' . $product->photoPath . '" class="card-img-top" alt="Product photo">';
             $productsHtml .= '</div>';
             $productsHtml .= '<div class="card-body">';
@@ -164,7 +169,7 @@ function generateProductHtml(array $products): string {
             $specCounter = 1;
             foreach ($product->specifications as $label => $name) {
                 if ($specCounter > 3) {
-                    $productsHtml .= '<li><a class="link-secondary" data-bs-toggle="modal" data-bs-target="#productModal" onclick="objShop.openProductModal(' . $product->id . ',' . PRODUCT_TAB_NAME_SPECIFICATIONS . ')">Show more...</a on></li>';
+                    $productsHtml .= '<li><a class="link-secondary" data-bs-toggle="modal" data-bs-target="#productModal" onclick="objShop.openProductModal(' . $product->id . ', \'' . PRODUCT_TAB_NAME_SPECIFICATIONS . '\')">Show more...</a on></li>';
                     break;
                 }
                 $productsHtml .= '<li><i class="far fa-circle"></i><span>' . $label . '</span><span class="card-info-list-text fw-bold ms-1 text-body">' . $name . '</span></li>';

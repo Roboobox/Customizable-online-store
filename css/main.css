@@ -227,6 +227,9 @@ nav .cart-container:hover > .cart-icon-container {
   max-height: 48px;
   overflow: hidden;
 }
+.product-card .card-title:hover {
+  color: #306bf5;
+}
 
 .card-price {
   display: flex;

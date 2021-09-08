@@ -19,6 +19,8 @@ class Product {
     
     public string $photoPath;
     
+    public array $photos = array();
+    
     public array $specifications = array();
     
     private float $priceFloat;
@@ -33,7 +35,8 @@ class Product {
         $this->price = $row['price'];
         $this->category = $row['category'];
         $this->inventoryAmount = $row['quantity'];
-        $this->photoPath = $row['photo_path'];
+//        $this->photoPath = $row['photo_path'];
+//        $this->photos[] = $row['photo_path'];
         $this->discountPercent = $row['discount_percent'] ?? 0;
         
         $discountPrice = $this->priceFloat - ($this->priceFloat * ($this->discountPercent / 100));
@@ -45,6 +48,18 @@ class Product {
         foreach ($specifications as $spec) 
         {
             $this->specifications["" . $spec['label'] . ""] = $spec['info'];        
+        }
+    }
+    
+    public function getPhotos(array $photos): void {
+        $i = 1;
+        foreach ($photos as $photo)
+        {
+            if ($i === 1) {
+                $this->photoPath = $photo['photo_path'];
+            }
+            $this->photos[] = $photo['photo_path'];
+            $i++;
         }
     }
     

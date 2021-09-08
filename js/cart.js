@@ -13,6 +13,7 @@ function getCart() {
             $('.cart-rows').html(data['cart']);
             $('.cart-footer').html(data['footer']);
             $('.cart-info-container .cart-count-container').text(Object.keys(data['cart_items']).length);
+            $('.cart-info-container .cart-text-container').text(data['cart_total']);
             setEvents();
             hideLoadingOverlay();
         },

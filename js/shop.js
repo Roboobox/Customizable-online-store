@@ -22,8 +22,6 @@ function ShopScript()
         }
     });
     
-    $()
-    
     this.init = function()
     {
         this.productSearch(false);
@@ -37,6 +35,7 @@ function ShopScript()
             dataType: "json",
             success: function (data) {
                 $('.cart-info-container .cart-count-container').text(Object.keys(data['cart_items']).length);
+                $('.cart-info-container .cart-text-container').text(data['cart_total']);
             },
             error: function()
             {
@@ -149,9 +148,13 @@ function ShopScript()
             dataType: "json",
             data: {'q': searchQuestion, 'filterParams': urlParams},
             success: function (data) {
-                console.log(data);
                 self.products = data['products'];
-                $('.spec-filters').html(data['spec_html']);
+                if (data['spec_html'] !== '') {
+                    $('.spec-filters').html(data['spec_html']).addClass('d-sm-block');
+                }
+                else {
+                    $('.spec-filters').parent().removeClass('d-sm-block');
+                }
                 $('.product-container .row').html(data['product_html']);
                 $('.filter-option .filter-input-button').click(function () {
                     self.productSearch(true);
@@ -236,7 +239,79 @@ function ShopScript()
         // TODO : Add support for more images (Carousel)
         var product = this.products[productId];
         
-        $('#productModal .product-images').html('<img src="test_images/' + product['photoPath'] + '" class="card-img-top float-start" alt="Product photo">');
+        // $productsHtml .= '<div id="carouselProductPhotos" class="carousel slide" data-ride="carousel">';
+        //     $productsHtml .= '<ol class="carousel-indicators">';
+        //     $photoCnt = count($product->photos);
+        //     for ($i = 0; $i < $photoCnt; $i++) {
+        //         if ($i === 0) {
+        //             $productsHtml .= '<li data-target="#carouselProductPhotos" data-slide-to="0" class="active"></li>';
+        //         }
+        //         else {
+        //             $productsHtml .= '<li data-target="#carouselProductPhotos" data-slide-to="'.$i.'"></li>';
+        //         }
+        //     }
+        //     $productsHtml .= '</ol><div class="carousel-inner">';
+        //     $productsHtml .= '<div class="carousel-item active">';
+        //     $productsHtml .= '<img class="d-block w-100" src="test_images/'.$product->photoPath.'" alt="Product image"></div>';
+        //    
+        //     $i = 1;
+        //     foreach ($product->photos as $photo) {
+        //         if ($i == 1) continue;
+        //         $productsHtml .= '<div class="carousel-item">';
+        //         $productsHtml .= '<img class="d-block w-100" src="test_images/'.$photo.'" alt="Product image"></div>';
+        //         $i++;
+        //     }
+        //     $productsHtml .= '</div>';
+        //     $productsHtml .= '
+        //         <a class="carousel-control-prev" href="#carouselProductPhotos" role="button" data-slide="prev">
+        //             <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        //             <span class="sr-only">Previous</span>
+        //         </a>
+        //         <a class="carousel-control-next" href="#carouselProductPhotos" role="button" data-slide="next">
+        //             <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        //             <span class="sr-only">Next</span>
+        //         </a>
+        //     </div>    
+        //     ';
+        
+        var imageCarouselHtml = '<div id="carouselProductPhotos" class="carousel carousel-dark slide" data-bs-ride="carousel">' +
+         '<div class="carousel-indicators">';
+         var photoCnt = product['photos'].length;
+         for (var i = 0; i < photoCnt; i++) {
+            if (i === 0) {
+                imageCarouselHtml += '<button type="button" data-bs-target="#carouselProductPhotos" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>';
+            } else {
+                imageCarouselHtml += '<button type="button" data-bs-target="#carouselProductPhotos" data-bs-slide-to="'+i+'" aria-label="Slide '+i+'"></button>';
+            }
+         }
+         imageCarouselHtml += '</div><div class="carousel-inner">' +
+          '<div class="carousel-item active">' +
+           '<img class="d-block w-100" src="test_images/'+product['photoPath']+'" alt="Product image"></div>';
+         i = 1;
+         for (var photo of product['photos']) {
+            if (i !== 1) {
+                imageCarouselHtml += '<div class="carousel-item">' +
+                    '<img class="d-block w-100" src="test_images/' + photo + '" alt="Product image"></div>';
+            }
+            i++;
+         }
+         imageCarouselHtml += '</div>';
+         imageCarouselHtml += '<button type="button" class="carousel-control-prev" data-bs-target="#carouselProductPhotos"data-bs-slide="prev">' +
+             '<span class="carousel-control-prev-icon" aria-hidden="true"></span>' +
+             '<span class="visually-hidden">Previous</span>' +
+             '</button>' +
+             '<button type="button" class="carousel-control-next" data-bs-target="#carouselProductPhotos" data-bs-slide="next">' +
+             '<span class="carousel-control-next-icon" aria-hidden="true"></span>' +
+             '<span class="visually-hidden">Next</span>' +
+             '</button>' +
+             '</div>';
+        
+        $('#productModal .product-images').html(imageCarouselHtml);
+        $('#productModal .product-images-mobile').html(imageCarouselHtml);
+        $('#productModal .product-images-mobile [data-bs-target="#carouselProductPhotos"]').attr('data-bs-target', "#carouselProductPhotosMobile");
+        $('#productModal .product-images-mobile #carouselProductPhotos').attr("id", "carouselProductPhotosMobile");
+        
+        //$('#productModal .product-images').html('<img src="test_images/' + product['photoPath'] + '" class="card-img-top float-start" alt="Product photo">');
         $('#productModal .card-subtitle').html(product['category']);
         $('#productModal .card-title').html(product['name']);
         

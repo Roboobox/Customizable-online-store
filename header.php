@@ -82,7 +82,7 @@ if (isset($_SESSION['sign_error']))
                     <li class="nav-item">
                         <a class="nav-link py-0" aria-current="page" href="">
                             <i class="fas fa-cogs"></i>
-                            <span>Admin dashboard</span>
+                            <span>Admin</span>
                         </a>
                     </li>
                     <?php
@@ -188,7 +188,7 @@ if (isset($_SESSION['sign_error']))
                 <li class="nav-item">
                     <a class="nav-link py-0" aria-current="page" href="">
                         <i class="fas fa-cogs"></i>
-                        <span>Admin dashboard</span>
+                        <span>Admin</span>
                     </a>
                 </li>
                 <?php
