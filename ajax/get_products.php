@@ -1,6 +1,6 @@
 <?php
-include_once 'conn.php';
-require_once('objects/Product.php');
+include_once '../conn.php';
+require_once('../objects/Product.php');
 
 const PRODUCT_TAB_NAME_DESCRIPTION = "description";
 const PRODUCT_TAB_NAME_SPECIFICATIONS = "specifications";
@@ -125,8 +125,12 @@ foreach ($stmtLite->fetchAll() as $productRow) {
 function generateSpecificationHtml(array $productSpecs): string
 {
     $specHtml = '';
+    $i = 0;
     foreach ($productSpecs as $specName => $specValues) {
         if(count($specValues) > 1) {
+            if ($i > 0) {
+                $specHtml .= '<hr class="my-2">';
+            }
             $specHtml .= '
             <div class="filter-option">
             <h6 class="mb-3">' . $specName . '</h6>
@@ -144,8 +148,8 @@ function generateSpecificationHtml(array $productSpecs): string
 
             $specHtml .= '
             </div>
-            </div>
-            <hr class="my-2">';
+            </div>';
+            $i++;
         }
     }
     return $specHtml;
@@ -157,19 +161,19 @@ function generateProductHtml(array $products): string {
         foreach ($products as $product) {
             $productsHtml .= '<div class="col mb-2 mb-sm-3 px-1 px-sm-2">';
             $productsHtml .= '<div class="card product-card h-100 shadow-sm" data-product-id="' . $product->id . '">';
-            $productsHtml .= '<div class="card-image-container p-1 p-sm-3" onclick="objShop.openProductModal(' . $product->id . ')" data-bs-toggle="modal" data-bs-target="#productModal">';
+            $productsHtml .= '<div class="card-image-container p-1 p-sm-3 border-bottom" onclick="objShop.openProductModal(' . $product->id . ')" data-bs-toggle="modal" data-bs-target="#productModal">';
             $productsHtml .= '<img src="test_images/' . $product->photoPath . '" class="card-img-top" alt="Product photo">';
             $productsHtml .= '</div>';
             $productsHtml .= '<div class="card-body">';
             $productsHtml .= '<span class="card-subtitle fw-light text-uppercase text-muted">' . $product->category . '</span>';
             $productsHtml .= '<h5 class="card-title mb-3" onclick="objShop.openProductModal(' . $product->id . ')" data-bs-toggle="modal" data-bs-target="#productModal">' . $product->name . '</h5>';
-            $productsHtml .= '<div class="card-text text-muted d-none d-sm-block mb-4">';
+            $productsHtml .= '<div class="card-text text-muted d-none d-sm-block">';
             $productsHtml .= '<ul class="card-info-list">';
 
             $specCounter = 1;
             foreach ($product->specifications as $label => $name) {
                 if ($specCounter > 3) {
-                    $productsHtml .= '<li><a class="link-secondary" data-bs-toggle="modal" data-bs-target="#productModal" onclick="objShop.openProductModal(' . $product->id . ', \'' . PRODUCT_TAB_NAME_SPECIFICATIONS . '\')">Show more...</a on></li>';
+                    $productsHtml .= '<li><a class="link-secondary show-more" data-bs-toggle="modal" data-bs-target="#productModal" onclick="objShop.openProductModal(' . $product->id . ', \'' . PRODUCT_TAB_NAME_SPECIFICATIONS . '\')">Show more...</a on></li>';
                     break;
                 }
                 $productsHtml .= '<li><i class="far fa-circle"></i><span>' . $label . '</span><span class="card-info-list-text fw-bold ms-1 text-body">' . $name . '</span></li>';
@@ -177,9 +181,23 @@ function generateProductHtml(array $products): string {
             }
 
             $productsHtml .= '</ul></div>';
+            $productsHtml .= '<hr class="mb-2" style="width: auto;margin: 0 -1rem">';
             $productsHtml .= '<div class="card-price">';
+            $productsHtml .= '<form method="post" action="/cart_process.php">';
+            $productsHtml .= '<div class="row row-cols-1 row-cols-md-2 order-product-container">';
+            $productsHtml .= '<div class="col">';
+            
+            $productsHtml .= '<div class="quantity-container mb-2">';
+            $productsHtml .= '<div class="text-muted mb-1">Qty</div>';
+            $productsHtml .= '<div class="quantity-picker-container">';
+            $productsHtml .= '<div onclick="objShop.changeQuantityPickerAmount(0,' . $product->id . ')" class="minus"><i class="fas fa-minus"></i></div>';
+            $productsHtml .= '<input class="form-control quantity-picker-input" name="cart_quantity" type="number" value="1" min="1" max="' . $product->inventoryAmount . '" onchange="objShop.validateQuantity(' . $product->id . ')">';
+            $productsHtml .= '<input type="hidden" value="' . $product->id . '" name="cart_product_id">';
+            $productsHtml .= '<div onclick="objShop.changeQuantityPickerAmount(1,' . $product->id . ')" class="plus"><i class="fas fa-plus"></i></div>';
+            $productsHtml .= '</div></div>';
+            
             $productsHtml .= '<div class="retail-price-container">';
-
+            $productsHtml .= '<span class="retail-price-label text-muted">Price</span>';
             if ($product->discountPercent > 0) {
                 $productsHtml .= '<span class="retail-price-text fw-bold price-sale">' . $product->price . ' €</span>';
                 $productsHtml .= '<span class="retail-price-text fw-bold price-new">' . $product->discountPrice . ' €</span>';
@@ -187,20 +205,16 @@ function generateProductHtml(array $products): string {
                 $productsHtml .= '<span class="retail-price-text fw-bold">' . $product->price . ' €</span>';
             }
             $productsHtml .= '</div>';
-            $productsHtml .= '<div class="quantity-container">';
-            $productsHtml .= '<form method="post" action="cart_process.php" onkeydown="return event.key != \'Enter\';">';
-            $productsHtml .= '<div class="text-muted mb-1">Qty</div>';
-            $productsHtml .= '<div class="quantity-picker-container">';
-            $productsHtml .= '<div onclick="objShop.changeQuantityPickerAmount(0,' . $product->id . ')" class="minus"><i class="fas fa-minus"></i></div>';
-            $productsHtml .= '<input class="form-control quantity-picker-input" name="cart_quantity" type="number" placeholder="0" min="0" max="' . $product->inventoryAmount . '" onchange="objShop.validateQuantity(' . $product->id . ')">';
-            $productsHtml .= '<input type="hidden" value="' . $product->id . '" name="cart_product_id">';
-            $productsHtml .= '<div onclick="objShop.changeQuantityPickerAmount(1,' . $product->id . ')" class="plus"><i class="fas fa-plus"></i></div>';
             $productsHtml .= '</div>';
-            $productsHtml .= '<div class="total-price" style="visibility: hidden">
-                          <div class="text-muted mb-1 mt-1 d-inline-block">Total:</div>
-                          <span class="fw-bold total-price-text d-inline-block"></span>
-                          <button type="submit" class="w-100 btn-add-cart">Add to cart</button>
+            $productsHtml .= '<div class="col">';
+            
+            $productsHtml .= '<button type="submit" class="btn-add-cart mb-2">Add to cart</button>';
+            $productsHtml .= '<div class="total-price">
+                          <div class="text-muted">Total</div>
+                          <span class="fw-bold total-price-text">'.$product->price.' €</span>
                           </div>';
+            
+            $productsHtml .= '</div></div>';
             $productsHtml .= '</form></div></div></div></div></div>';
         }
         $productsHtml .= "</div>";

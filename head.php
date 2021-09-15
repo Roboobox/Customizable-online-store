@@ -11,7 +11,7 @@
             
             <script src="https://kit.fontawesome.com/24d82854f9.js" crossorigin="anonymous"></script>
             <link href="css/main.css?<?=time()?>" rel="stylesheet">
-            <script type="text/javascript" src="./js/shop.js"></script>
+            <script type="text/javascript" src="./js/shop.js?v=1"></script>
             
             <title>Page Title</title>
     </head>

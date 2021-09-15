@@ -2,6 +2,7 @@
 session_start();
 
 $formErrors = array();
+
 try {
     if (isset($_POST['email'], $_POST['password'], $_POST['c_password'])
         && $_SERVER['REQUEST_METHOD'] === "POST"
@@ -34,13 +35,15 @@ try {
             if ($filteredPassword === $filteredConfirmPassword) {
                 $hashedPassword = password_hash($filteredPassword, PASSWORD_DEFAULT);
 
-                $stmt = $conn->prepare("INSERT INTO `user` (`email`, `password_hash`) VALUES (:email, :passwordHash)");
+                $stmt = $conn->prepare("INSERT INTO `user` (`email`, `password_hash`, `role_id`) VALUES (:email, :passwordHash, :roleId)");
                 $stmt->bindParam(':email', $filteredEmail);
                 $stmt->bindParam(':passwordHash', $hashedPassword);
+                $stmt->bindValue(':roleId', 0);
                 $queryResult = $stmt->execute();
 
                 if ($queryResult) {
-                    header("Location: " . $_POST['redirect']);
+                    $_SESSION['sign_success'] = "Account created, you can log in now!";
+                    header("Location: " . $_POST['redirect'] . '?&su=1');
                     exit;
                 }
                 throw new Exception();
@@ -63,7 +66,7 @@ catch (Exception $e) {
         $formErrors['general'] = $e->getMessage();
     }
     else {
-        $formErrors['general'] = 'Something went wrong. Please try again later!';
+        $formErrors['general'] = 'Something went wrong. Please try again later! ';
     }
     $_SESSION['sign_error'] = $formErrors;
     header("Location: " . $_POST['redirect']);

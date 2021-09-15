@@ -2,7 +2,7 @@
 session_start();
 
 if (isset($_SESSION['user_id'])) {
-    include_once "conn.php";
+    include_once "../conn.php";
     $stmt = $conn->prepare("UPDATE `cart_item` SET quantity = :productQuantity WHERE cart_id = (SELECT id FROM cart WHERE user_id = :userId AND is_active = :active) AND product_id = :productId");
     $stmt->bindParam(':productQuantity', $_POST['quantity']);
     $stmt->bindParam(':userId', $_SESSION['user_id']);

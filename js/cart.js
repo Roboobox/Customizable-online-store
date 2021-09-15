@@ -5,7 +5,7 @@ var isCartLoading = false;
 function getCart() {
     showLoadingOverlay();
     $.ajax({
-        url: "get_cart.php",
+        url: "ajax/get_cart.php",
         method: "POST",
         dataType: "json",
         data: {'cart_html' : true},
@@ -67,7 +67,7 @@ function setEvents() {
 function updateCart(productId, productQuantity) {
     showLoadingOverlay();
     $.ajax({
-        url: "update_cart.php",
+        url: "ajax/update_cart.php",
         method: "POST",
         dataType: "json",
         data: {'product_id' : productId, 'quantity' : productQuantity},
@@ -85,7 +85,7 @@ function updateCart(productId, productQuantity) {
 function deleteCartItem(productId, userToken, cartId) {
     showLoadingOverlay();
     $.ajax({
-        url: "cart_remove_item.php",
+        url: "ajax/cart_remove_item.php",
         method: "POST",
         dataType: "json",
         data: {'product_id' : productId, 'token' : userToken, 'cart_id' : cartId},

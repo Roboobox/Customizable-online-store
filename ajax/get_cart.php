@@ -1,6 +1,6 @@
 <?php
 session_start();
-include_once "conn.php";
+include_once "../conn.php";
 
 $responseArray = array();
 $cartItems = array();
@@ -31,7 +31,7 @@ else if (isset($_SESSION['cart']))
 }
 
 
-require_once('objects/Product.php');
+require_once('../objects/Product.php');
 $productIdAndQuantity = array();
 $products = array();
 $totalCartPrice = 0.00;
@@ -102,7 +102,7 @@ if (isset($_POST['cart_html'])) {
                     </div>
         ';
 
-            if ($productIdAndQuantity[$cartProduct->id] > $product->inventoryAmount) {
+            if ($productIdAndQuantity[$cartProduct->id] > $cartProduct->inventoryAmount) {
                 $error = true;
                 $cartHtml .= '<p class="text-danger pt-2"><i class="fas fa-info-circle"></i> Selected quantity is not available</p>';
             }
@@ -140,6 +140,20 @@ if (isset($_POST['cart_html'])) {
 
     $responseArray['cart'] = $cartHtml;
     $responseArray['footer'] = $cartFooterHtml;
+}
+else if (isset($_POST['cart_summary_html'])) {
+    $cartShortHtml = '';
+    foreach ($products as $cartProduct) {
+        $cartShortHtml .= '<div class="cart-item border-bottom text-muted p-2 row">';
+        $cartShortHtml .= '<div class="col-8 item-name d-inline-block"><span class="item-amount">'.$productIdAndQuantity[$cartProduct->id].' x </span>'.$cartProduct->name.'</div>';
+        $cartShortHtml .= '<div class="col-4 item-price text-end">'.$cartProduct->getProductTotalPrice($productIdAndQuantity[$cartProduct->id]).' €</div>';
+        $cartShortHtml .= '</div>';
+    }
+    $cartShortHtml .= '<div class="total text-end pt-2">
+                        <span class="d-inline-blokc">Total: </span>
+                        <span class="d-inline-block fw-bold">' . number_format($totalCartPrice, 2, '.', '') . ' €</span>
+                    </div>';
+    $responseArray['cart_summary'] = $cartShortHtml;
 }
 
 $responseArray['cart_items'] = $cartItems;

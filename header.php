@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (!isset($_SESSION)) {
+    session_start();
+}
 include_once 'conn.php';
 
 $cartItemCount = 0;
@@ -45,7 +47,7 @@ var objShop;
 
 <?php
 
-if (isset($_SESSION['sign_error']))
+if (isset($_SESSION['sign_error']) || (isset($_SESSION['sign_success']) && isset($_GET['su']) && $_GET['su'] == '1'))
 {
 ?>
     <script>
@@ -64,7 +66,7 @@ if (isset($_SESSION['sign_error']))
     </script>
     <?php
     }
-    $formError = $_SESSION['sign_error'];
+    $formError = $_SESSION['sign_error'] ?? array();
     unset($_SESSION['sign_error']);
 }
 
@@ -80,7 +82,7 @@ if (isset($_SESSION['sign_error']))
                     {
                     ?>
                     <li class="nav-item">
-                        <a class="nav-link py-0" aria-current="page" href="">
+                        <a class="nav-link py-0 <?=$tab === 'Admin' ? 'active' : ''?>" aria-current="page" href="admin_dash.php">
                             <i class="fas fa-cogs"></i>
                             <span>Admin</span>
                         </a>
@@ -143,14 +145,12 @@ if (isset($_SESSION['sign_error']))
                 </a>
                 
                 <div class="search-container m-auto ps-2 pe-4 d-none d-lg-block">
-                    <form method="get" action="index.php">
                         <div class="input-group">
-                            <input class="form-control" type="search" name="q" placeholder="Product" aria-label="Search">
-                            <button type="submit" class="btn search-button">
+                            <input class="form-control" id="search" type="search" name="q" value="<?= isset($_GET['q']) ? htmlspecialchars($_GET['q'], ENT_QUOTES, 'UTF-8') : ''?>" placeholder="Product" aria-label="Search">
+                            <button id="search_button" class="btn search-button">
                                 <i class="fas fa-search"></i>
                             </button>
                         </div>
-                    </form>
                 </div>
                 
                 <div onclick="objShop.mobSearch()" class="search-button-mobile ms-auto mx-4 d-block d-lg-none">
@@ -186,7 +186,7 @@ if (isset($_SESSION['sign_error']))
                 {
                 ?>
                 <li class="nav-item">
-                    <a class="nav-link py-0" aria-current="page" href="">
+                    <a href="admin_dash.php" class="nav-link text-white py-0 <?=$tab === 'Admin' ? 'active' : ''?>" aria-current="page">
                         <i class="fas fa-cogs"></i>
                         <span>Admin</span>
                     </a>
@@ -289,6 +289,10 @@ if (isset($_SESSION['sign_error']))
                         
                         
                         <div style="min-height: 21px;" class="login-gn-error invalid-feedback d-block text-center mb-3 <?=isset($formError['general']) ? 'visible' : 'invisible'?>"><?= $formError['general'] ?? '' ?></div>
+                        
+                        <div style="min-height: 21px;" class="register-success text-success text-center mb-3 <?=isset($_SESSION['sign_success']) ? '' : 'd-none'?>"><?= $_SESSION['sign_success'] ?? '' ?></div>
+                        
+                        <?php if(isset($_SESSION['sign_success'])) unset($_SESSION['sign_success'])?>
                         
                         <div class="col-md-12 mb-3 text-center form-submit">
                             <button type="submit" class="w-100 py-2 text-uppercase fw-bold rounded-0 btn btn-block btn-primary">Login</button>

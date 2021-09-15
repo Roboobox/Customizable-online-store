@@ -1,3 +1,8 @@
+:root {
+  --primary-color: #306bf5;
+  --sale-color: #D9594C;
+}
+
 *:focus {
   outline: none;
 }
@@ -29,7 +34,7 @@ img {
 }
 .container-wrapper .not-found-code {
   font-size: 6rem;
-  color: #306bf5;
+  color: var(--primary-color);
 }
 
 .nav-fixed {
@@ -41,7 +46,7 @@ img {
 }
 
 nav .active {
-  color: #306bf5 !important;
+  color: var(--primary-color) !important;
 }
 nav .nav-item {
   cursor: pointer;
@@ -57,7 +62,7 @@ nav .mobile-sidebar-toggle {
   background: none;
   border: none;
   font-size: 30px;
-  color: #306bf5;
+  color: var(--primary-color);
 }
 nav .search-container {
   position: relative;
@@ -67,11 +72,10 @@ nav .search-container input {
   padding: 9px 15px 9px 20px;
   border-radius: 3px;
   width: 100%;
-  border: 1px solid #306bf5;
-  color: #306bf5;
+  border: 1px solid var(--primary-color);
 }
 nav .search-container .search-button {
-  background: #306bf5;
+  background: var(--primary-color);
 }
 nav .search-container .fa-search, nav .search-container .fa-times {
   color: white;
@@ -81,20 +85,20 @@ nav .search-button-mobile {
 }
 nav .search-button-mobile .fas {
   font-size: 25px;
-  color: #306bf5;
+  color: var(--primary-color);
 }
 nav .cart-container {
-  color: #306bf5;
+  color: var(--primary-color);
   text-align: center;
   display: flex;
   align-items: center;
   cursor: pointer;
 }
 nav .cart-container .cart-icon-container {
-  background: #306bf5;
+  background: var(--primary-color);
   color: white;
   padding: 10px;
-  border: 1px solid #306bf5;
+  border: 1px solid var(--primary-color);
 }
 nav .cart-container .cart-icon-container .fa-shopping-cart {
   font-size: 20px;
@@ -102,13 +106,13 @@ nav .cart-container .cart-icon-container .fa-shopping-cart {
 }
 nav .cart-container .cart-info-container {
   background: white;
-  border: 1px solid #306bf5;
+  border: 1px solid var(--primary-color);
   transition: 0.2s;
   padding: 10px 25px 10px 10px;
   position: relative;
 }
 nav .cart-container .cart-info-container .cart-count-container {
-  background: #306bf5;
+  background: var(--primary-color);
   color: white;
   border-radius: 5px;
   position: absolute;
@@ -177,7 +181,7 @@ nav .cart-container:hover > .cart-icon-container {
 .mobile-sidebar-container .mobile-sidebar-content .mobile-sidebar-close {
   position: absolute;
   font-size: 35px;
-  color: #306bf5;
+  color: var(--primary-color);
   top: 5px;
   right: -45px;
 }
@@ -189,18 +193,24 @@ nav .cart-container:hover > .cart-icon-container {
   position: relative;
 }
 .container .product-container .card {
-  cursor: pointer;
-  border-width: 2px;
+  border-width: 1px;
   transition: 0.2s;
 }
 .container .product-container .card .card-img-top {
   width: 100%;
+  cursor: pointer;
   max-height: 180px;
   min-height: 180px;
   object-fit: contain;
 }
 .container .product-container .card .card-subtitle {
   font-size: 0.9rem;
+}
+.container .product-container .card .card-title {
+  cursor: pointer;
+}
+.container .product-container .card .show-more {
+  cursor: pointer;
 }
 .container .product-container .card .card-info-list {
   list-style-type: none;
@@ -219,7 +229,8 @@ nav .cart-container:hover > .cart-icon-container {
   margin-right: 5px;
 }
 .container .product-container .card:hover {
-  border-color: #306bf5;
+  box-shadow: 0 0.125rem 0.25rem var(--primary-color) !important;
+  border: 1px solid transparent;
 }
 
 .product-card .card-title {
@@ -228,15 +239,9 @@ nav .cart-container:hover > .cart-icon-container {
   overflow: hidden;
 }
 .product-card .card-title:hover {
-  color: #306bf5;
+  color: var(--primary-color);
 }
 
-.card-price {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-}
 .card-price .retail-price-container {
   font-size: 0;
   display: inline-block;
@@ -246,7 +251,7 @@ nav .cart-container:hover > .cart-icon-container {
   font-size: 1rem;
 }
 .card-price .retail-price-container .retail-price-text, .card-price .retail-price-container .retail-price-currency {
-  color: #306bf5;
+  color: var(--primary-color);
   font-size: 24px;
 }
 .card-price .price-sale {
@@ -258,17 +263,28 @@ nav .cart-container:hover > .cart-icon-container {
 .card-price .price-new {
   display: block;
   margin-top: -9px;
-  color: #D9594C !important;
+  color: var(--sale-color) !important;
 }
-.card-price .total-price .btn-add-cart {
-  background: #306bf5;
+.card-price .btn-add-cart {
+  background-color: #b9b9b9;
   color: white;
+  width: 100%;
+  margin-top: 27px;
+  transition: 0.3s;
+  height: 35px;
   border: none;
-  display: none;
+}
+.card-price .btn-add-cart:hover {
+  filter: brightness(106%);
+}
+.card-price .total-price-text {
+  font-size: 24px;
+  color: #646464;
 }
 
 .quantity-container .quantity-picker-container {
   height: 35px;
+  width: 100%;
   background: white;
   display: inline-flex;
 }
@@ -279,7 +295,7 @@ nav .cart-container:hover > .cart-icon-container {
   text-align: center;
   background: none;
   display: flex;
-  width: 60px;
+  width: 100%;
   border-radius: 0;
   border: 1px solid #ced4da;
   border-left: 0;
@@ -297,7 +313,7 @@ nav .cart-container:hover > .cart-icon-container {
   border: 1px solid #ced4da;
   font-weight: 400;
   cursor: pointer;
-  width: 40px;
+  min-width: 30%;
 }
 
 #product_page .modal-dialog {
@@ -321,7 +337,7 @@ nav .cart-container:hover > .cart-icon-container {
 #product_page .modal-body .btn-close-modal {
   background: none;
   border: none;
-  color: #306bf5;
+  color: var(--primary-color);
 }
 #product_page .modal-body .page-switch-container button {
   transition: 0.2s;
@@ -331,7 +347,7 @@ nav .cart-container:hover > .cart-icon-container {
   border-bottom: 5px solid lightgrey;
 }
 #product_page .modal-body .page-switch-container button.active {
-  border-bottom: 5px solid #306bf5;
+  border-bottom: 5px solid var(--primary-color);
 }
 
 .green-label {
@@ -381,6 +397,12 @@ nav .cart-container:hover > .cart-icon-container {
 @media only screen and (max-width: 410px) {
   nav .navbar-brand img {
     max-width: 124px;
+  }
+}
+/* md breakpoint */
+@media only screen and (max-width: 720px) {
+  .card-price .btn-add-cart {
+    margin-top: 10px;
   }
 }
 
