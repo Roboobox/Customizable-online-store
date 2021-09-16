@@ -89,6 +89,31 @@ include_once 'header.php';
     </div>
 </section>
 
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header justify-content-between">
+            <div class="cart-success cart-msg">
+                <i class="far fa-check-circle me-1 text-success"></i>
+                <strong class="me-auto text-success">Success!</strong>
+            </div>
+            <div class="cart-error cart-msg">
+                <i class="fas fa-exclamation-circle me-1 text-danger"></i>
+                <strong class="me-auto text-danger">Error!</strong>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            <div class="cart-success cart-msg">
+            Product was added to the cart
+            </div>
+            <div class="cart-error cart-msg">
+                Something went wrong. Try again later!
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <?php include_once 'footer.php' ?>
 
 <script>

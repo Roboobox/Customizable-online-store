@@ -356,12 +356,15 @@ nav {
     //background: var(--primary-color);
     background-color: #b9b9b9;
     color: white;
-    //width: 140px;
     width: 100%;
     margin-top: 27px;
     transition: 0.3s;
     height: 35px;
     border: none;
+    
+    .loading {
+      display: none;
+    }
   }
   
   .btn-add-cart:hover {

@@ -274,6 +274,9 @@ nav .cart-container:hover > .cart-icon-container {
   height: 35px;
   border: none;
 }
+.card-price .btn-add-cart .loading {
+  display: none;
+}
 .card-price .btn-add-cart:hover {
   filter: brightness(106%);
 }

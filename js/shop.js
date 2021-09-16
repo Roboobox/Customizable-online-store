@@ -24,6 +24,8 @@ function ShopScript()
     
     this.init = function()
     {
+        var self = this;
+        
         this.productSearch(false);
     }
     
@@ -42,6 +44,55 @@ function ShopScript()
                 
             }
         });
+    }
+    
+    this.addItemToCart = function(productId, quantity)
+    {
+        var self = this;
+        $('.toast .cart-msg').hide();
+        self.cartAddLoadShow(productId);
+        $.ajax({
+            url: "ajax/cart_add.php",
+            method: "POST",
+            dataType: "json",
+            data: {
+            'cart_product_id' : productId,
+            'cart_quantity' : quantity
+            },
+            success: function (data) {
+                if (data['status'] === 'success') {
+                    $('.toast .cart-success').show();
+                    $('.toast').toast('show');
+                    self.updateCartPreview();
+                    self.cartAddLoadHide(productId);
+                }
+                else if (data['status'] === 'error' ) {
+                    $('.toast .cart-error').show();
+                    $('.toast').toast('show');
+                    self.cartAddLoadHide(productId);
+                }
+            },
+            error: function()
+            {
+                $('.toast .cart-error').show();
+                $('.toast').toast('show');
+                self.cartAddLoadShow(productId);
+            }
+        });
+    }
+    
+    this.cartAddLoadShow = function(productId)
+    {
+        
+        $('.product-container .card[' + "data-product-id=" + productId + '] .btn-add-cart .text').hide();
+        $('.product-container .card[' + "data-product-id=" + productId + '] .btn-add-cart .loading').show();
+    }
+    
+    this.cartAddLoadHide = function(productId)
+    {
+        
+        $('.product-container .card[' + "data-product-id=" + productId + '] .btn-add-cart .text').show();
+        $('.product-container .card[' + "data-product-id=" + productId + '] .btn-add-cart .loading').hide();
     }
     
     this.validateQuantity = function(productId)
@@ -190,6 +241,11 @@ function ShopScript()
         });
         $('#search_button').click(function(){
             self.productSearch(true);
+        });
+        $('.product-container .btn-add-cart').click(function(){
+            var productId = $(this).data('product');
+            var quantity = $('.card[data-product-id=' + productId + '] .quantity-picker-input').val();
+            self.addItemToCart(productId, quantity, this);
         });
     }
         

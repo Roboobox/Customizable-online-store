@@ -181,9 +181,8 @@ function generateProductHtml(array $products): string {
             }
 
             $productsHtml .= '</ul></div>';
-            $productsHtml .= '<hr class="mb-2" style="width: auto;margin: 0 -1rem">';
+            $productsHtml .= '<hr class="mb-2 d-none d-sm-block" style="width: auto;margin: 0 -1rem">';
             $productsHtml .= '<div class="card-price">';
-            $productsHtml .= '<form method="post" action="/cart_process.php">';
             $productsHtml .= '<div class="row row-cols-1 row-cols-md-2 order-product-container">';
             $productsHtml .= '<div class="col">';
             
@@ -208,14 +207,14 @@ function generateProductHtml(array $products): string {
             $productsHtml .= '</div>';
             $productsHtml .= '<div class="col">';
             
-            $productsHtml .= '<button type="submit" class="btn-add-cart mb-2">Add to cart</button>';
+            $productsHtml .= '<button class="btn-add-cart mb-2" data-product="'.$product->id.'"><span class="btn-text">Add to cart</span><i class="fas fa-spinner fa-spin loading"></i></button>';
             $productsHtml .= '<div class="total-price">
                           <div class="text-muted">Total</div>
-                          <span class="fw-bold total-price-text">'.$product->price.' €</span>
+                          <span class="fw-bold total-price-text">'.$product->discountPrice.' €</span>
                           </div>';
             
             $productsHtml .= '</div></div>';
-            $productsHtml .= '</form></div></div></div></div></div>';
+            $productsHtml .= '</div></div></div></div></div>';
         }
         $productsHtml .= "</div>";
     }
