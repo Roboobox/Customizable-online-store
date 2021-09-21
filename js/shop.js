@@ -84,14 +84,14 @@ function ShopScript()
     this.cartAddLoadShow = function(productId)
     {
         
-        $('.product-container .card[' + "data-product-id=" + productId + '] .btn-add-cart .text').hide();
+        $('.product-container .card[' + "data-product-id=" + productId + '] .btn-add-cart .btn-text').hide();
         $('.product-container .card[' + "data-product-id=" + productId + '] .btn-add-cart .loading').show();
     }
     
     this.cartAddLoadHide = function(productId)
     {
         
-        $('.product-container .card[' + "data-product-id=" + productId + '] .btn-add-cart .text').show();
+        $('.product-container .card[' + "data-product-id=" + productId + '] .btn-add-cart .btn-text').show();
         $('.product-container .card[' + "data-product-id=" + productId + '] .btn-add-cart .loading').hide();
     }
     
