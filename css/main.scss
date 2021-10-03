@@ -54,7 +54,7 @@ nav {
     color: var(--primary-color) !important;
   }
 
-  .nav-item {
+  .nav-link {
     cursor: pointer;
   }
 
@@ -259,7 +259,7 @@ nav {
 
   .filter-option {
     .filter-buttons {
-      .form-check-input, .form-check-label {
+      .form-check-input:not(:disabled), .form-check-input:not(:disabled)~.form-check-label {
         cursor: pointer;
       }
     }

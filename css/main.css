@@ -52,7 +52,7 @@ img {
 nav .active {
   color: var(--primary-color) !important;
 }
-nav .nav-item {
+nav .nav-link {
   cursor: pointer;
 }
 nav .navbar-brand {
@@ -204,7 +204,7 @@ nav .cart-container:hover > .cart-icon-container {
   right: -45px;
 }
 
-.container .filter-option .filter-buttons .form-check-input, .container .filter-option .filter-buttons .form-check-label {
+.container .filter-option .filter-buttons .form-check-input:not(:disabled), .container .filter-option .filter-buttons .form-check-input:not(:disabled) ~ .form-check-label {
   cursor: pointer;
 }
 .container .product-container .row {

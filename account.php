@@ -188,18 +188,18 @@ function getFormValidationErrors($conn) {
                     <div class="col-md-4 pe-sm-3">
                         <label for="productSort" class="form-label fw-bold">Default product sorting</label>
                         <select id="productSort" name="account_sort" class="form-select w-auto <?=(isset($formErrors['account_sort']) ? 'is-invalid' : '')?>" aria-label="Sorting select">
-                            <option value="A to Z" selected>A to Z</option>
-                            <option value="Z to A">Z to A</option>
-                            <option value="Price desc">Price descending</option>
-                            <option value="Price asc">Price ascending</option>
+                            <option value="A to Z" <?=(!isset($_SESSION['sort']) || $_SESSION['sort'] == 'A to Z') ? 'selected' : ''?>>A to Z</option>
+                            <option value="Z to A" <?=(isset($_SESSION['sort']) && $_SESSION['sort'] == 'Z to A') ? 'selected' : ''?>>Z to A</option>
+                            <option value="Price desc" <?=(isset($_SESSION['sort']) && $_SESSION['sort'] == 'Price desc') ? 'selected' : ''?>>Price descending</option>
+                            <option value="Price asc" <?=(isset($_SESSION['sort']) && $_SESSION['sort'] == 'Price asc') ? 'selected' : ''?>>Price ascending</option>
                         </select>
                         <div class="invalid-feedback"><?=$formErrors['account_sort'] ?? ''?></div>
                     </div>
                     <div class="col-md-4 pe-sm-3">
                         <label for="productLayout" class="form-label fw-bold">Default product layout</label>
                         <select id="productLayout" name="account_layout" class="form-select w-auto <?=(isset($formErrors['account_layout']) ? 'is-invalid' : '')?>" aria-label="Layout select">
-                            <option value="grid" selected>Grid</option>
-                            <option value="list">List</option>
+                            <option value="grid" <?=(!isset($_SESSION['layout']) || $_SESSION['layout'] == 'grid') ? 'selected' : ''?>>Grid</option>
+                            <option value="list" <?=(isset($_SESSION['layout']) && $_SESSION['layout'] == 'list') ? 'selected' : ''?>>List</option>
                         </select>
                         <div class="invalid-feedback"><?=$formErrors['account_layout'] ?? ''?></div>
                     </div>
@@ -212,26 +212,6 @@ function getFormValidationErrors($conn) {
             </form>
         </div>
     </div>
-<!--    <div class="contact-form-container m-auto shadow-sm">-->
-<!--        <form>-->
-<!--            <div class="mb-3">-->
-<!--                <label for="name_input" class="form-label">Name</label>-->
-<!--                <input type="text" class="form-control" id="name_input">-->
-<!--            </div>-->
-<!--            <div class="mb-3">-->
-<!--                <label for="surname_input" class="form-label">Surname</label>-->
-<!--                <input type="text" class="form-control" id="surname_input">-->
-<!--            </div>-->
-<!--            <div class="mb-3">-->
-<!--                <label for="message_textarea" class="form-label">Your message</label>-->
-<!--                <textarea class="form-control" id="message_textarea" rows="3"></textarea>-->
-<!--            </div>-->
-<!--            <div class="contact-form-footer d-flex flex-column">-->
-<!--                <button class="btn-contact-send w-50 mb-3 mt-3 m-auto">SEND</button>-->
-<!--                <p class="text-center px-4 mb-0">If you have any questions, feel free to write to us.</p>-->
-<!--            </div>-->
-<!--        </form>-->
-<!--    </div>-->
 </div>
 
 <?php include_once 'footer.php'?>
