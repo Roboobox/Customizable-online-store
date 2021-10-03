@@ -2,11 +2,14 @@
 include_once 'head.php';
 include_once 'header.php';
 
+$paymentEnabled = false;
 $checkoutStage = 1;
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['billing_name'], $_POST['billing_surname'], $_POST['billing_email'], $_POST['billing_address'], $_POST['billing_country'], $_POST['billing_city'], $_POST['billing_zip'], $_POST['paymentMethod'])) {
-        if (strlen($_POST['billing_name']) < 256 && strlen($_POST['billing_surname']) < 256 && strlen($_POST['billing_email']) < 256 && strlen($_POST['billing_address']) < 256 && strlen($_POST['billing_country']) < 256 && strlen($_POST['billing_city']) < 256 && strlen($_POST['billing_zip']) < 256) {
-            $checkoutStage = 2;
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $checkoutStage === 1) {
+    if (isset($_POST['billing_name'], $_POST['billing_surname'], $_POST['billing_email'], $_POST['billing_address'], $_POST['billing_country'], $_POST['billing_city'], $_POST['billing_zip'])) {
+        if (!empty($_POST['billing_name']) && !empty($_POST['billing_surname']) && !empty($_POST['billing_email']) && !empty($_POST['billing_address']) && !empty($_POST['billing_country']) && !empty($_POST['billing_city']) && !empty($_POST['billing_zip'])) {
+            if (strlen($_POST['billing_name']) < 256 && strlen($_POST['billing_surname']) < 256 && strlen($_POST['billing_email']) < 256 && strlen($_POST['billing_address']) < 256 && strlen($_POST['billing_country']) < 256 && strlen($_POST['billing_city']) < 256 && strlen($_POST['billing_zip']) < 256) {
+                $checkoutStage = 2;
+            }
         }
     }
 }
@@ -19,7 +22,7 @@ function clean_input($input) {
 }
 
 ?>
-<script type="text/javascript" src="./js/checkout.js?v=1"></script>
+<script type="text/javascript" src="./js/checkout.js?v=2"></script>
 <script type="text/javascript">
     $( document ).ready(function() {
         getCartSummary();
@@ -82,14 +85,14 @@ function clean_input($input) {
                                 </div>
                                 <div class="order-summary-row row my-2">
                                     <div class="text-muted">Payment method:</div>
-                                    <span class="fw-bold"><?=clean_input($_POST['paymentMethod'])?></span>
+                                    <span class="fw-bold"><?=($paymentEnabled === true) ? clean_input($_POST['paymentMethod']) : 'Bank transfer'?></span>
                                 </div>
                                 <div class="order-summary-row-payment rounded row my-3 p-2 mx-3 bg-light fs-5">
                                     <div class="col d-flex align-items-center justify-content-center">
                                         <div class="text-muted fw-bold text-center">Payment amount: </div>
                                     </div>
                                     <div class="col d-flex align-items-center justify-content-center">
-                                        <div class="fw-bold text-muted text-center">20.00$</div>
+                                        <div class="fw-bold text-muted text-center order-review-sum">20.00$</div>
                                     </div>
                                 </div>
                                 <div class="order-summary-row-confirm row my-2 mx-2">
@@ -154,6 +157,9 @@ function clean_input($input) {
                                 </div>
                             </div>
                             
+                            <?php
+                            if ($paymentEnabled === true) {
+                            ?>
                             <div><h4 class="d-none mt-5">Payment method</h4></div>
                             <div class="d-none row g-3">
                                 <div class="col-12">
@@ -231,6 +237,9 @@ function clean_input($input) {
                                     </div>
                                 </div>
                             </div>
+                            <?php
+                            }
+                            ?>
                             <button type="submit" class="mt-4 btn btn-primary float-end checkout-continue fs-5 fw-bold">Continue <i class="fas fa-arrow-right"></i></button>
                         </form>
                         <?php

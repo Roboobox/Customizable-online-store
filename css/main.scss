@@ -3,8 +3,6 @@
   --sale-color: #D9594C;
 }
 
-//$primary-color
-
 *:focus {
   outline: none;
 }
@@ -15,6 +13,9 @@ html {
 
 body {
   min-width: 310px;
+}
+body.modal-open {
+    padding-right: 0 !important;
 }
 
 img {
@@ -176,20 +177,33 @@ nav {
 .nav-top {
   padding-top: 0.3em;
   padding-bottom: 0.3rem;
-
+  background-color: #ebebeb;
+  .nav-item {
+    padding: 5px 6px;
+    border-color: #ccc !important;
+  }
   .navbar-nav {
     .nav-link {
+      span {
+        font-weight: 500;
+      }
       i, span {
         line-height: 24px;
         display: inline-block;
+        color: #5b5b5b;
+        text-transform: uppercase;
       }
 
-      .fas {
-        font-size: 15px;
+      i {
+        font-size: 16px;
         vertical-align: middle;
       }
     }
   }
+}
+
+.nav-bot.transition {
+  transition: 0.3s;
 }
 
 #authModal {
@@ -303,10 +317,43 @@ nav {
     }
 
     .card:hover {
-      box-shadow: 0 .125rem .25rem var(--primary-color) !important;
+      box-shadow: 0 0 .25rem var(--primary-color) !important;
       border: 1px solid transparent;
       //border-color: var(--primary-color);
     }
+  }
+}
+
+#search_options {
+  select, #gridSelect, #listSelect {
+    cursor: pointer;
+  }
+}
+
+.product-row table {
+  td {
+    vertical-align: middle;
+  }
+  .total-price-text {
+    color: #646464;
+    font-weight: bold;
+    max-width: 100px;
+    min-width: 81px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .retail-price-text {
+    color: var(--primary-color);
+  }
+  .retail-price-text, .total-price-text {
+    white-space: nowrap;
+  }
+  .row-view-image {
+    cursor: pointer;
+  }
+  .row-price-sale {
+    color: var(--sale-color);
   }
 }
 
@@ -352,29 +399,38 @@ nav {
     color: var(--sale-color) !important;
   }
 
-  .btn-add-cart {
-    //background: var(--primary-color);
-    background-color: #b9b9b9;
-    color: white;
-    width: 100%;
-    margin-top: 27px;
-    transition: 0.3s;
-    height: 35px;
-    border: none;
-    
-    .loading {
-      display: none;
-    }
-  }
-  
-  .btn-add-cart:hover {
-    filter: brightness(106%);
-  }
-
   .total-price-text {
     font-size: 24px;
     color: #646464;
   }
+}
+
+.btn-add-cart {
+  //background: var(--primary-color);
+  background-color: #b9b9b9;
+  color: white;
+  width: 100%;
+  margin-top: 27px;
+  transition: 0.3s;
+  height: 35px;
+  border: none;
+
+  .loading {
+    display: none;
+  }
+}
+
+.product-row table .btn-add-cart {
+  height: auto;
+  min-height: 40px;
+}
+
+.btn-add-cart:hover {
+  filter: brightness(106%);
+}
+
+table .btn-add-cart {
+  margin: 0;
 }
 
 .quantity-container {
@@ -518,11 +574,7 @@ nav {
 
 /* Mobile phone properties (sm breakpoint) */
 @media only screen and (max-width: 576px) {
-  nav {
-    .nav-bot {
-      position: static;
-    }
-  }
+  //
 }
 
 @media only screen and (max-width: 410px) {
@@ -536,7 +588,13 @@ nav {
 }
 
 /* md breakpoint */
-@media only screen and (max-width: 720px) {
+@media only screen and (max-width: 768px) {
+  .product-row table {
+    .quantity-picker-input {
+      border: 1px solid #ced4da;
+    }
+  }
+  
   .card-price {
     .btn-add-cart {
       margin-top: 10px;

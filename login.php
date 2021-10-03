@@ -25,6 +25,9 @@ try {
                     $_SESSION['user_id'] = $row['id'];
                     $_SESSION['user_token'] = $userToken;
                     $_SESSION['user_role'] = $row['role_id'];
+                    $_SESSION['sort'] = $row['product_sort'];
+                    $_SESSION['layout'] = $row['product_layout'];
+                    $_SESSION['user_data'] = array('email' => $row['email'], 'name' => $row['name'], 'surname' => $row['surname'], 'phoneNr' => $row['mobile']);
 
                     syncSessionCartWithDB($conn);
                     header("Location: " . $_POST['redirect']);

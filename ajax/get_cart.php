@@ -159,9 +159,7 @@ else if (isset($_POST['cart_summary_html'])) {
 $responseArray['cart_items'] = $cartItems;
 $responseArray['cart_total'] = number_format($totalCartPrice, 2, '.', '') . ' €';
 
-//if (isset($cartId)) {
-//    $responseArray['id'] = $cartId;
+//if (isset($_POST['cart_summary_html']) || isset($_POST['cart_html'])) {
+    echo json_encode($responseArray);
 //}
-
-echo json_encode($responseArray);
 

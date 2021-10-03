@@ -6,6 +6,7 @@ function getCartSummary() {
         data: {'cart_summary_html' : true},
         success: function (data) {
             $('.cart-summary').html(data['cart_summary']);
+            $('.order-review-sum').html(data['cart_total']);
         },
         error: function() {
         }
@@ -39,6 +40,7 @@ $( document ).ready(function() {
                     event.preventDefault();
                     event.stopPropagation();
                 }
+                
                 form.classList.add('was-validated');
             }, false);
         });

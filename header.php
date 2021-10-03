@@ -73,67 +73,6 @@ if (isset($_SESSION['sign_error']) || (isset($_SESSION['sign_success']) && isset
 ?>
 
 <header>
-    <div class="navbar navbar-expand navbar-light bg-light nav-top d-none d-sm-flex">
-        <nav class="container navbar-expand navbar-light d-none d-sm-flex" role="navigation">
-                
-                <ul class="navbar-nav ms-auto">
-                    <?php
-                    if (isset($_SESSION['user_role']) && $_SESSION['user_role'] == 1)
-                    {
-                    ?>
-                    <li class="nav-item">
-                        <a class="nav-link py-0 <?=$tab === 'Admin' ? 'active' : ''?>" aria-current="page" href="admin_dash.php">
-                            <i class="fas fa-cogs"></i>
-                            <span>Admin</span>
-                        </a>
-                    </li>
-                    <?php
-                    }
-                    ?>
-                    <li class="nav-item">
-                        <a class="nav-link py-0 <?=$tab === 'Products' ? 'active' : ''?>" aria-current="page" href="index.php">
-                            <i class="fas fa-boxes"></i>
-                            <span>Products</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link py-0 <?=$tab === 'About' ? 'active' : ''?>" href="about.php">
-                            <i class="fas fa-users"></i>
-                            <span>About us</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">   
-                        <a class="nav-link py-0 <?=$tab === 'Contact' ? 'active' : ''?>" href="contact.php">
-                            <i class="far fa-envelope"></i>
-                            <span>Contact</span>
-                        </a>
-                    </li>
-                    
-                    <li class="nav-item <?php echo (isset($_SESSION['user_id'])) ? 'd-none' : '' ?>">   
-                        <a class="nav-link py-0" onclick="objShop.hideAuthModalErrors()" data-bs-toggle="modal" data-bs-target="#authModal">
-                            <i class="fas fa-sign-in-alt"></i>
-                            <span>Sign in</span>
-                        </a>
-                    </li>
-                    
-                    <li class="nav-item <?php echo (isset($_SESSION['user_id'])) ? '' : 'd-none' ?>">
-                        <div class="dropdown">
-                            <a class="nav-link py-0" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-user-circle"></i>
-                                <span class="dropdown-toggle">Account</span>
-                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                                    <li><a class="dropdown-item" href="#">Account settings</a></li>
-                                    <li><a class="dropdown-item" href="history.php">Order history</a></li>
-                                    <li><a class="dropdown-item" href="logout.php?token=<?=$_SESSION['user_token'] ?? ''?>">Log out</a></li>
-                                </ul>
-                            </a>
-                        </div>
-                    </li>
-                    
-                </ul>
-        </nav>
-    </div>
-
     <div class="navbar navbar-expand-lg navbar-light bg-dark nav-bot" role="navigation">
         <nav class="container navbar-expand-lg navbar-dark">
                 <button class="mobile-sidebar-toggle me-3 d-block d-sm-none" type="button" onclick="objShop.showSideBar()">
@@ -163,10 +102,9 @@ if (isset($_SESSION['sign_error']) || (isset($_SESSION['sign_success']) && isset
                     </div>
                     <div class="cart-info-container">
                         <div class="cart-count-container fw-bold">
-<!--                            --><?//=$cartItemCount?>
                         </div>
                         <div class="cart-text-container fw-bold">
-                            17.30
+                            0.00
                             <span>€</span>
                         </div>
                     </div>
@@ -174,6 +112,68 @@ if (isset($_SESSION['sign_error']) || (isset($_SESSION['sign_success']) && isset
                 
         </nav>
     </div>
+    
+    <div class="navbar navbar-expand navbar-light nav-top d-none d-sm-flex">
+        <nav class="container navbar-expand navbar-light d-none d-sm-flex" role="navigation">
+                
+                <ul class="navbar-nav w-100">
+<!--                    --><?php
+//                    if (isset($_SESSION['user_role']) && $_SESSION['user_role'] == 1)
+//                    {
+//                    ?>
+<!--                    <li class="nav-item">-->
+<!--                        <a class="nav-link py-0 --><?//=$tab === 'Admin' ? 'active' : ''?><!--" aria-current="page" href="admin_dash.php">-->
+<!--                            <i class="fas fa-cogs"></i>-->
+<!--                            <span>Admin</span>-->
+<!--                        </a>-->
+<!--                    </li>-->
+<!--                    --><?php
+//                    }
+//                    ?>
+                    <li class="nav-item border-end text-center">
+                        <a class="nav-link py-0 <?=$tab === 'Products' ? 'active' : ''?>" aria-current="page" href="index.php">
+                            <i class="fas fa-boxes"></i>
+                            <span>Products</span>
+                        </a>
+                    </li>
+                    <li class="nav-item border-end text-center">
+                        <a class="nav-link py-0 <?=$tab === 'About' ? 'active' : ''?>" href="about.php">
+                            <i class="fas fa-users"></i>
+                            <span>About us</span>
+                        </a>
+                    </li>
+                    <li class="nav-item text-center">   
+                        <a class="nav-link py-0 <?=$tab === 'Contact' ? 'active' : ''?>" href="contact.php">
+                            <i class="fas fa-envelope"></i>
+                            <span>Contact</span>
+                        </a>
+                    </li>
+                    
+                    <li class="ms-auto text-center nav-item <?php echo (isset($_SESSION['user_id'])) ? 'd-none' : '' ?>">   
+                        <a class="nav-link py-0" onclick="objShop.hideAuthModalErrors()" data-bs-toggle="modal" data-bs-target="#authModal">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span>Sign in</span>
+                        </a>
+                    </li>
+                    
+                    <li class="ms-auto text-center nav-item <?php echo (isset($_SESSION['user_id'])) ? '' : 'd-none' ?>">
+                        <div class="dropdown">
+                            <a class="nav-link py-0" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user-circle"></i>
+                                <span class="dropdown-toggle">Account</span>
+                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                    <li><a class="dropdown-item" href="account.php">Account settings</a></li>
+                                    <li><a class="dropdown-item" href="history.php">Order history</a></li>
+                                    <li><a class="dropdown-item" href="logout.php?token=<?=$_SESSION['user_token'] ?? ''?>">Log out</a></li>
+                                </ul>
+                            </a>
+                        </div>
+                    </li>
+                    
+                </ul>
+        </nav>
+    </div>
+    
     <div class="mobile-sidebar-container">
         <div class="d-flex flex-column flex-shrink-0 p-3 bg-dark text-white mobile-sidebar-content" style="width: 280px;">
             <a href="/" class="d-flex align-items-center mb-1 mb-md-0 me-md-auto text-white text-decoration-none">
@@ -181,19 +181,19 @@ if (isset($_SESSION['sign_error']) || (isset($_SESSION['sign_success']) && isset
             </a>
             <hr>
             <ul class="nav nav-pills flex-column mb-auto">
-                <?php
-                if (isset($_SESSION['user_role']) && $_SESSION['user_role'] == 1)
-                {
-                ?>
-                <li class="nav-item">
-                    <a href="admin_dash.php" class="nav-link text-white py-0 <?=$tab === 'Admin' ? 'active' : ''?>" aria-current="page">
-                        <i class="fas fa-cogs"></i>
-                        <span>Admin</span>
-                    </a>
-                </li>
-                <?php
-                }
-                ?>
+<!--                --><?php
+//                if (isset($_SESSION['user_role']) && $_SESSION['user_role'] == 1)
+//                {
+//                ?>
+<!--                <li class="nav-item">-->
+<!--                    <a href="admin_dash.php" class="nav-link text-white py-0 --><?//=$tab === 'Admin' ? 'active' : ''?><!--" aria-current="page">-->
+<!--                        <i class="fas fa-cogs"></i>-->
+<!--                        <span>Admin</span>-->
+<!--                    </a>-->
+<!--                </li>-->
+<!--                --><?php
+//                }
+//                ?>
                 <li class="nav-item py-1">
                     <a href="index.php" class="nav-link text-white <?=$tab === 'Products' ? 'active' : ''?>" aria-current="page">
                         <i class="fas fa-boxes"></i>
@@ -227,7 +227,7 @@ if (isset($_SESSION['sign_error']) || (isset($_SESSION['sign_success']) && isset
                             <i class="fas fa-user-circle"></i>
                             <span class="dropdown-toggle">Account</span>
                             <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropdownMenuButton1">
-                                <li><a class="dropdown-item" href="#">Account settings</a></li>
+                                <li><a class="dropdown-item" href="account.php">Account settings</a></li>
                                 <li><a class="dropdown-item" href="history.php">Order history</a></li>
                                 <li><a class="dropdown-item" href="logout.php?token=<?=$_SESSION['user_token'] ?? ''?>">Log out</a></li>
                             </ul>

@@ -6,27 +6,124 @@ include_once 'header.php';
 ?>
 <script type="text/javascript">
     $( document ).ready(function() {
-        objShop.init();
+        objShop.init(<?=(isset($_SESSION['sort'], $_SESSION['layout']) ? json_encode($_SESSION['sort']) . ',' . json_encode($_SESSION['layout']) : '')?>);
     });
 </script>
 <link href="css/index.css?<?=time()?>" rel="stylesheet">
 <div class="container mb-5">
     <div class="row">
         <h3 class="w-100 mt-4 mt-sm-5">Products</h3>
-        <h5 class="search-results w-100 mb-4 mb-sm-5 <?=isset($_GET['q']) ? 'visible' : 'invisible'?>">Search results: <span class="search-results-text"><?= isset($_GET['q']) ? '"' . htmlspecialchars($_GET['q'], ENT_QUOTES, 'UTF-8') . '"' : ''?></span></h5>
+        <h5 class="search-results w-100 mb-3 mb-sm-4">Search results: <span class="search-results-text"></span></h5>
     </div>
     <div class="row">
-        <div class="col-3 d-none d-sm-block">
+        <div class="col-3 d-none d-lg-block">
             <div class="spec-filters row p-3 me-2 bg-white border"></div>
         </div>
         <div class="col product-container">
+            <div id="search_options" style="height: 50px;" class="row mb-2">
+                <div class="col d-flex ms-1 ms-sm-2 ps-2 ps-sm-3 border-start border-top border-bottom bg-white align-items-center">
+                    <i class="d-none fas fa-filter d-sm-inline-block" style="width: 30px"></i>
+                    <select id="productSort" class="form-select w-auto d-inline-block" aria-label="Sorting select">
+                        <option value="A to Z" <?=(!isset($_SESSION['sort'])||$_SESSION['sort'] == 'A to Z') ? 'Selected' : '' ?>>Sort: A to Z</option>
+                        <option value="Z to A" <?=(isset($_SESSION['sort'])&&$_SESSION['sort'] == 'Z to A') ? 'Selected' : '' ?>>Sort: Z to A</option>
+                        <option value="Price desc" <?=(isset($_SESSION['sort'])&&$_SESSION['sort'] == 'Price desc') ? 'Selected' : '' ?>>Sort: Price descending</option>
+                        <option value="Price asc" <?=(isset($_SESSION['sort'])&&$_SESSION['sort'] == 'Price asc') ? 'Selected' : '' ?>>Sort: Price ascending</option>
+                    </select>
+                </div>
+                <div class="col d-flex me-sm-2 me-1 pe-0 bg-white border-top border-bottom align-items-center justify-content-end">
+                    <div id="gridSelect" style="line-height: 50px" class="fs-5 px-3 border-start border-end h-100 grid-view-button">
+                        <i class="fas fa-th-large"></i>
+                    </div>
+                    <div id="listSelect" style="line-height: 50px" class="fs-5 px-3 border-end h-100 list-view-button">
+                        <i class="fas fa-align-justify"></i>
+                    </div>
+                </div>
+            </div>
             <div class="col-12 px-3" id="products_loading">
                 <div class="p-3 border shadow-sm fw-bold text-center">
                     <div><i class="fas fa-spinner fa-spin fs-1 my-3 text-muted"></i></div>
                 </div>
             </div>
-            <div class="row row-cols-xl-3 row-cols-lg-2 row-cols-sm-2 row-cols-2"></div>
-        </div>
+            <div class="product-view-container">
+            </div>
+<!--            <div class="row product-row-new">-->
+<!--                <table class="table table-bordered text-center bg-white">-->
+<!--                    <tr>-->
+<!--                        <th>Image</th>-->
+<!--                        <th>Category</th>-->
+<!--                        <th>Title</th>-->
+<!--                        <th>Price</th>-->
+<!--                        <th>Quantity</th>-->
+<!--                        <th>Total</th>-->
+<!--                        <th></th>-->
+<!--                    </tr>-->
+<!--                    <tr class="mb-2 mb-sm-3 px-1 px-sm-2">-->
+<!--                        <td onclick="objShop.openProductModal(3)" data-bs-toggle="modal" data-bs-target="#productModal" style="cursor: pointer"><i class="far fa-eye"></i></td>-->
+<!--                        <td>Screen cleaner</td>-->
+<!--                        <td>Acme CL34</td>-->
+<!--                        <td style="color: #306bf5"><b>5.10 €</b></td>-->
+<!--                        <td>-->
+<!--                            <div class="quantity-container">-->
+<!--                                <div class="quantity-picker-container">-->
+<!--                                    <div onclick="objShop.changeQuantityPickerAmount(0,3)"-->
+<!--                                         class="minus"><i-->
+<!--                                                class="fas fa-minus" aria-hidden="true"></i></div>-->
+<!--                                    <input class="form-control quantity-picker-input"-->
+<!--                                           name="cart_quantity"-->
+<!--                                           data-product-id="3"-->
+<!--                                           type="number" value="1" min="1" max="11"-->
+<!--                                           onchange="objShop.validateQuantity(3)"><input-->
+<!--                                            type="hidden"-->
+<!--                                            value="3"-->
+<!--                                            name="cart_product_id">-->
+<!--                                    <div onclick="objShop.changeQuantityPickerAmount(1,3)"-->
+<!--                                         class="plus"><i-->
+<!--                                                class="fas fa-plus" aria-hidden="true"></i></div>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                        </td>-->
+<!--                        <td><b>5.10 €</b></td>-->
+<!--                        <td>-->
+<!--                            <button class="btn-add-cart" data-product="3">-->
+<!--                                <span class="btn-text">Add to cart</span>-->
+<!--                                <i class="fas fa-spinner fa-spin loading" aria-hidden="true"></i>-->
+<!--                            </button>-->
+<!--                        </td>-->
+<!--                    </tr>-->
+<!--                    <tr class="mb-2 mb-sm-3 px-1 px-sm-2">-->
+<!--                        <td onclick="objShop.openProductModal(3)" style="cursor: pointer"><i class="far fa-eye"></i></td>-->
+<!--                        <td>Screen cleaner</td>-->
+<!--                        <td>Acme CL34</td>-->
+<!--                        <td style="color: #306bf5"><b>5.10 €</b></td>-->
+<!--                        <td>-->
+<!--                            <div class="quantity-container">-->
+<!--                                <div class="quantity-picker-container">-->
+<!--                                    <div onclick="objShop.changeQuantityPickerAmount(0,3)"-->
+<!--                                         class="minus"><i-->
+<!--                                                class="fas fa-minus" aria-hidden="true"></i></div>-->
+<!--                                    <input class="form-control quantity-picker-input"-->
+<!--                                           name="cart_quantity"-->
+<!--                                           type="number" value="1" min="1" max="11"-->
+<!--                                           onchange="objShop.validateQuantity(3)"><input-->
+<!--                                            type="hidden"-->
+<!--                                            value="3"-->
+<!--                                            name="cart_product_id">-->
+<!--                                    <div onclick="objShop.changeQuantityPickerAmount(1,3)"-->
+<!--                                         class="plus"><i-->
+<!--                                                class="fas fa-plus" aria-hidden="true"></i></div>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                        </td>-->
+<!--                        <td><b>5.10 €</b></td>-->
+<!--                        <td>-->
+<!--                            <button class="btn-add-cart" data-product="3">-->
+<!--                                <span class="btn-text">Add to cart</span>-->
+<!--                                <i class="fas fa-spinner fa-spin loading" aria-hidden="true"></i>-->
+<!--                            </button>-->
+<!--                        </td>-->
+<!--                    </tr>-->
+<!--                </table>-->
+<!--        </div>-->
     </div>
 </div>
 

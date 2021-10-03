@@ -6,25 +6,56 @@ function ShopScript()
     this.jqTopNavbar = $('.nav-top');
     this.jqBotNavbar = $('.nav-bot');
     this.products = "";
+    this.productSort = "A to Z";
+    this.productLayout = "grid";
     
     this.intTopNavBarHeight = this.jqTopNavbar.outerHeight(true);
-    
+    this.intBotNavBarHeight = this.jqBotNavbar.outerHeight(true);
+    this.intNavFixedGap = 130;
     
     var self = this;
     $(window).scroll( function(){
-        if(window.scrollY > self.intTopNavBarHeight){
-            self.jqBotNavbar.addClass('nav-fixed')
+        if(window.scrollY > self.intTopNavBarHeight + self.intBotNavBarHeight + self.intNavFixedGap){
+            self.jqBotNavbar.addClass('nav-fixed');
+            self.jqBotNavbar.css('opacity', 1);
             $('body').css('padding-top', self.jqBotNavbar.outerHeight(true));
         }
-        else if(window.scrollY < self.intTopNavBarHeight){
+        else if (window.scrollY > self.intBotNavBarHeight) {
+            self.jqBotNavbar.css('opacity', 0);
+            self.jqBotNavbar.addClass('transition');
+        }
+        else if(window.scrollY <= self.intNavFixedGap){
             self.jqBotNavbar.removeClass('nav-fixed');
             $('body').css('padding-top', '0');
+            self.jqBotNavbar.removeClass('transition');
+            self.jqBotNavbar.css('opacity', 1);
         }
     });
     
-    this.init = function()
+    this.init = function(productSort = 'A to Z', productLayout = 'grid')
     {
         var self = this;
+        this.productLayout = productLayout;
+        this.productSort = productSort;
+        
+        $('.product-container #productSort').change(function(){
+            self.productSort = $('#productSort option:selected').val();
+            self.productSearch(false);
+        });
+        
+        $('.product-container #gridSelect').click(function(){
+            if (self.productLayout !== "grid") {
+                self.productLayout = "grid"
+                self.productSearch(false);    
+            }
+        });
+        
+        $('.product-container #listSelect').click(function(){
+            if (self.productLayout !== "list") {
+                self.productLayout = "list"
+                self.productSearch(false);    
+            }
+        });
         
         this.productSearch(false);
     }
@@ -84,22 +115,22 @@ function ShopScript()
     this.cartAddLoadShow = function(productId)
     {
         
-        $('.product-container .card[' + "data-product-id=" + productId + '] .btn-add-cart .btn-text').hide();
-        $('.product-container .card[' + "data-product-id=" + productId + '] .btn-add-cart .loading').show();
+        $('.product-container .product[' + "data-product-id=" + productId + '] .btn-add-cart .btn-text').hide();
+        $('.product-container .product[' + "data-product-id=" + productId + '] .btn-add-cart .loading').show();
     }
     
     this.cartAddLoadHide = function(productId)
     {
         
-        $('.product-container .card[' + "data-product-id=" + productId + '] .btn-add-cart .btn-text').show();
-        $('.product-container .card[' + "data-product-id=" + productId + '] .btn-add-cart .loading').hide();
+        $('.product-container .product[' + "data-product-id=" + productId + '] .btn-add-cart .btn-text').show();
+        $('.product-container .product[' + "data-product-id=" + productId + '] .btn-add-cart .loading').hide();
     }
     
     this.validateQuantity = function(productId)
     {
         var product = this.products[productId];
         
-        var quantityPickerInput =  $('.card[' + "data-product-id=" + productId + '] .quantity-container .quantity-picker-input');
+        var quantityPickerInput =  $('.product[' + "data-product-id=" + productId + '] .quantity-container .quantity-picker-input');
         
         if (quantityPickerInput.val() > 0) {
             if (quantityPickerInput.val() > product['inventoryAmount']) {
@@ -107,7 +138,7 @@ function ShopScript()
                 alert('Selected quantity cannot be ordered');
             }
             //$('.card[' + "data-product-id=" + productId + '] .quantity-container .total-price').css('visibility', 'visible');
-            $('.card[' + "data-product-id=" + productId + '] .order-product-container .total-price-text').text((product['discountPrice'] * Number(quantityPickerInput.val())).toFixed(2) + ' €');
+            $('.product[' + "data-product-id=" + productId + '] .total-price-text').text((product['discountPrice'] * Number(quantityPickerInput.val())).toFixed(2) + ' €');
 
             //$('.card[' + "data-product-id=" + productId + '] .quantity-container .total-price .btn-add-cart').css('display', 'block');
         }
@@ -170,6 +201,10 @@ function ShopScript()
         }
         if ($('#search').val().length > 0) {
             url.searchParams.set('q', encodeURI($('#search').val()));
+            $('.search-results-text').text($('#search').val());
+            $('.search-results').show();
+        } else {
+            $('.search-results').hide();
         }
         //url.searchParams.set('param1', 'val1');
         window.history.replaceState(null, null, url);
@@ -194,9 +229,9 @@ function ShopScript()
             paramCount++;
         }
         
-        var previousHeight = $('.product-container .row').height();
+        var previousHeight = $('.product-container .product-row').height();
         
-        $('.product-container .row').hide();
+        $('.product-container .product-row').hide();
         
         $('.product-container #products_loading').height(previousHeight).show();
         
@@ -204,7 +239,12 @@ function ShopScript()
             url: "ajax/get_products.php",
             method: "POST",
             dataType: "json",
-            data: {'q': searchQuestion, 'filterParams': urlParams},
+            data: {
+            'q': searchQuestion, 
+            'filterParams': urlParams, 
+            'layout': self.productLayout,
+            'sort' : self.productSort
+            },
             success: function (data) {
                 self.products = data['products'];
                 if (data['spec_html'] !== '') {
@@ -213,11 +253,13 @@ function ShopScript()
                 else {
                     $('.spec-filters').parent().removeClass('d-sm-block');
                 }
-                $('.product-container .row').html(data['product_html']);
+                $('.product-container .product-view-container').html(data['product_html']);
                 self.setSearchEvents();
                 self.setSearchFiltersChecked(urlParams);
+                // Removes disabled attribute from filter elements that are already checked so user can unselect them
+                $('.filter-buttons .filter-input-button:checked:disabled').prop("disabled", false);
                 $('.product-container #products_loading').hide();
-                $('.product-container .row').show();
+                $('.product-container .product-view-container').show();
             },
             error: function()
             {
@@ -240,11 +282,14 @@ function ShopScript()
             }
         });
         $('#search_button').click(function(){
-            self.productSearch(true);
+            if ($('#search').val().length > 1) {
+                self.productSearch(true);
+            }
+            //self.productSearch(true);
         });
         $('.product-container .btn-add-cart').click(function(){
             var productId = $(this).data('product');
-            var quantity = $('.card[data-product-id=' + productId + '] .quantity-picker-input').val();
+            var quantity = $('.product[data-product-id=' + productId + '] .quantity-picker-input').val();
             self.addItemToCart(productId, quantity, this);
         });
     }
@@ -318,40 +363,6 @@ function ShopScript()
         // TODO : Add support for more images (Carousel)
         var product = this.products[productId];
         
-        // $productsHtml .= '<div id="carouselProductPhotos" class="carousel slide" data-ride="carousel">';
-        //     $productsHtml .= '<ol class="carousel-indicators">';
-        //     $photoCnt = count($product->photos);
-        //     for ($i = 0; $i < $photoCnt; $i++) {
-        //         if ($i === 0) {
-        //             $productsHtml .= '<li data-target="#carouselProductPhotos" data-slide-to="0" class="active"></li>';
-        //         }
-        //         else {
-        //             $productsHtml .= '<li data-target="#carouselProductPhotos" data-slide-to="'.$i.'"></li>';
-        //         }
-        //     }
-        //     $productsHtml .= '</ol><div class="carousel-inner">';
-        //     $productsHtml .= '<div class="carousel-item active">';
-        //     $productsHtml .= '<img class="d-block w-100" src="test_images/'.$product->photoPath.'" alt="Product image"></div>';
-        //    
-        //     $i = 1;
-        //     foreach ($product->photos as $photo) {
-        //         if ($i == 1) continue;
-        //         $productsHtml .= '<div class="carousel-item">';
-        //         $productsHtml .= '<img class="d-block w-100" src="test_images/'.$photo.'" alt="Product image"></div>';
-        //         $i++;
-        //     }
-        //     $productsHtml .= '</div>';
-        //     $productsHtml .= '
-        //         <a class="carousel-control-prev" href="#carouselProductPhotos" role="button" data-slide="prev">
-        //             <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        //             <span class="sr-only">Previous</span>
-        //         </a>
-        //         <a class="carousel-control-next" href="#carouselProductPhotos" role="button" data-slide="next">
-        //             <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        //             <span class="sr-only">Next</span>
-        //         </a>
-        //     </div>    
-        //     ';
         
         var imageCarouselHtml = '<div id="carouselProductPhotos" class="carousel carousel-dark slide" data-bs-ride="carousel">' +
          '<div class="carousel-indicators">';
@@ -457,7 +468,7 @@ function ShopScript()
         // TODO : Check for currency rounding errors
         var product = this.products[productId];
         
-        var quantityPickerInput =  $('.card[' + "data-product-id=" + productId + '] .quantity-container .quantity-picker-input');
+        var quantityPickerInput =  $('.quantity-picker-input[' + "data-product-id=" + productId + ']');
         
         if (add === 1) {
             quantityPickerInput[0].stepUp();
@@ -468,7 +479,7 @@ function ShopScript()
         
         if (quantityPickerInput.val() > 0) {
             //$('.card[' + "data-product-id=" + productId + '] .quantity-container .total-price').css('visibility', 'visible');
-            $('.card[' + "data-product-id=" + productId + '] .order-product-container .total-price-text').text((product['discountPrice'] * Number(quantityPickerInput.val())).toFixed(2) + ' €');
+            $('.product[' + "data-product-id=" + productId + '] .total-price-text').text((product['discountPrice'] * Number(quantityPickerInput.val())).toFixed(2) + ' €');
             
             //$('.card[' + "data-product-id=" + productId + '] .quantity-container .total-price .btn-add-cart').css('display', 'block');
         }
