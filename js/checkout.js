@@ -3,7 +3,7 @@ function getCartSummary() {
         url: "ajax/get_cart.php",
         method: "POST",
         dataType: "json",
-        data: {'cart_summary_html' : true},
+        data: {'cart_summary_html' : true, 'output' : true},
         success: function (data) {
             $('.cart-summary').html(data['cart_summary']);
             $('.order-review-sum').html(data['cart_total']);

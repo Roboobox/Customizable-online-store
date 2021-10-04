@@ -17,16 +17,19 @@ function ShopScript()
     $(window).scroll( function(){
         if(window.scrollY > self.intTopNavBarHeight + self.intBotNavBarHeight + self.intNavFixedGap){
             self.jqBotNavbar.addClass('nav-fixed');
+            self.jqBotNavbar.css('visibility', 'visible');
             self.jqBotNavbar.css('opacity', 1);
             $('body').css('padding-top', self.jqBotNavbar.outerHeight(true));
         }
         else if (window.scrollY > self.intBotNavBarHeight) {
             self.jqBotNavbar.css('opacity', 0);
             self.jqBotNavbar.addClass('transition');
+            self.jqBotNavbar.css('visibility', 'hidden');
         }
         else if(window.scrollY <= self.intNavFixedGap){
             self.jqBotNavbar.removeClass('nav-fixed');
             $('body').css('padding-top', '0');
+            self.jqBotNavbar.css('visibility', 'visible');
             self.jqBotNavbar.removeClass('transition');
             self.jqBotNavbar.css('opacity', 1);
         }
@@ -57,7 +60,32 @@ function ShopScript()
             }
         });
         
+        $('#mob_filter_open').click(function(){
+           self.showMobileFilter(); 
+        });
+        
         this.productSearch(false);
+    }
+    
+    this.initSearch = function(tabName)
+    {
+        if (tabName == 'Products') {
+            $('#search').keyup(function () {
+                if ($('#search').val().length > 3) {
+                    self.productSearch(true);
+                }
+            });
+        }
+        
+        $('#search_button').click(function(){
+            if ($('#search').val().length > 1) {
+                if (tabName != 'Products') {
+                    let searchValue = $('#search').val();
+                    window.location.href = "index.php?q=" + searchValue;
+                }
+                self.productSearch(true);
+            }
+        });
     }
     
     this.updateCartPreview = function()
@@ -66,6 +94,7 @@ function ShopScript()
             url: "ajax/get_cart.php",
             method: "POST",
             dataType: "json",
+            data: {'output' : true},
             success: function (data) {
                 $('.cart-info-container .cart-count-container').text(Object.keys(data['cart_items']).length);
                 $('.cart-info-container .cart-text-container').text(data['cart_total']);
@@ -248,10 +277,10 @@ function ShopScript()
             success: function (data) {
                 self.products = data['products'];
                 if (data['spec_html'] !== '') {
-                    $('.spec-filters').html(data['spec_html']).addClass('d-sm-block');
+                    $('.spec-filters').html(data['spec_html']).parent().addClass('d-lg-block');
                 }
                 else {
-                    $('.spec-filters').parent().removeClass('d-sm-block');
+                    $('.spec-filters').parent().removeClass('d-lg-block');
                 }
                 $('.product-container .product-view-container').html(data['product_html']);
                 self.setSearchEvents();
@@ -275,17 +304,9 @@ function ShopScript()
         $('.filter-option .filter-input-button').click(function () {
             self.productSearch(true);
         });
-        $('#search').unbind('keyup');
-        $('#search').keyup(function () {
-            if ($('#search').val().length > 3) {
-                self.productSearch(true);
-            }
-        });
-        $('#search_button').click(function(){
-            if ($('#search').val().length > 1) {
-                self.productSearch(true);
-            }
-            //self.productSearch(true);
+        $('#mob_filter_hide').unbind('click');
+        $('#mob_filter_hide').click(function(){
+           self.hideMobileFilter(); 
         });
         $('.product-container .btn-add-cart').click(function(){
             var productId = $(this).data('product');
@@ -324,6 +345,18 @@ function ShopScript()
             $('.nav-bot .search-container').addClass('ps-2').addClass('pe-4').addClass('d-none').css('width', '50%');
             $('.nav-bot .search-button-mobile i').addClass('fa-search').removeClass('fa-times');
         }
+    }
+    
+    this.showMobileFilter = function()
+    {
+        $('.filter-container').removeClass('d-none').addClass('d-block');
+        $('body').css('overflow', 'hidden');
+    }
+    
+    this.hideMobileFilter = function()
+    {
+        $('.filter-container').addClass('d-none').removeClass('d-block');
+        $('body').css('overflow', '');
     }
     
     this.showSignUpForm = function()

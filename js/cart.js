@@ -8,7 +8,7 @@ function getCart() {
         url: "ajax/get_cart.php",
         method: "POST",
         dataType: "json",
-        data: {'cart_html' : true},
+        data: {'cart_html' : true, 'output': true},
         success: function (data) {
             $('.cart-rows').html(data['cart']);
             $('.cart-footer').html(data['footer']);

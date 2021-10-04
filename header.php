@@ -41,6 +41,7 @@ var objShop;
     $( function()
     {
         objShop = new ShopScript();
+        objShop.initSearch(<?=json_encode($tab ?? 'None')?>)
         objShop.updateCartPreview();
     } );
 </script>
@@ -79,13 +80,13 @@ if (isset($_SESSION['sign_error']) || (isset($_SESSION['sign_success']) && isset
                     <i class="fas fa-bars"></i>
                 </button>
                 
-                <a class="navbar-brand text-white" href="#">
+                <a class="navbar-brand text-white" href="index.php">
                     <img src="test_images/logo.png" alt="logo">
                 </a>
                 
                 <div class="search-container m-auto ps-2 pe-4 d-none d-lg-block">
                         <div class="input-group">
-                            <input class="form-control" id="search" type="search" name="q" value="<?= isset($_GET['q']) ? htmlspecialchars($_GET['q'], ENT_QUOTES, 'UTF-8') : ''?>" placeholder="Product" aria-label="Search">
+                            <input class="form-control" id="search" type="search" name="q" value="<?= isset($_GET['q']) ? htmlspecialchars(urldecode($_GET['q']), ENT_QUOTES, 'UTF-8') : ''?>" placeholder="Product" aria-label="Search">
                             <button id="search_button" class="btn search-button">
                                 <i class="fas fa-search"></i>
                             </button>

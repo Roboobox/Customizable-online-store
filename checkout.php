@@ -4,13 +4,19 @@ include_once 'header.php';
 
 $paymentEnabled = false;
 $checkoutStage = 1;
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $checkoutStage === 1) {
-    if (isset($_POST['billing_name'], $_POST['billing_surname'], $_POST['billing_email'], $_POST['billing_address'], $_POST['billing_country'], $_POST['billing_city'], $_POST['billing_zip'])) {
-        if (!empty($_POST['billing_name']) && !empty($_POST['billing_surname']) && !empty($_POST['billing_email']) && !empty($_POST['billing_address']) && !empty($_POST['billing_country']) && !empty($_POST['billing_city']) && !empty($_POST['billing_zip'])) {
-            if (strlen($_POST['billing_name']) < 256 && strlen($_POST['billing_surname']) < 256 && strlen($_POST['billing_email']) < 256 && strlen($_POST['billing_address']) < 256 && strlen($_POST['billing_country']) < 256 && strlen($_POST['billing_city']) < 256 && strlen($_POST['billing_zip']) < 256) {
-                $checkoutStage = 2;
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if ($checkoutStage === 1) {
+        if (isset($_POST['billing_name'], $_POST['billing_surname'], $_POST['billing_email'], $_POST['billing_address'], $_POST['billing_country'], $_POST['billing_city'], $_POST['billing_zip'])) {
+            if (!empty($_POST['billing_name']) && !empty($_POST['billing_surname']) && !empty($_POST['billing_email']) && !empty($_POST['billing_address']) && !empty($_POST['billing_country']) && !empty($_POST['billing_city']) && !empty($_POST['billing_zip'])) {
+                if (strlen($_POST['billing_name']) < 256 && strlen($_POST['billing_surname']) < 256 && strlen($_POST['billing_email']) < 256 && strlen($_POST['billing_address']) < 256 && strlen($_POST['billing_country']) < 256 && strlen($_POST['billing_city']) < 256 && strlen($_POST['billing_zip']) < 256) {
+                    $checkoutStage = 2;
+                }
             }
         }
+    } else if ($checkoutStage === 2) {
+        include_once 'ajax/get_cart.php';
+        $checkoutStage = 3;
+        //var_dump($cartItems);
     }
 }
 
@@ -22,7 +28,7 @@ function clean_input($input) {
 }
 
 ?>
-<script type="text/javascript" src="./js/checkout.js?v=2"></script>
+<script type="text/javascript" src="./js/checkout.js?v=3"></script>
 <script type="text/javascript">
     $( document ).ready(function() {
         getCartSummary();
@@ -30,9 +36,6 @@ function clean_input($input) {
 </script>
 <link href="css/checkout.css?<?=time()?>" rel="stylesheet">
 <div class="container">
-<!--    <div class="row">-->
-<!--        <h2 class="w-100 mt-5 mb-4">Contact us</h2>-->
-<!--    </div>-->
     <div class="my-md-5 my-0">
         <div class="row p-3 border border-bottom-0">
             <div class="progress-container d-flex justify-content-center">
@@ -76,7 +79,7 @@ function clean_input($input) {
                                     <span class="fw-bold"><?=clean_input($_POST['billing_email'])?></span>
                                 </div>
                                 <div class="order-summary-row row my-2">
-                                    <div class="text-muted">Adress:</div>
+                                    <div class="text-muted">Address:</div>
                                     <span class="fw-bold"><?=clean_input($_POST['billing_address']) . ', ' . clean_input($_POST['billing_country']) . ', ' . clean_input($_POST['billing_city'])?></span>
                                 </div>
                                 <div class="order-summary-row row my-2">
@@ -92,11 +95,13 @@ function clean_input($input) {
                                         <div class="text-muted fw-bold text-center">Payment amount: </div>
                                     </div>
                                     <div class="col d-flex align-items-center justify-content-center">
-                                        <div class="fw-bold text-muted text-center order-review-sum">20.00$</div>
+                                        <div class="fw-bold text-muted text-center order-review-sum"><?=$_SESSION['cart_price']?> €</div>
                                     </div>
                                 </div>
                                 <div class="order-summary-row-confirm row my-2 mx-2">
-                                    <button class="btn btn-primary checkout-continue fs-5 fw-bold">Place an order <i class="fas fa-check"></i></button>
+                                    <form action="checkout.php" method="POST">
+                                        <button type="submit" class="btn btn-primary checkout-continue fs-5 fw-bold">Place an order <i class="fas fa-check"></i></button>
+                                    </form>
                                 </div></div>
                         </div>
                         <?php
@@ -242,6 +247,10 @@ function clean_input($input) {
                             ?>
                             <button type="submit" class="mt-4 btn btn-primary float-end checkout-continue fs-5 fw-bold">Continue <i class="fas fa-arrow-right"></i></button>
                         </form>
+                        <?php
+                        } else if ($checkoutStage == 3) {
+                        ?>
+                        <div>Test</div>
                         <?php
                         }
                         ?>

@@ -13,16 +13,17 @@ include_once 'header.php';
 <div class="container mb-5">
     <div class="row">
         <h3 class="w-100 mt-4 mt-sm-5">Products</h3>
-        <h5 class="search-results w-100 mb-3 mb-sm-4">Search results: <span class="search-results-text"></span></h5>
+        <h5 class="search-results w-100 mb-lg-4">Search results: <span class="search-results-text"></span></h5>
+        <a id="mob_filter_open"><h6 class="d-lg-none fw-bold py-2"><i class="fas fa-filter"></i> Filters <i class="fas fa-caret-down"></i></h6></a>
     </div>
     <div class="row">
-        <div class="col-3 d-none d-lg-block">
-            <div class="spec-filters row p-3 me-2 bg-white border"></div>
+        <div class="col-3 d-none d-lg-block filter-container">
+            <div class="spec-filters row p-3 me-lg-2 bg-white border"></div>
         </div>
         <div class="col product-container">
             <div id="search_options" style="height: 50px;" class="row mb-2">
                 <div class="col d-flex ms-1 ms-sm-2 ps-2 ps-sm-3 border-start border-top border-bottom bg-white align-items-center">
-                    <i class="d-none fas fa-filter d-sm-inline-block" style="width: 30px"></i>
+                    <i class="d-none fas fa-sort fs-5 d-sm-inline-block" style="width: 25px"></i>
                     <select id="productSort" class="form-select w-auto d-inline-block" aria-label="Sorting select">
                         <option value="A to Z" <?=(!isset($_SESSION['sort'])||$_SESSION['sort'] == 'A to Z') ? 'Selected' : '' ?>>Sort: A to Z</option>
                         <option value="Z to A" <?=(isset($_SESSION['sort'])&&$_SESSION['sort'] == 'Z to A') ? 'Selected' : '' ?>>Sort: Z to A</option>

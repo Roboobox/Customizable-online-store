@@ -153,13 +153,13 @@ else if (isset($_POST['cart_summary_html'])) {
                         <span class="d-inline-blokc">Total: </span>
                         <span class="d-inline-block fw-bold">' . number_format($totalCartPrice, 2, '.', '') . ' €</span>
                     </div>';
+    $_SESSION['cart_price'] = number_format($totalCartPrice, 2, '.', '');
     $responseArray['cart_summary'] = $cartShortHtml;
 }
 
 $responseArray['cart_items'] = $cartItems;
 $responseArray['cart_total'] = number_format($totalCartPrice, 2, '.', '') . ' €';
 
-//if (isset($_POST['cart_summary_html']) || isset($_POST['cart_html'])) {
+if (isset($_POST['output']) && $_POST['output'] == true) {
     echo json_encode($responseArray);
-//}
-
+}

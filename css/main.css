@@ -465,5 +465,21 @@ table .btn-add-cart {
     margin-top: 10px;
   }
 }
+/* lg breakpoint */
+@media only screen and (max-width: 992px) {
+  .filter-container {
+    position: fixed;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+  }
+  .filter-container .spec-filters {
+    height: 100%;
+    display: block;
+    overflow-y: auto;
+  }
+}
 
 /*# sourceMappingURL=main.css.map */

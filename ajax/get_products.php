@@ -176,12 +176,8 @@ foreach ($productSpecs as $specName => $specValues) {
             if (!$paramInArray) {
                 $params[] = array("fs_" . $specName . "_0", $value);
             }
-            //if (!isset($params[$specName]) || !in_array($value, $params[$specName], false)) {
-                //$params["fs_".$specName."_0"][] = $value;
-            //}
             $specSql = getSpecFilters($params)[0];
-            $testSql = "SELECT COUNT(id) as Count FROM product P WHERE P.id IN (SELECT product_id FROM product_specification WHERE label = \"".$specName."\" AND info = \"".$value. "\") " . $specSql;
-            //var_dump($testSql);
+            $testSql = "SELECT COUNT(id) as Count FROM product P WHERE (P.name LIKE CONCAT('%', :productName, '%') OR :productName is NULL) AND P.id IN (SELECT product_id FROM product_specification WHERE label = \"".$specName."\" AND info = \"".$value. "\") " . $specSql;
             $testStmt = $conn->prepare($testSql);
             $cnt = 1;
             foreach ($specFilters as $label => $infos) {
@@ -194,6 +190,11 @@ foreach ($productSpecs as $specName => $specValues) {
             if (!$paramInArray) {
                 $testStmt->bindValue(':spec' . $cnt, $specName);
                 $testStmt->bindValue(':spec' . ($cnt + 1), $value);
+            }
+            if (isset($_POST['q']) && !empty($_POST['q'])) {
+                $testStmt->bindParam(':productName', $_POST['q']);
+            } else {
+                $testStmt->bindValue(':productName', null);
             }
             $testStmt->execute();
             $specProductCount[$specName][$value] = $testStmt->fetch()['Count'];
@@ -247,7 +248,7 @@ function getSpecFilters(array $filterParams): array
 
 function generateSpecificationHtml(array $productSpecs, array $specProductCount): string
 {
-    $specHtml = '';
+    $specHtml = '<div class="d-block d-lg-none border-bottom w-100 mb-3 pb-2 text-center"><div class="fw-bold fs-5 d-inline-block">Product filters</div><a id="mob_filter_hide" class="float-end text-dark"><i class="fas fa-times-circle fs-2 align-middle"></i></a></div>';
     $i = 0;
     foreach ($productSpecs as $specName => $specValues) {
         if (count($specValues) > 1) {
@@ -275,7 +276,10 @@ function generateSpecificationHtml(array $productSpecs, array $specProductCount)
             $i++;
         }
     }
-    return $specHtml;
+    if ($i > 0) {
+        return $specHtml;
+    }
+    return '';
 }
 
 function generateProductRVHtml(array $products): string
