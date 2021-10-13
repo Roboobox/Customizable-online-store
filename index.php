@@ -169,24 +169,6 @@ include_once 'header.php';
     </div>
 </section>
 
-<!--TODO : Successful product add to cart message-->
-<section id="cart_add_page">
-    <div class="modal fade" id="cartAddModal" tabindex="-1" aria-labelledby="cartAddModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-xl">
-            <div class="modal-content">
-                <div class="modal-body pb-4 pt-4 h-100">
-                    <div><i class="fas fa-cart-plus fs-1"></i></div>
-                    <div>Product has been added to cart!</div>
-                    <div>
-                        <button>Continue shopping</button>
-                        <button>Go to cart</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
 <div class="toast-container position-fixed bottom-0 end-0 p-3">
     <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="toast-header justify-content-between">

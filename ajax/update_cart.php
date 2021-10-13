@@ -1,4 +1,5 @@
 <?php
+header('Content-type: application/json');
 session_start();
 
 if (isset($_SESSION['user_id'])) {

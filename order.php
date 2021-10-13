@@ -1,6 +1,77 @@
 <?php
+session_start();
+if (!isset($_SESSION['user_id']) || !isset($_GET['id'])) {
+    header('Location: index.php');
+    exit;
+}
+
+include_once 'conn.php';
+require_once('objects/Order.php');
+require_once('objects/Product.php');
+$stmt = $conn->prepare("SELECT * FROM `order` WHERE id = :orderId");
+$stmt->bindParam(':orderId', $_GET['id']);
+$stmt->execute();
+$order = new Order();
+$order->getOrderFromRow($stmt->fetch());
+
+if ($stmt->rowCount() != 1 || ($_SESSION['user_id'] != $order->id && $_SESSION['user_role'] != 1)) {
+    header('Location: index.php');
+    exit;
+}
+
+$stmt = $conn->prepare("SELECT * FROM shipping WHERE id = :shippingId");
+$stmt->bindParam(':shippingId', $order->shippingId);
+$stmt->execute();
+$row = $stmt->fetch();
+
+$shipping = (object) ['type'=>$row['shipping_type'], 'address'=>$row['address'], 'city'=>$row['city'], 'country'=>$row['country'], 'zip'=>$row['postal_code']];
+
+$stmt = $conn->prepare("SELECT * FROM shipping WHERE id = :shippingId");
+$stmt->bindParam(':shippingId', $order->shippingId);
+$stmt->execute();
+$row = $stmt->fetch();
+
+$stmt = $conn->prepare("SELECT product_id, quantity FROM cart_item WHERE cart_id = :cartId");
+$stmt->bindParam(':cartId', $order->cartId);
+$stmt->execute();
+$cartItems = $stmt->fetchAll();
+
+foreach ($cartItems as $item) {
+    $productIdAndQuantity[(int)$item['product_id']] = (int)$item['quantity'];
+}
+
+if (!empty($productIdAndQuantity)) {
+    $inQuery = implode(',', array_fill(0, count($productIdAndQuantity), '?'));
+    $stmt = $conn->prepare("
+        SELECT P.*, I.quantity, D.discount_percent, C.name AS category, (SELECT photo_path FROM product_photo PP WHERE P.id = PP.product_id LIMIT 1) AS photo_path  FROM `product` P
+        LEFT JOIN product_inventory I ON P.inventory_id = I.id
+        LEFT JOIN product_category C ON P.category_id = C.id
+        LEFT JOIN product_discount D ON D.id = (SELECT MAX(PD.id) FROM product_discount PD WHERE PD.product_id = P.id AND PD.is_active = 1 AND (NOW() between PD.starting_at AND PD.ending_at))
+        WHERE P.id IN (" . $inQuery . ")
+        ORDER BY P.name
+    ");
+
+    $i = 1;
+    foreach ($productIdAndQuantity as $id => $quantity) {
+        $stmt->bindValue(($i), $id);
+        $i++;
+    }
+    $stmt->execute();
+
+    $productRows = $stmt->fetchAll();
+    $products = array();
+    foreach ($productRows as $row) {
+        $product = new Product();
+        $product->getProductDataFromRow($row);
+        $product->photoPath = $row['photo_path'];
+        $products[] = $product;
+    }
+}
+
 include_once 'head.php';
 include_once 'header.php'
+
+
 ?>
 <link href="css/order.css?<?=time()?>" rel="stylesheet">
 <div class="container order-container">
@@ -10,52 +81,49 @@ include_once 'header.php'
     <div class="row border order-info mb-5">
         <div class="order-top px-4 py-3 bg-light d-flex">
             <div class="d-inline-block">
-            <h4 class="w-100">Order nr. KJFJKEFHJ392K</h4>
+            <h4 class="w-100">Order #<?=$order->id?></h4>
             <div class="text-muted d-inline-block">Date:</div>
-            <div class="fw-bold text-muted d-inline-block">02.05.2019</div>
+            <div class="fw-bold text-muted d-inline-block"><?=$order->getCreatedAt()?></div>
             </div>
             <div class="d-inline-block ms-3">
-            <div class="order-status-container yellow-label">In transit</div>
+            <div class="order-status-container yellow-label"><?=$order->status?></div>
             </div>
         </div>
         <div class="order-content p-4">
             <div  class="d-flex flex-wrap">
                 <div class="order-payment-info order-info-container">
                     <div class="order-info-label text-muted text-center mb-1 border-bottom">
-                        Payment information
+                        Billing information
                     </div>
                     <ul class="list-unstyled">
                         <li>
-                            Credit card payment
+                            <?=$order->getFullName()?>
                         </li>
                         <li>
-                            Visa
+                            <?=$order->email?>
                         </li>
-                        <li>
-                            XXXX-XXXX-XXXX-1111
-                        </li>
-                        <li>Total: 20.00$</li>
+                        <li>Total: <?=$order->total?> €</li>
                     </ul>
                 </div>
                 <div class="order-delivery-info order-info-container">
                     <div class="order-info-label text-muted text-center mb-1 border-bottom">
-                        Delivery information
+                        Shipping information
                     </div>
                     <ul class="list-unstyled">
                         <li>
-                            Latvia
+                            <?=$shipping->country?>
                         </li>
                         <li>
-                            Riga
+                            <?=$shipping->city?>
                         </li>
                         <li>
-                            LV-1009
+                            <?=$shipping->zip?>
                         </li>
                         <li>
-                            Pērnavas street 30
+                            <?=$shipping->address?>
                         </li>
                         <li>
-                            29498293
+                            Recieve at <?=$shipping->type?>
                         </li>
                     </ul>
                 </div>
@@ -63,53 +131,36 @@ include_once 'header.php'
             
             <div class="order-items d-block mt-3">
                 <span class="fw-bold fs-4 mb-3 d-block">Items:</span>
-                <div class="order-item bg-light p-3 row border-bottom">
-                    <div class="col-md text-center text-md-start my-1 my-md-0">
-                        <img src="test_images/acme5.png" height="90" width="90" class="d-inline-block" alt="...">
+                <?php
+                foreach ($products as $product) {?>
+                    <div class="order-item bg-light p-3 row border-bottom">
+                        <div class="col-md text-center text-md-start my-1 my-md-0">
+                            <img src="test_images/<?=$product->photoPath?>" height="90" width="90" class="d-inline-block" alt="Product image">
+                        </div>
+                        <div class="d-inline-block px-3 product-title col-md my-1 my-md-0 w-100">
+                            <span class="text-muted">Product:</span>
+                            <div class="d-inline-block d-md-block"><?=$product->name?></div>
+                        </div>
+                        <div class="d-inline-block px-3 col-md my-1 my-md-0">
+                            <span class="text-muted">Quantity:</span>
+                            <div class="d-inline-block d-md-block"><?=$productIdAndQuantity[$product->id]?> pcs.</div>
+                        </div>
+                        <div class="d-inline-block px-3 col-md my-1 my-md-0">
+                            <span class="text-muted">Price per piece:</span>
+                            <div class="d-inline-block d-md-block"><?=$product->discountPrice?> €</div>
+                        </div>
+                        <div class="d-inline-block px-3 col-md my-1 my-md-0">
+                            <span class="text-muted">Total:</span>
+                            <div class="fw-bold d-inline-block d-md-block"><?=$product->getProductTotalPrice($productIdAndQuantity[$product->id])?> €</div>
+                        </div>
                     </div>
-                    <div class="d-inline-block px-3 product-title col-md my-1 my-md-0 w-100">
-                        <span class="text-muted">Product:</span>
-                        <div class="d-inline-block d-md-block">Cleaning tissues Acme CL02</div>
-                    </div>
-                    <div class="d-inline-block px-3 col-md my-1 my-md-0">
-                        <span class="text-muted">Quantity:</span>
-                        <div class="d-inline-block d-md-block">2 pcs.</div>
-                    </div>
-                    <div class="d-inline-block px-3 col-md my-1 my-md-0">
-                        <span class="text-muted">Price per piece:</span>
-                        <div class="d-inline-block d-md-block">8.00$</div>
-                    </div>
-                    <div class="d-inline-block px-3 col-md my-1 my-md-0">
-                        <span class="text-muted">Total:</span>
-                        <div class="fw-bold d-inline-block d-md-block">16.00$</div>
-                    </div>
-                </div>
-                
-                <div class="order-item bg-light p-3 row">
-                    <div class="col-md text-center text-md-start my-1 my-md-0">
-                        <img src="test_images/inakustik.png" height="90" width="90" class="d-inline-block" alt="...">
-                    </div>
-                    <div class="d-inline-block px-3 item-info col-md my-1 my-md-0 w-100">
-                        <span class="text-muted">Product:</span>
-                        <div class="d-inline-block d-md-block">Inakustik 004528002 screen-clean</div>
-                    </div>
-                    <div class="d-inline-block px-3 item-info col-md my-1 my-md-0">
-                        <span class="text-muted">Quantity:</span>
-                        <div class="d-inline-block d-md-block">1 pc.</div>
-                    </div>
-                    <div class="d-inline-block px-3 item-info col-md my-1 my-md-0">
-                        <span class="text-muted">Price per piece</span>
-                        <div class="d-inline-block d-md-block">2.00$</div>
-                    </div>
-                    <div class="d-inline-block px-3 item-info col-md my-1 my-md-0">
-                        <span class="text-muted">Total</span>
-                        <div class="fw-bold d-inline-block d-md-block">4.00$</div>
-                    </div>
-                </div>
+                    <?php
+                }
+                ?>
             </div>
             <div class="text-end my-2 fs-5 me-3">
                 <div>Total:</div>
-                <div class="fw-bold">20.00$</div>
+                <div class="fw-bold"><?=$order->total?> €</div>
             </div>
         </div>
     </div>

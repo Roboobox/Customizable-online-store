@@ -1,4 +1,5 @@
 <?php
+header('Content-type: application/json');
 session_start();
 include_once "../conn.php";
 $response_array = array();

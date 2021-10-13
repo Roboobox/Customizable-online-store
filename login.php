@@ -98,7 +98,6 @@ function syncSessionCartWithDB($conn): void
         $insertCounter = 0;
 
         foreach ($sessionCart as $product_id => $quantity) {
-            // TODO : Return to parameter queries
             // If is in database UPDATE quantity otherwise INSERT new cart item
             if (!empty($userCartItems) && in_array($product_id, $userCartItems, false)) {
 

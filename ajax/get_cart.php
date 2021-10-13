@@ -1,4 +1,5 @@
 <?php
+header('Content-type: application/json');
 session_start();
 include_once "../conn.php";
 
@@ -15,6 +16,7 @@ if (isset($_SESSION['user_id'])) {
     if ($stmt->rowCount() > 0) {
         $row = $stmt->fetch();
         $cartId = $row["id"];
+        $_SESSION['cart_id'] = $cartId;
         $cartSql = 'SELECT * FROM `cart_item` WHERE cart_id = :cartId';
         $stmt = $conn->prepare($cartSql);
         $stmt->bindParam(':cartId', $cartId);

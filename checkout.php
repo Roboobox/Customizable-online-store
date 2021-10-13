@@ -1,22 +1,148 @@
 <?php
+session_start();
+// TODO: check if something is in cart to not access 'checkout.php'
+//if ($_SESSION['cart_price'] == '0.00' && empty($_SESSION['cart'])) {
+//    header('Location: cart.php');
+//    exit;
+//}
 include_once 'head.php';
 include_once 'header.php';
 
 $paymentEnabled = false;
 $checkoutStage = 1;
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if ($checkoutStage === 1) {
+$checkoutError = false;
+// TODO : Add phone number input
+// TODO : Remove zip code
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['checkout_stage'])) {
+    if ($_POST['checkout_stage'] == 1) {
         if (isset($_POST['billing_name'], $_POST['billing_surname'], $_POST['billing_email'], $_POST['billing_address'], $_POST['billing_country'], $_POST['billing_city'], $_POST['billing_zip'])) {
             if (!empty($_POST['billing_name']) && !empty($_POST['billing_surname']) && !empty($_POST['billing_email']) && !empty($_POST['billing_address']) && !empty($_POST['billing_country']) && !empty($_POST['billing_city']) && !empty($_POST['billing_zip'])) {
                 if (strlen($_POST['billing_name']) < 256 && strlen($_POST['billing_surname']) < 256 && strlen($_POST['billing_email']) < 256 && strlen($_POST['billing_address']) < 256 && strlen($_POST['billing_country']) < 256 && strlen($_POST['billing_city']) < 256 && strlen($_POST['billing_zip']) < 256) {
                     $checkoutStage = 2;
+                    $_SESSION['order_data'] = array('name'=>$_POST['billing_name'], 'surname'=>$_POST['billing_surname'], 'email'=>$_POST['billing_email'], 'address'=>$_POST['billing_address'], 'country'=>$_POST['billing_country'], 'city'=>$_POST['billing_city'], 'zip'=>$_POST['billing_zip'], 'type'=>$_POST['shipping_type']);
                 }
             }
         }
-    } else if ($checkoutStage === 2) {
-        include_once 'ajax/get_cart.php';
-        $checkoutStage = 3;
-        //var_dump($cartItems);
+    } else if ($_POST['checkout_stage'] == 2 && isset($_SESSION['order_data'])) {
+        include_once "conn.php";
+        // Save shipping information in database
+        $stmt = $conn->prepare("INSERT INTO shipping (shipping_type, address, city, country, postal_code) VALUES (:shippingType, :address, :city, :country, :postalCode)");
+        $stmt->bindParam(':shippingType', $_SESSION['order_data']['type']);
+        $stmt->bindParam(':address', $_SESSION['order_data']['address']);
+        $stmt->bindParam(':city', $_SESSION['order_data']['city']);
+        $stmt->bindParam(':country', $_SESSION['order_data']['country']);
+        $stmt->bindParam(':postalCode', $_SESSION['order_data']['zip']);
+        $stmt->execute();
+        if ($stmt->rowCount() > 0) {
+            // Get saved shipping information id
+            $shippingId = $conn->lastInsertId();
+            
+            // Save order information in database
+            $stmt = $conn->prepare("INSERT INTO `order` (total, order_name, order_surname, order_email, status, user_id, cart_id, shipping_id) VALUES (:total, :name, :surname, :email, :status, :userId, :cartId, :shippingId)");
+            $stmt->bindParam(':total', $_SESSION['cart_price']);
+            $stmt->bindParam(':name', $_SESSION['order_data']['name']);
+            $stmt->bindParam(':surname', $_SESSION['order_data']['surname']);
+            $stmt->bindParam(':email', $_SESSION['order_data']['email']);
+            $stmt->bindValue(':status', 'New order');
+            // TODO : Convert order from using cart to cart_items
+            // Save user id and make cart not active
+//            if (isset($_SESSION['user_id'])) {
+//                $cartItemStmt = $conn->prepare("SELECT CI.product_id, CI.quantity, IFNULL((P.price - P.price * (D.discount_percent / 100)), P.price) AS price FROM cart_item CI
+//                                                LEFT JOIN `product` P ON CI.product_id = P.id
+//                                                LEFT JOIN `product_discount` D on D.product_id = CI.product_id
+//                                                WHERE CI.cart_id = (SELECT id FROM cart WHERE user_id = :userId AND is_active = :active)");
+//                $cartItemStmt->bindParam(':userId', $_SESSION['user_id']);
+//                $cartItemStmt->bindValue(':active', 1);
+//                $cartItemStmt->execute();
+//                $cartItems = $cartItemStmt->fetchAll();
+//                $orderItemSql = "INSERT INTO order_item (product_id, product_price, quantity, order_id) VALUES ";
+//                if (!empty($cartItems)) {
+//                    $preparedValues = [];
+//                    $i = 0;
+//                    foreach ($cartItems as $item) {
+//                        if ($i != 0) $orderItemSql .= ",";
+//                        $orderItemSql .= "(:prodId".$i.", :price".$i.", :quantity".$i.", :orderId)";
+//                        $preparedValues[$i] = array($item['product_id'], $item['quantity'], $item['price']);
+//                        $i++;
+//                    }
+//                    $orderItemStmt = $conn->prepare($orderItemSql);
+//                    foreach ($preparedValues as $i => $values) {
+//                        $orderItemStmt->bindParam(':prodId'.$i, $values[0]);
+//                        $orderItemStmt->bindParam(':price'.$i, $values[2]);
+//                        $orderItemStmt->bindParam(':quantity'.$i, $values[1]);
+//                    }
+//                    $orderItemStmt->bindParam(':orderId', );
+//                }
+//
+//                $stmt->bindParam(':userId', $_SESSION['user_id']);
+//                // Update user cart as not active anymore
+//                $cartStmt = $conn->prepare("UPDATE cart SET is_active = 0 WHERE user_id = :userId AND is_active = :active");
+//                $cartStmt->bindParam(':userId', $_SESSION['user_id']);
+//                $cartStmt->bindValue(':active', 1);
+//                $cartStmt->execute();
+//            } else {
+//                // Set user id as null because user is not logged in
+//                $stmt->bindValue(':userId', null, PDO::PARAM_NULL);
+//            }
+
+            // Save user id and cart id
+            if (isset($_SESSION['user_id'])) {
+                $stmt->bindParam(':userId', $_SESSION['user_id']);
+                $stmt->bindParam(':cartId', $_SESSION['cart_id']);
+
+                // Update user cart as not active anymore
+                $cartStmt = $conn->prepare("UPDATE cart SET is_active = 0 WHERE user_id = :userId AND is_active = :active");
+                $cartStmt->bindParam(':userId', $_SESSION['user_id']);
+                $cartStmt->bindValue(':active', 1);
+                $cartStmt->execute();
+            } else {
+                // Set user id as null because user is not logged in
+                $stmt->bindValue(':userId', null, PDO::PARAM_NULL);
+
+                // Create a cart in database for guest user from session
+                $cartStmt = $conn->prepare("INSERT INTO `cart` (is_active, user_id) VALUES (:cartActive, :userId)");
+                $cartStmt->bindValue(':cartActive', 0, PDO::PARAM_INT);
+                $cartStmt->bindValue(':userId', null, PDO::PARAM_NULL);
+                $cartStmt->execute();
+                if ($cartStmt->rowCount() > 0) {
+                    // Get inserted cart id
+                    $cartId = $conn->lastInsertId();
+                    $stmt->bindParam(':cartId', $cartId);
+
+                    // Populate cart with cart items from session cart
+                    $cartItemSql = "INSERT INTO `cart_item` (cart_id, product_id, quantity) VALUES ";
+                    $insertCounter = 0;
+                    $sessionCart = $_SESSION['cart'];
+                    foreach ($sessionCart as $product_id => $quantity) {
+                        $cartItemSql .= "(" . ":cartId" . $insertCounter . ", :productId" . $insertCounter . ", :quantity" . $insertCounter . "), ";
+                        $insertData[$insertCounter] = array($product_id, $quantity);
+                        $insertCounter++;
+                    }
+                    // Removes trailing comma and whitespace
+                    $cartItemSql = substr($cartItemSql, 0, -2);
+                    $cartStmt = $conn->prepare($cartItemSql);
+                    // Populates prepared parameters
+                    for ($i = 0; $i < $insertCounter; $i++) {
+                        $cartStmt->bindParam(':cartId' . $i, $cartId);
+                        $cartStmt->bindParam(':productId' . $i, $insertData[$i][0]);
+                        $cartStmt->bindParam(':quantity' . $i, $insertData[$i][1]);
+                    }
+                    $cartStmt->execute();
+                    unset($_SESSION['cart']);
+                } else {
+                    $checkoutError = true;
+                }
+            }
+
+            $stmt->bindParam(':shippingId', $shippingId);
+            $stmt->execute();
+            
+            $checkoutStage = 3;
+        } else {
+            $checkoutError = true;
+        }
+        // Unset order information from session
+        unset($_SESSION['order_data']);
     }
 }
 
@@ -87,6 +213,11 @@ function clean_input($input) {
                                     <span class="fw-bold"><?=clean_input($_POST['billing_zip'])?></span>
                                 </div>
                                 <div class="order-summary-row row my-2">
+                                    <div class="text-muted">Shipping:</div>
+                                    <span class="fw-bold">Recieve at <?=clean_input($_POST['shipping_type'])?></span>
+                                </div>
+                                
+                                <div class="order-summary-row row my-2">
                                     <div class="text-muted">Payment method:</div>
                                     <span class="fw-bold"><?=($paymentEnabled === true) ? clean_input($_POST['paymentMethod']) : 'Bank transfer'?></span>
                                 </div>
@@ -100,6 +231,7 @@ function clean_input($input) {
                                 </div>
                                 <div class="order-summary-row-confirm row my-2 mx-2">
                                     <form action="checkout.php" method="POST">
+                                        <input type="hidden" name="checkout_stage" value="2"/>
                                         <button type="submit" class="btn btn-primary checkout-continue fs-5 fw-bold">Place an order <i class="fas fa-check"></i></button>
                                     </form>
                                 </div></div>
@@ -113,21 +245,21 @@ function clean_input($input) {
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label for="firstName" class="form-label">First name</label>
-                                    <input type="text" name="billing_name" class="form-control" id="firstName" placeholder="" value="" required maxlength="255">
+                                    <input type="text" name="billing_name" value="<?=$_SESSION['user_data']['name'] ?? ''?>" class="form-control" id="firstName" placeholder="" required maxlength="255">
                                     <div class="invalid-feedback">
                                         Valid first name is required.
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <label for="lastName" class="form-label">Last name</label>
-                                    <input type="text" name="billing_surname" class="form-control" id="lastName" placeholder="" value="" required maxlength="255">
+                                    <input type="text" name="billing_surname" value="<?=$_SESSION['user_data']['surname'] ?? ''?>" class="form-control" id="lastName" placeholder="" required maxlength="255">
                                     <div class="invalid-feedback">
                                         Valid last name is required.
                                     </div>
                                 </div>
                                 <div class="col-12">
                                     <label for="email" class="form-label">Email</label>
-                                    <input type="email" name="billing_email" class="form-control" id="email" placeholder="you@example.com" required maxlength="255">
+                                    <input type="email" name="billing_email" value="<?=$_SESSION['user_data']['email'] ?? ''?>" class="form-control" id="email" placeholder="you@example.com" required maxlength="255">
                                     <div class="invalid-feedback">
                                         Please enter a valid email address.
                                     </div>
@@ -159,6 +291,32 @@ function clean_input($input) {
                                     <div class="invalid-feedback">
                                         Zip code required.
                                     </div>
+                                </div>
+                            </div>
+                            
+                            <div><h4 class="mt-4">Shipping details</h4></div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" value="address" type="radio" name="shipping_type" id="shippingTypeAddress" checked>
+                                        <label class="form-check-label" for="shippingTypeAddress">
+                                            Recieve at address<br>
+                                            <span class="text-muted">Shipping fees will not be included in order total and will be arranged after placing the order</span>
+                                        </label>
+                                    </div>
+                                    <?php
+                                    if ($storeSettings['store_address'] !== NULL) {
+                                    ?>
+                                    <div class="form-check my-2">
+                                        <input class="form-check-input" value="store" type="radio" name="shipping_type" id="shippingTypeStore">
+                                        <label class="form-check-label" for="shippingTypeStore">
+                                            Recieve at store<br>
+                                            <span class="text-muted">Store address: <?=$storeSettings['store_address']?></span>
+                                        </label>
+                                    </div>
+                                    <?php
+                                    }
+                                    ?>
                                 </div>
                             </div>
                             
@@ -245,13 +403,18 @@ function clean_input($input) {
                             <?php
                             }
                             ?>
+                            <input type="hidden" name="checkout_stage" value="1"/>
                             <button type="submit" class="mt-4 btn btn-primary float-end checkout-continue fs-5 fw-bold">Continue <i class="fas fa-arrow-right"></i></button>
                         </form>
                         <?php
                         } else if ($checkoutStage == 3) {
+                            if (!$checkoutError) {
                         ?>
-                        <div>Test</div>
-                        <?php
+                                <div class="fs-4 text-center my-4 text-success"><i class="far fa-check-circle"></i> Order successfully placed!</div><?php
+                            } else {?>
+                                <div class="fs-4 text-center my-4 text-danger"><i class="far fa-times-circle"></i> Something went wrong, please try again later!</div>
+                            <?php
+                            }
                         }
                         ?>
                     </div>
@@ -272,7 +435,7 @@ function clean_input($input) {
                                     <div class="col-4 item-price text-end">4.00$</div>
                                 </div>
                                 <div class="total text-end pt-2">
-                                    <span class="d-inline-blokc">Total: </span>
+                                    <span class="d-inline-block">Total: </span>
                                     <span class="d-inline-block fw-bold">20.00$</span>
                                 </div>
                             </div>

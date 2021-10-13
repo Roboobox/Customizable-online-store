@@ -3,9 +3,13 @@ if (!isset($_SESSION)) {
     session_start();
 }
 include_once 'conn.php';
-
+include_once 'get_settings.php';
 $cartItemCount = 0;
 $cartItems = "";
+
+if (!isset($tab)) {
+    $tab = '';
+}
 
 if (isset($_SESSION['user_id']))
 {
@@ -81,7 +85,7 @@ if (isset($_SESSION['sign_error']) || (isset($_SESSION['sign_success']) && isset
                 </button>
                 
                 <a class="navbar-brand text-white" href="index.php">
-                    <img src="test_images/logo.png" alt="logo">
+                    <img src="test_images/<?=$storeSettings['logo_path']?>" alt="logo">
                 </a>
                 
                 <div class="search-container m-auto ps-2 pe-4 d-none d-lg-block">
@@ -165,6 +169,7 @@ if (isset($_SESSION['sign_error']) || (isset($_SESSION['sign_success']) && isset
                                 <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                                     <li><a class="dropdown-item" href="account.php">Account settings</a></li>
                                     <li><a class="dropdown-item" href="history.php">Order history</a></li>
+                                    <?=(($_SESSION['user_role'] == 1) ? '<li><a class="dropdown-item" href="admin_dash.php">Admin dashboard</a></li>' : '')?>
                                     <li><a class="dropdown-item" href="logout.php?token=<?=$_SESSION['user_token'] ?? ''?>">Log out</a></li>
                                 </ul>
                             </a>
@@ -178,7 +183,7 @@ if (isset($_SESSION['sign_error']) || (isset($_SESSION['sign_success']) && isset
     <div class="mobile-sidebar-container">
         <div class="d-flex flex-column flex-shrink-0 p-3 bg-dark text-white mobile-sidebar-content" style="width: 280px;">
             <a href="/" class="d-flex align-items-center mb-1 mb-md-0 me-md-auto text-white text-decoration-none">
-                <img class="me-2 img-fluid" src="test_images/logo.png" alt="logo" height="50">
+                <img class="me-2 img-fluid" src="test_images/<?=$storeSettings['logo_path']?>" alt="logo" height="50">
             </a>
             <hr>
             <ul class="nav nav-pills flex-column mb-auto">
@@ -230,6 +235,7 @@ if (isset($_SESSION['sign_error']) || (isset($_SESSION['sign_success']) && isset
                             <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropdownMenuButton1">
                                 <li><a class="dropdown-item" href="account.php">Account settings</a></li>
                                 <li><a class="dropdown-item" href="history.php">Order history</a></li>
+                                <?=(($_SESSION['user_role'] == 1) ? '<li><a class="dropdown-item" href="admin_dash.php">Admin dashboard</a></li>' : '')?>
                                 <li><a class="dropdown-item" href="logout.php?token=<?=$_SESSION['user_token'] ?? ''?>">Log out</a></li>
                             </ul>
                         </a>

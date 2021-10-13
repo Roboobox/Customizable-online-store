@@ -1,0 +1,17 @@
+body {
+  width: 100vw;
+  overflow-x: hidden;
+}
+
+.message_text {
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.feedback {
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.no-transition {
+  transition: none;
+}

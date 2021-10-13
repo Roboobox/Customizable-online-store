@@ -393,7 +393,6 @@ function ShopScript()
     
     this.openProductModal = function(productId, tab = PRODUCT_TAB_NAME_DESCRIPTION)
     {
-        // TODO : Add support for more images (Carousel)
         var product = this.products[productId];
         
         
