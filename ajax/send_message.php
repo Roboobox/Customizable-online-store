@@ -8,8 +8,8 @@ $responseArray['status'] = 'success';
 
 if (empty($email)) {
     $responseArray['email'] = 'Email is required!';
-} else if (strlen($email) > 255) {
-    $responseArray['email'] = 'Email cannot exceed 255 characters!';
+} else if (strlen($email) > 254) {
+    $responseArray['email'] = 'Email cannot exceed 254 characters!';
 } else if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     $responseArray['email'] = 'Email address is not valid!';
 }

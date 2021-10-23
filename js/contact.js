@@ -21,8 +21,8 @@ $( document ).ready(function() {
 
         if (emailInput.length === 0) {
             showError(emailError, emailField, 'Email is required!');
-        } else if (emailInput.length > 255) {
-            showError(emailError, emailField, 'Email cannot exceed 255 characters!');
+        } else if (emailInput.length > 254) {
+            showError(emailError, emailField, 'Email cannot exceed 254 characters!');
         } else if (!(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput))) {
           //Simple email regex validation, advanced validation at server side
           showError(emailError, emailField, 'Email address is not valid!')

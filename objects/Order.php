@@ -9,9 +9,10 @@ class Order
     public string $surname;
     public string $email;
     public string $status;
+    public string $phoneNr;
     public ?int $userId;
-    public int $cartId;
     public int $shippingId;
+
 
     public function getOrderSummaryFromRow(array $row): void {
         $this->id = $row['id'];
@@ -30,9 +31,9 @@ class Order
         $this->name = $row['order_name'];
         $this->surname = $row['order_surname'];
         $this->email = $row['order_email'];
-        $this->cartId = $row['cart_id'];
         $this->shippingId = $row['shipping_id'];
         $this->userId = $row['user_id'];
+        $this->phoneNr = $row['order_phonenr'];
     }
 
     public function getCreatedAt(): string {
@@ -42,4 +43,6 @@ class Order
     public function getFullName(): string {
         return $this->name . ' ' . $this->surname;
     }
+
+
 }

@@ -262,7 +262,7 @@ if (isset($_SESSION['sign_error']) || (isset($_SESSION['sign_success']) && isset
                     <button type="button" class="close-modal" data-bs-dismiss="modal" aria-label="Close"><i class="fas fa-times-circle"></i></button>
                 </div>
                 <div class="modal-body">
-                    <form method="post" action="login.php" id="login_form">
+                    <form method="post" action="login.php" id="login_form" novalidate>
                     
                         <input type="hidden" name="redirect" value="<?php echo $_SERVER['REQUEST_URI']; ?>" />
                     

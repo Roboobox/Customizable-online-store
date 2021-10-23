@@ -10,9 +10,6 @@ include_once 'head.php';
 include_once 'header.php';
 include_once "conn.php";
 require_once('objects/Order.php');
-// TODO : Make page switching using ajax?
-// TODO : Make about us managing page
-// TODO : add inventory quantity field for product
 // TODO : add product editing page
 $page = $_GET['p'] ?? 'create_product';
 $availablePages = ['create_product', 'delete_product', 'store_orders', 'store_settings', 'contact_messages', 'product_discounts'];
@@ -109,6 +106,10 @@ if ($page === 'create_product' || $page === 'delete_product') {
                                     <a id="add_new_spec" class="btn mt-2 float-end btn-success">Add new</a>
                                 </div>
                             </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="inputProductInventory" class="form-label">Product quantity in inventory</label>
+                            <input name="prodInventory" type="number" class="form-control" id="inputProductInventory" value="1" min="1" max="10000" required/>
                         </div>
                         <div class="mb-3">
                             <label for="inputProductImages" class="form-label">Product image/s</label>
@@ -324,10 +325,6 @@ if ($page === 'create_product' || $page === 'delete_product') {
                 <?php
                 }
                 ?>
-<!--                <section class="p-4" id="about_page">-->
-<!--                    <h5 class="mb-4">About us page settings</h5>-->
-<!--                    -->
-<!--                </section>-->
             </div>
         </div>
     </div>

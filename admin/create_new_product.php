@@ -7,8 +7,8 @@ if ($_SESSION['user_role'] != 1) {
     exit;
 }
 
-if (isset($_POST['prodName'], $_POST['prodCat'], $_POST['prodPrice'], $_FILES['prodImg'])
-    && !empty($_POST['prodName']) && !empty($_POST['prodCat']) && !empty($_POST['prodPrice']) && !empty($_FILES['prodImg'])
+if (isset($_POST['prodName'], $_POST['prodCat'], $_POST['prodPrice'], $_FILES['prodImg'], $_POST['prodInventory'])
+    && !empty($_POST['prodName']) && !empty($_POST['prodCat']) && !empty($_POST['prodPrice']) && !empty($_FILES['prodImg'] && !empty($_POST['prodInventory']))
 ) {
     include_once "../conn.php";
     $error = false;
@@ -31,7 +31,9 @@ if (isset($_POST['prodName'], $_POST['prodCat'], $_POST['prodPrice'], $_FILES['p
             }
         }
 
-        $stmt = $conn->query("INSERT INTO product_inventory (quantity) VALUES (10)");
+        $stmt = $conn->prepare("INSERT INTO product_inventory (quantity) VALUES (:prodInventory)");
+        $stmt->bindParam(':prodInventory', $_POST['prodInventory']);
+        $stmt->execute();
         if ($stmt->rowCount() > 0) {
             $invId = $conn->lastInsertId();
         } else {

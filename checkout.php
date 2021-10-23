@@ -11,15 +11,14 @@ include_once 'header.php';
 $paymentEnabled = false;
 $checkoutStage = 1;
 $checkoutError = false;
-// TODO : Add phone number input
-// TODO : Remove zip code
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['checkout_stage'])) {
     if ($_POST['checkout_stage'] == 1) {
-        if (isset($_POST['billing_name'], $_POST['billing_surname'], $_POST['billing_email'], $_POST['billing_address'], $_POST['billing_country'], $_POST['billing_city'], $_POST['billing_zip'])) {
-            if (!empty($_POST['billing_name']) && !empty($_POST['billing_surname']) && !empty($_POST['billing_email']) && !empty($_POST['billing_address']) && !empty($_POST['billing_country']) && !empty($_POST['billing_city']) && !empty($_POST['billing_zip'])) {
-                if (strlen($_POST['billing_name']) < 256 && strlen($_POST['billing_surname']) < 256 && strlen($_POST['billing_email']) < 256 && strlen($_POST['billing_address']) < 256 && strlen($_POST['billing_country']) < 256 && strlen($_POST['billing_city']) < 256 && strlen($_POST['billing_zip']) < 256) {
+        if (isset($_POST['billing_name'], $_POST['billing_surname'], $_POST['billing_email'], $_POST['billing_address'], $_POST['billing_country'], $_POST['billing_city'], $_POST['billing_phone'])) {
+            if (!empty($_POST['billing_name']) && !empty($_POST['billing_surname']) && !empty($_POST['billing_email']) && !empty($_POST['billing_address']) && !empty($_POST['billing_country']) && !empty($_POST['billing_city']) && !empty($_POST['billing_phone'])) {
+                if (strlen($_POST['billing_name']) < 256 && strlen($_POST['billing_surname']) < 256 && strlen($_POST['billing_email']) < 256 && strlen($_POST['billing_address']) < 256 && strlen($_POST['billing_country']) < 256 && strlen($_POST['billing_city']) < 256 && strlen($_POST['billing_phone']) < 256) {
                     $checkoutStage = 2;
-                    $_SESSION['order_data'] = array('name'=>$_POST['billing_name'], 'surname'=>$_POST['billing_surname'], 'email'=>$_POST['billing_email'], 'address'=>$_POST['billing_address'], 'country'=>$_POST['billing_country'], 'city'=>$_POST['billing_city'], 'zip'=>$_POST['billing_zip'], 'type'=>$_POST['shipping_type']);
+                    $_SESSION['order_data'] = array('name'=>$_POST['billing_name'], 'surname'=>$_POST['billing_surname'], 'email'=>$_POST['billing_email'], 'address'=>$_POST['billing_address'], 'country'=>$_POST['billing_country'], 'city'=>$_POST['billing_city'], 'phone'=>$_POST['billing_phone'], 'type'=>$_POST['shipping_type']);
                 }
             }
         }
@@ -31,112 +30,106 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['checkout_stage'])) {
         $stmt->bindParam(':address', $_SESSION['order_data']['address']);
         $stmt->bindParam(':city', $_SESSION['order_data']['city']);
         $stmt->bindParam(':country', $_SESSION['order_data']['country']);
-        $stmt->bindParam(':postalCode', $_SESSION['order_data']['zip']);
+        $stmt->bindParam(':postalCode', $_SESSION['order_data']['phone']);
         $stmt->execute();
         if ($stmt->rowCount() > 0) {
             // Get saved shipping information id
             $shippingId = $conn->lastInsertId();
             
             // Save order information in database
-            $stmt = $conn->prepare("INSERT INTO `order` (total, order_name, order_surname, order_email, status, user_id, cart_id, shipping_id) VALUES (:total, :name, :surname, :email, :status, :userId, :cartId, :shippingId)");
+            $stmt = $conn->prepare("INSERT INTO `order` (total, order_name, order_surname, order_email, order_phonenr, status, user_id, shipping_id) VALUES (:total, :name, :surname, :email, :phoneNr, :status, :userId, :shippingId)");
             $stmt->bindParam(':total', $_SESSION['cart_price']);
             $stmt->bindParam(':name', $_SESSION['order_data']['name']);
             $stmt->bindParam(':surname', $_SESSION['order_data']['surname']);
+            $stmt->bindParam(':phoneNr', $_SESSION['order_data']['phone']);
             $stmt->bindParam(':email', $_SESSION['order_data']['email']);
             $stmt->bindValue(':status', 'New order');
-            // TODO : Convert order from using cart to cart_items
-            // Save user id and make cart not active
-//            if (isset($_SESSION['user_id'])) {
-//                $cartItemStmt = $conn->prepare("SELECT CI.product_id, CI.quantity, IFNULL((P.price - P.price * (D.discount_percent / 100)), P.price) AS price FROM cart_item CI
-//                                                LEFT JOIN `product` P ON CI.product_id = P.id
-//                                                LEFT JOIN `product_discount` D on D.product_id = CI.product_id
-//                                                WHERE CI.cart_id = (SELECT id FROM cart WHERE user_id = :userId AND is_active = :active)");
-//                $cartItemStmt->bindParam(':userId', $_SESSION['user_id']);
-//                $cartItemStmt->bindValue(':active', 1);
-//                $cartItemStmt->execute();
-//                $cartItems = $cartItemStmt->fetchAll();
-//                $orderItemSql = "INSERT INTO order_item (product_id, product_price, quantity, order_id) VALUES ";
-//                if (!empty($cartItems)) {
-//                    $preparedValues = [];
-//                    $i = 0;
-//                    foreach ($cartItems as $item) {
-//                        if ($i != 0) $orderItemSql .= ",";
-//                        $orderItemSql .= "(:prodId".$i.", :price".$i.", :quantity".$i.", :orderId)";
-//                        $preparedValues[$i] = array($item['product_id'], $item['quantity'], $item['price']);
-//                        $i++;
-//                    }
-//                    $orderItemStmt = $conn->prepare($orderItemSql);
-//                    foreach ($preparedValues as $i => $values) {
-//                        $orderItemStmt->bindParam(':prodId'.$i, $values[0]);
-//                        $orderItemStmt->bindParam(':price'.$i, $values[2]);
-//                        $orderItemStmt->bindParam(':quantity'.$i, $values[1]);
-//                    }
-//                    $orderItemStmt->bindParam(':orderId', );
-//                }
-//
-//                $stmt->bindParam(':userId', $_SESSION['user_id']);
-//                // Update user cart as not active anymore
-//                $cartStmt = $conn->prepare("UPDATE cart SET is_active = 0 WHERE user_id = :userId AND is_active = :active");
-//                $cartStmt->bindParam(':userId', $_SESSION['user_id']);
-//                $cartStmt->bindValue(':active', 1);
-//                $cartStmt->execute();
-//            } else {
-//                // Set user id as null because user is not logged in
-//                $stmt->bindValue(':userId', null, PDO::PARAM_NULL);
-//            }
 
-            // Save user id and cart id
+            // Save user id
             if (isset($_SESSION['user_id'])) {
                 $stmt->bindParam(':userId', $_SESSION['user_id']);
-                $stmt->bindParam(':cartId', $_SESSION['cart_id']);
-
-                // Update user cart as not active anymore
-                $cartStmt = $conn->prepare("UPDATE cart SET is_active = 0 WHERE user_id = :userId AND is_active = :active");
-                $cartStmt->bindParam(':userId', $_SESSION['user_id']);
-                $cartStmt->bindValue(':active', 1);
-                $cartStmt->execute();
             } else {
                 // Set user id as null because user is not logged in
                 $stmt->bindValue(':userId', null, PDO::PARAM_NULL);
+            }
 
-                // Create a cart in database for guest user from session
-                $cartStmt = $conn->prepare("INSERT INTO `cart` (is_active, user_id) VALUES (:cartActive, :userId)");
-                $cartStmt->bindValue(':cartActive', 0, PDO::PARAM_INT);
-                $cartStmt->bindValue(':userId', null, PDO::PARAM_NULL);
-                $cartStmt->execute();
-                if ($cartStmt->rowCount() > 0) {
-                    // Get inserted cart id
-                    $cartId = $conn->lastInsertId();
-                    $stmt->bindParam(':cartId', $cartId);
+            // Bind shipping ID and execute order insertion query
+            $stmt->bindParam(':shippingId', $shippingId);
+            $stmt->execute();
 
-                    // Populate cart with cart items from session cart
-                    $cartItemSql = "INSERT INTO `cart_item` (cart_id, product_id, quantity) VALUES ";
-                    $insertCounter = 0;
-                    $sessionCart = $_SESSION['cart'];
-                    foreach ($sessionCart as $product_id => $quantity) {
-                        $cartItemSql .= "(" . ":cartId" . $insertCounter . ", :productId" . $insertCounter . ", :quantity" . $insertCounter . "), ";
-                        $insertData[$insertCounter] = array($product_id, $quantity);
-                        $insertCounter++;
-                    }
-                    // Removes trailing comma and whitespace
-                    $cartItemSql = substr($cartItemSql, 0, -2);
-                    $cartStmt = $conn->prepare($cartItemSql);
-                    // Populates prepared parameters
-                    for ($i = 0; $i < $insertCounter; $i++) {
-                        $cartStmt->bindParam(':cartId' . $i, $cartId);
-                        $cartStmt->bindParam(':productId' . $i, $insertData[$i][0]);
-                        $cartStmt->bindParam(':quantity' . $i, $insertData[$i][1]);
-                    }
+            if ($stmt->rowCount() > 0) {
+                // Get new order id
+                $orderId = $conn->lastInsertId();
+                // Prepare sql for inserting order items
+                $orderItemSql = "INSERT INTO order_item (product_id, product_price, quantity, order_id) VALUES ";
+
+                // Save order items and set user cart as not active anymore
+                if (isset($_SESSION['user_id'])) {
+                    // If user is logged in then get cart items and product data from users cart in database
+                    $cartItemStmt = $conn->prepare("SELECT CI.product_id, CI.quantity, IFNULL((P.price - P.price * (D.discount_percent / 100)), P.price) AS price FROM cart_item CI
+                                                LEFT JOIN `product` P ON CI.product_id = P.id
+                                                LEFT JOIN `product_discount` D on D.product_id = CI.product_id
+                                                WHERE CI.cart_id = (SELECT id FROM cart WHERE user_id = :userId AND is_active = :active)");
+                    $cartItemStmt->bindParam(':userId', $_SESSION['user_id']);
+                    $cartItemStmt->bindValue(':active', 1);
+                    $cartItemStmt->execute();
+                    $cartItems = $cartItemStmt->fetchAll();
+
+                    // Update user cart as not active anymore
+                    $cartStmt = $conn->prepare("UPDATE cart SET is_active = 0 WHERE user_id = :userId AND is_active = :active");
+                    $cartStmt->bindParam(':userId', $_SESSION['user_id']);
+                    $cartStmt->bindValue(':active', 1);
                     $cartStmt->execute();
+                } else if (!empty($_SESSION['cart'])) {
+                    // If user is not logged in then get cart from session and product data from database
+                    $cart = $_SESSION['cart'];
+                    // Create template for product ids
+                    $inQuery = implode(',', array_fill(0, count($cart), '?'));
+                    $productStmt = $conn->prepare('SELECT P.id, IFNULL((P.price - P.price * (D.discount_percent / 100)), P.price) AS price FROM product P LEFT JOIN `product_discount` D on D.product_id = P.id WHERE P.id IN ('.$inQuery.')');
+
+                    // Bind product ids to prepared template
+                    $i = 1;
+                    foreach ($cart as $id => $quantity) {
+                        $productStmt->bindValue($i, $id);
+                        $i++;
+                    }
+                    $productStmt->execute();
+                    // Get results from query
+                    $orderItems = $productStmt->fetchAll();
+                    $cartItems = [];
+
+                    // Create array of cart items from order items
+                    foreach ($orderItems as $item) {
+                        $cartItems[] = array('product_id' => $item['id'], 'quantity' => $cart[$item['id']], 'price' => $item['price']);
+                    }
+                    // Clear user cart by unsetting session variable
                     unset($_SESSION['cart']);
-                } else {
-                    $checkoutError = true;
+                }
+
+                // If there are any cart items prepare them to be inserted as order items
+                if (isset($cartItems) && !empty($cartItems)) {
+                    $preparedValues = [];
+                    $i = 0;
+                    // Creating insert template for order items
+                    foreach ($cartItems as $item) {
+                        if ($i != 0) $orderItemSql .= ",";
+                        $orderItemSql .= "(:prodId".$i.", :price".$i.", :quantity".$i.", :orderId)";
+                        $preparedValues[$i] = array($item['product_id'], $item['quantity'], $item['price']);
+                        $i++;
+                    }
+                    $orderItemStmt = $conn->prepare($orderItemSql);
+                    // Filling insert template for order items
+                    foreach ($preparedValues as $i => $values) {
+                        $orderItemStmt->bindParam(':prodId'.$i, $values[0]);
+                        $orderItemStmt->bindParam(':price'.$i, $values[2]);
+                        $orderItemStmt->bindParam(':quantity'.$i, $values[1]);
+                    }
+                    // Bind order id to order item insert
+                    $orderItemStmt->bindParam(':orderId', $orderId);
+                    $orderItemStmt->execute();
                 }
             }
 
-            $stmt->bindParam(':shippingId', $shippingId);
-            $stmt->execute();
-            
             $checkoutStage = 3;
         } else {
             $checkoutError = true;
@@ -209,8 +202,8 @@ function clean_input($input) {
                                     <span class="fw-bold"><?=clean_input($_POST['billing_address']) . ', ' . clean_input($_POST['billing_country']) . ', ' . clean_input($_POST['billing_city'])?></span>
                                 </div>
                                 <div class="order-summary-row row my-2">
-                                    <div class="text-muted">Zip / Postal code:</div>
-                                    <span class="fw-bold"><?=clean_input($_POST['billing_zip'])?></span>
+                                    <div class="text-muted">Phone number:</div>
+                                    <span class="fw-bold"><?=clean_input($_POST['billing_phone'])?></span>
                                 </div>
                                 <div class="order-summary-row row my-2">
                                     <div class="text-muted">Shipping:</div>
@@ -271,7 +264,7 @@ function clean_input($input) {
                                         Please enter your shipping address.
                                     </div>
                                 </div>
-                                <div class="col-lg-5">
+                                <div class="col-lg-4">
                                     <label for="country" class="form-label">Country</label>
                                     <input type="text" name="billing_country" class="form-control" id="country" placeholder="" value="" required maxlength="255">
                                     <div class="invalid-feedback">
@@ -285,11 +278,11 @@ function clean_input($input) {
                                         Valid city is required.
                                     </div>
                                 </div>
-                                <div class="col-lg-3">
-                                    <label for="zip" class="form-label">Zip / Postal code</label>
-                                    <input type="text" name="billing_zip" class="form-control" id="zip" placeholder="" required maxlength="255">
+                                <div class="col-lg-4">
+                                    <label for="phone" class="form-label">Phone number</label>
+                                    <input type="tel" name="billing_phone" class="form-control" id="phone" placeholder="" required maxlength="31" minlength="1">
                                     <div class="invalid-feedback">
-                                        Zip code required.
+                                        Phone number required.
                                     </div>
                                 </div>
                             </div>
@@ -412,7 +405,7 @@ function clean_input($input) {
                         ?>
                                 <div class="fs-4 text-center my-4 text-success"><i class="far fa-check-circle"></i> Order successfully placed!</div><?php
                             } else {?>
-                                <div class="fs-4 text-center my-4 text-danger"><i class="far fa-times-circle"></i> Something went wrong, please try again later!</div>
+                                <div class="fs-4 text-center my-4 text-danger"><i class="far fa-times-circle"></i> Something went wrong, try again later!</div>
                             <?php
                             }
                         }

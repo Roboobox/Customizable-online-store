@@ -40,7 +40,7 @@ if (empty($formErrors)) {
             $_SESSION['user_data']['name'] = $_POST['account_name'];
             $_SESSION['user_data']['surname'] = $_POST['account_surname'];
             $_SESSION['user_data']['phoneNr'] = $_POST['account_phonenr'];
-            $formSuccessMsg = "Account info updated";
+            $formSuccessMsg = "Account info updated!";
         }
 
     } else if (isset($_POST['account_passold'], $_POST['account_passnew'], $_POST['account_passconfirm'])) {
@@ -50,7 +50,7 @@ if (empty($formErrors)) {
         $stmt->bindParam(':passwordHash', $hashedPassword);
         $stmt->bindParam(':userId', $_SESSION['user_id']);
         $stmt->execute();
-        $formSuccessMsg = "Password changed";
+        $formSuccessMsg = "Password updated!";
     } else if (isset($_POST['account_sort'], $_POST['account_layout'])) {
         $userUpdateSql = "UPDATE user SET product_sort = :sort, product_layout = :layout WHERE id = :userId";
         $stmt = $conn->prepare($userUpdateSql);
@@ -61,7 +61,7 @@ if (empty($formErrors)) {
         if ($stmt->rowCount() > 0) {
             $_SESSION['sort'] = $_POST['account_sort'];
             $_SESSION['layout'] = $_POST['account_layout'];
-            $formSuccessMsg = "Preferences updated";
+            $formSuccessMsg = "Preferences updated!";
         }
 
     }
@@ -73,17 +73,17 @@ function getFormValidationErrors($conn) {
         $fields = array('account_name' => 'Name', 'account_surname' => 'Surname', 'account_phonenr' => 'Phone number');
         
         foreach ($fields as $field => $label) {
-            if (($field === 'account_name' || $field === 'account_surname')) {
-                if (strlen($_POST[$field]) > 255) {
-                    $formErrors[$field] = $label . ' cannot be longer than 255 symbols';
-                } else if (!preg_match("/[A-Za-z]/", $_POST[$field])) {
-                    $formErrors[$field] = $label . ' can only be letters';
-                }
-            } else if ($field === 'account_phonenr') {
-                if (strlen($_POST[$field]) > 20) {
-                    $formErrors[$field] = $label . ' cannot be longer than 20 digits';
-                } else if (!preg_match("/[0-9]/", $_POST[$field])) {
-                    $formErrors[$field] = $label . ' can only be numbers';
+            if (!empty($_POST[$field])) {
+                if (($field === 'account_name' || $field === 'account_surname')) {
+                    if (strlen($_POST[$field]) > 255) {
+                        $formErrors[$field] = $label . ' cannot exceed 255 characters';
+                    }
+                } else if ($field === 'account_phonenr') {
+                    if (strlen($_POST[$field]) > 31) {
+                        $formErrors[$field] = $label . ' cannot be longer than 31 digits';
+                    } else if (!preg_match("/[0-9]/", $_POST[$field])) {
+                        $formErrors[$field] = $label . ' can only contain digits';
+                    }
                 }
             }
         }
@@ -130,16 +130,16 @@ function getFormValidationErrors($conn) {
     <div class="row">
         <div class="col p-4 bg-white shadow-sm border">
             <h4 class="mt-md-2 mt-4">Account</h4>
-            <form method="POST" action="account.php">
+            <form method="POST" action="account.php" novalidate>
                 <div class="row g-3 mt-3 pb-4 border-bottom text-muted">
                     <div class="col-md-4 pe-sm-3">
                         <label for="firstName" class="form-label fw-bold">First name</label>
-                        <input type="text" required pattern="[A-Za-z]+" name="account_name" title="Letters only" value="<?=htmlspecialchars($_SESSION['user_data']['name'] ?? '')?>" class="form-control <?=(isset($formErrors['account_name']) ? 'is-invalid' : '')?>" id="firstName" placeholder="John" maxlength="255">
+                        <input type="text" required name="account_name" value="<?=htmlspecialchars($_POST['account_name'] ?? $_SESSION['user_data']['name'] ?? '')?>" class="form-control <?=(isset($formErrors['account_name']) ? 'is-invalid' : '')?>" id="firstName" placeholder="John">
                         <div class="invalid-feedback"><?=$formErrors['account_name'] ?? ''?></div>
                     </div>
                     <div class="col-md-4 pe-sm-3 ps-sm-3">
                         <label for="lastName" class="form-label fw-bold">Last name</label>
-                        <input type="text" required pattern="[A-Za-z]+" name="account_surname" title="Letters only" value="<?=htmlspecialchars($_SESSION['user_data']['surname'] ?? '')?>" class="form-control <?=(isset($formErrors['account_surname']) ? 'is-invalid' : '')?>" id="lastName" placeholder="Smith" maxlength="255">
+                        <input type="text" required name="account_surname" value="<?=htmlspecialchars($_POST['account_surname'] ?? $_SESSION['user_data']['surname'] ?? '')?>" class="form-control <?=(isset($formErrors['account_surname']) ? 'is-invalid' : '')?>" id="lastName" placeholder="Smith">
                         <div class="invalid-feedback"><?=$formErrors['account_surname'] ?? ''?></div>
                     </div>
                     <div class="col-md-4 ps-sm-3">
@@ -149,7 +149,7 @@ function getFormValidationErrors($conn) {
                     </div>
                     <div class="col-md-4 pe-sm-3">
                         <label for="phoneNr" class="form-label fw-bold">Phone number</label>
-                        <input type="tel" pattern="[0-9]+" name="account_phonenr" title="Numbers only" value="<?=htmlspecialchars($_SESSION['user_data']['phoneNr'] ?? '')?>" class="form-control  <?=(isset($formErrors['account_phonenr']) ? 'is-invalid' : '')?>" id="phoneNr" maxlength="255">
+                        <input type="tel" pattern="[0-9]+" name="account_phonenr" title="Numbers only" value="<?=htmlspecialchars($_POST['account_phonenr'] ?? $_SESSION['user_data']['phoneNr'] ?? '')?>" class="form-control  <?=(isset($formErrors['account_phonenr']) ? 'is-invalid' : '')?>" id="phoneNr" maxlength="255">
                         <div class="invalid-feedback"><?=$formErrors['account_phonenr'] ?? ''?></div>
                     </div>
                     <div class="row g-3 mt-1">
@@ -163,7 +163,7 @@ function getFormValidationErrors($conn) {
             <form method="POST" action="account.php">
                 <div class="row g-3 mt-3 pb-4 border-bottom text-muted">
                     <div class="col-md-4 pe-sm-3">
-                        <label for="passwordOld" class="form-label fw-bold">Old password</label>
+                        <label for="passwordOld" class="form-label fw-bold">Current password</label>
                         <input type="password" name="account_passold" class="form-control <?=(isset($formErrors['account_passold']) ? 'is-invalid' : '')?>" id="passwordOld" placeholder="" value="" required maxlength="255">
                         <div class="invalid-feedback"><?=$formErrors['account_passold'] ?? ''?></div>
                     </div>

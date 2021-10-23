@@ -187,7 +187,7 @@ include_once 'header.php';
             Product was added to the cart
             </div>
             <div class="cart-error cart-msg">
-                Something went wrong. Try again later!
+                Something went wrong, try again later!
             </div>
         </div>
     </div>

@@ -7,21 +7,23 @@ try {
     if (isset($_POST['cart_product_id'], $_POST['cart_quantity']) && is_numeric($_POST['cart_product_id']) && is_numeric($_POST['cart_quantity'])) {
         $productId = (int)$_POST['cart_product_id'];
         $quantity = (int)$_POST['cart_quantity'];
+        // TODO : Remove inventory checking because it is checked at cart
+        // TODO : Add more exceptions
+        // Get product inventory quantity which is being added to cart
+        $productInventorySql = "SELECT quantity From product_inventory WHERE id = :productId";
+//        $productSql = "
+//        SELECT P.*, PI.quantity FROM product P
+//        LEFT JOIN product_inventory PI on P.inventory_id = PI.id
+//        WHERE P.id = :productId
+//    ";
+        $stmtInventory = $conn->prepare($productInventorySql);
+        $stmtInventory->bindParam(':productId', $productId);
+        $stmtInventory->execute();
 
-        // Get product and its inventory quantity which is being added to cart
-        $productSql = "
-        SELECT P.*, PI.quantity FROM product P
-        LEFT JOIN product_inventory PI on P.inventory_id = PI.id
-        WHERE P.id = :productId
-    ";
-        $stmt = $conn->prepare($productSql);
-        $stmt->bindParam(':productId', $productId);
-        $stmt->execute();
+        if ($quantity > 0 && $stmtInventory->rowCount() > 0) {
+            $inventory = $stmtInventory->fetch();
 
-        if ($quantity > 0 && $stmt->rowCount() > 0) {
-            $product = $stmt->fetch();
-
-            if ($product['quantity'] > 0) {
+            if ($inventory['quantity'] > 0) {
 
                 // Use database if user is logged in
                 if (isset($_SESSION['user_id'])) {

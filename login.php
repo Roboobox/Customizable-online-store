@@ -8,7 +8,7 @@ try {
     ) {
         $_SESSION['auth_email'] = $_POST['email'];
         include_once('conn.php');
-
+        // TODO : Throw exceptions for > 254 email, > 72 password
         $filteredEmail = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_SPECIAL_CHARS);
         $filteredPassword = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_SPECIAL_CHARS);
 
@@ -33,9 +33,9 @@ try {
                     header("Location: " . $_POST['redirect']);
                     exit;
             }
-            throw new Exception("Incorrect email or password", 3);
+            throw new Exception("Incorrect email or password!", 3);
         } else {
-            throw new Exception("Incorrect email or password", 3);
+            throw new Exception("Incorrect email or password!", 3);
         }
     }
 }
