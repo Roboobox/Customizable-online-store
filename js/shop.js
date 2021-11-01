@@ -15,11 +15,12 @@ function ShopScript()
     
     var self = this;
     $(window).scroll( function(){
+        //console.log(window.scrollY, self.intBotNavBarHeight, self.intTopNavBarHeight + self.intBotNavBarHeight + self.intNavFixedGap, self.intNavFixedGap)
         if(window.scrollY > self.intTopNavBarHeight + self.intBotNavBarHeight + self.intNavFixedGap){
             self.jqBotNavbar.addClass('nav-fixed');
             self.jqBotNavbar.css('visibility', 'visible');
             self.jqBotNavbar.css('opacity', 1);
-            $('body').css('padding-top', self.jqBotNavbar.outerHeight(true));
+            $('body').css('padding-top', self.intBotNavBarHeight);
         }
         else if (window.scrollY > self.intBotNavBarHeight) {
             self.jqBotNavbar.css('opacity', 0);
@@ -162,19 +163,16 @@ function ShopScript()
         var quantityPickerInput =  $('.product[' + "data-product-id=" + productId + '] .quantity-container .quantity-picker-input');
         
         if (quantityPickerInput.val() > 0) {
-            if (quantityPickerInput.val() > product['inventoryAmount']) {
-                quantityPickerInput.val(product['inventoryAmount']);
-                alert('Selected quantity cannot be ordered');
-            }
-            //$('.card[' + "data-product-id=" + productId + '] .quantity-container .total-price').css('visibility', 'visible');
+            // Uncomment to enable warning for adding higher quantity than product inventory has
+            // if (quantityPickerInput.val() > product['inventoryAmount']) {
+            //     quantityPickerInput.val(product['inventoryAmount']);
+            //     alert('Selected quantity cannot be ordered');
+            // }
             $('.product[' + "data-product-id=" + productId + '] .total-price-text').text((product['discountPrice'] * Number(quantityPickerInput.val())).toFixed(2) + ' €');
 
-            //$('.card[' + "data-product-id=" + productId + '] .quantity-container .total-price .btn-add-cart').css('display', 'block');
         }
          else {
             quantityPickerInput.val(1);
-            // $('.quantity-container .total-price').css('visibility', 'hidden');
-            // $('.card[' + "data-product-id=" + productId + '] .quantity-container .total-price .btn-add-cart').hide();
         }
     }
     
@@ -334,14 +332,14 @@ function ShopScript()
     this.mobSearch = function()
     {
         if ($('.nav-bot .search-button-mobile i').hasClass('fa-search')) {
-            $('.nav-bot .navbar-brand').addClass('d-none');
-            $('.nav-bot .mobile-sidebar-toggle').addClass('d-none');
-            $('.nav-bot .search-container').removeClass('ps-2').removeClass('pe-4').removeClass('d-none').css('width', '65%');
+            $('.nav-bot .logo-col').addClass('d-none');
+            $('.nav-bot .search-col').removeClass('col-2').addClass('col-9');
+            $('.nav-bot .search-container').removeClass('ps-2').removeClass('pe-4').removeClass('d-none').css('width', '90%');
             $('.nav-bot .search-button-mobile i').removeClass('fa-search').addClass('fa-times');
         }
         else {
-            $('.nav-bot .navbar-brand').removeClass('d-none');
-            $('.nav-bot .mobile-sidebar-toggle').removeClass('d-none');
+            $('.nav-bot .logo-col').removeClass('d-none');
+            $('.nav-bot .search-col').addClass('col-2').removeClass('col-9');
             $('.nav-bot .search-container').addClass('ps-2').addClass('pe-4').addClass('d-none').css('width', '50%');
             $('.nav-bot .search-button-mobile i').addClass('fa-search').removeClass('fa-times');
         }
@@ -497,7 +495,6 @@ function ShopScript()
     
     this.changeQuantityPickerAmount = function(add, productId)
     {
-        // TODO : Check for currency rounding errors
         var product = this.products[productId];
         
         var quantityPickerInput =  $('.quantity-picker-input[' + "data-product-id=" + productId + ']');

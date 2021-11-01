@@ -21,9 +21,16 @@ if (isset($_GET['id']) || !empty($_GET['id'])) {
         $stmt = $conn->prepare("DELETE FROM product WHERE id = :prodId");
         $stmt->bindParam(':prodId', $_GET['id']);
         $stmt->execute();
-        header('Location: ../admin_dash.php?p=delete_product');
-        exit;
+        if ($stmt->rowCount() == 0) {
+            $formErrors['general'] = 'Something went wrong, try again later!';
+        }
+    } else {
+        $formErrors['general'] = 'Something went wrong, try again later!';
     }
 }
-header('location: index.php');
+$_SESSION['formErrors'] = $formErrors;
+if (empty($formErrors)) {
+    $_SESSION['formSuccess'] = 'Product deleted successfully!';
+}
+header('Location: ../admin_dash.php?p=delete_product');
 exit;

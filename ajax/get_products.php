@@ -6,8 +6,10 @@ require_once('../objects/Product.php');
 const PRODUCT_TAB_NAME_DESCRIPTION = "description";
 const PRODUCT_TAB_NAME_SPECIFICATIONS = "specifications";
 
+// Small sql to only select search matching products
 $liteProductSql = "SELECT id FROM product P WHERE (P.name LIKE CONCAT('%', :productName, '%') OR :productName is NULL)";
 
+// Main product selection sql
 $productSql = "
         SELECT P.*, I.quantity, D.discount_percent, C.name AS category FROM `product` P
         LEFT JOIN product_inventory I ON P.inventory_id = I.id
@@ -20,47 +22,12 @@ $specFilters = array();
 $productFilterSql = "";
 // Check if there are any filters applied
 if (isset($_POST['filterParams'])) {
-    $paramsCleaned = array();
-    foreach ($_POST['filterParams'] as $param) {
-        // Check if valid filter
-        if (empty($param[1]) || strlen($param[0]) < 6) {
-            continue;
-        }
-        // Removes 'fs_' from start and '_X' numbering from end
-        $dbLabel = substr(urldecode($param[0]), 3, -2);
-        // Adds filter to array {['label'] = array(infos)}
-        $specFilters[$dbLabel][] = urldecode($param[1]);
-        $paramsCleaned[] = array($dbLabel, urldecode($param[1]));
-    }
-
-    if (!empty($specFilters)) {
-        // Creates placeholders in sql for binding filter values
-        $productFilterSql .= ' AND ';
-        $counter = 1;
-        $i = 0;
-        foreach ($specFilters as $label => $infos) {
-            if ($i > 0) {
-                $productFilterSql .= ' AND ';
-            }
-            $productFilterSql .= 'EXISTS (SELECT id FROM product_specification PS WHERE P.id = PS.product_id AND (';
-            $i++;
-            $k = 0;
-            foreach ($infos as $info) {
-                if ($k > 0) {
-                    $productFilterSql .= ' OR ';
-                }
-                $productFilterSql .= '(PS.label = :spec' . $counter . ' AND PS.info = :spec' . ($counter + 1) . ')';
-                $counter += 2;
-                $k++;
-            }
-            $productFilterSql .= ')) ';
-        }
-    }
+    $specFilterData = getSpecFilters($_POST['filterParams']);
+    $specFilters = $specFilterData['specFilters'];
+    $productFilterSql = $specFilterData['sql'];
 }
-//$test = getSpecFilters($_POST['filterParams']);
-//$productFilterSql = $test[0];
-//$specFilters = $test[1];
-//var_dump($productFilterSql);
+
+// Add selected filter sql to product sql
 $productSql .= $productFilterSql;
 
 // Sort changing based on user choice
@@ -78,6 +45,7 @@ if (!isset($_POST['sort']) || empty($_POST['sort']) || $_POST['sort'] == "A to Z
 
 $stmt = $conn->prepare($productSql);
 $stmtLite = $conn->prepare($liteProductSql);
+
 // Binds search input value to placeholder
 if (isset($_POST['q']) && !empty($_POST['q'])) {
     $filteredSearch = filter_input(INPUT_POST, 'q', FILTER_SANITIZE_SPECIAL_CHARS);
@@ -106,11 +74,13 @@ $products = array();
 $allProductData = array();
 $productSpecs = array();
 $specProductCount = array();
+
 // Gets product data and stores it into product object
 foreach ($productRows as $row) {
     $product = new Product();
     $product->getProductDataFromRow($row);
 
+    // Sql to select product specifications and photos
     $productSpecsSql = "SELECT label, info FROM product_specification WHERE product_id = :productId";
     $productPhotoSql = "SELECT photo_path FROM product_photo WHERE product_id = :productId";
 
@@ -126,24 +96,9 @@ foreach ($productRows as $row) {
 
     $product->getSpecifactions($specifications);
     $product->getPhotos($photos);
-
+    // Save product object in products array
     $products[$row['id']] = $product;
-
-    foreach ($product->specifications as $label => $info) {
-        if (!isset($specProductCount[$label][$info])) {
-            $specProductCount[$label][$info] = 1;
-        } else {
-            $specProductCount[$label][$info]++;
-        }
-    }
 }
-
-//if (!isset($specProductCount[$row['label']][$row['info']])) {
-//            $specProductCount[$row['label']][$row['info']] = 1;
-//        }
-//        else {
-//            $specProductCount[$row['label']][$row['info']]++;
-//        }
 
 // Get product specifications for filters
 foreach ($stmtLite->fetchAll() as $productRow) {
@@ -161,11 +116,11 @@ foreach ($stmtLite->fetchAll() as $productRow) {
     }
 }
 
-//var_dump($paramsCleaned);
-
+// Get each filter (specification) returned product count when it will be added
 foreach ($productSpecs as $specName => $specValues) {
     if ($specValues > 1) {
         foreach ($specValues as $value) {
+            // Check for currently applied filters
             $params = $_POST['filterParams'] ?? array();
             $paramInArray = false;
             foreach ($params as $param) {
@@ -174,31 +129,37 @@ foreach ($productSpecs as $specName => $specValues) {
                     break;
                 }
             }
+            // If filter is not currently applied, add it to filter (specification) parameters as it would be if it were applied
             if (!$paramInArray) {
                 $params[] = array("fs_" . $specName . "_0", $value);
             }
-            $specSql = getSpecFilters($params)[0];
-            $testSql = "SELECT COUNT(id) as Count FROM product P WHERE (P.name LIKE CONCAT('%', :productName, '%') OR :productName is NULL) AND P.id IN (SELECT product_id FROM product_specification WHERE label = \"".$specName."\" AND info = \"".$value. "\") " . $specSql;
-            $testStmt = $conn->prepare($testSql);
+            // Get returned product results with filter added
+            $specSql = getSpecFilters($params)['sql'];
+            $productFilterSql = "SELECT COUNT(id) as Count FROM product P WHERE (P.name LIKE CONCAT('%', :productName, '%') OR :productName is NULL) AND P.id IN (SELECT product_id FROM product_specification WHERE label = \"".$specName."\" AND info = \"".$value. "\") " . $specSql;
+            $productFilterStmt = $conn->prepare($productFilterSql);
             $cnt = 1;
+            // Bind currently applied filter (specification) variables to statement
             foreach ($specFilters as $label => $infos) {
                 foreach ($infos as $info) {
-                    $testStmt->bindValue(':spec' . $cnt, $label);
-                    $testStmt->bindValue(':spec' . ($cnt + 1), $info);
+                    $productFilterStmt->bindValue(':spec' . $cnt, $label);
+                    $productFilterStmt->bindValue(':spec' . ($cnt + 1), $info);
                     $cnt += 2;
                 }
             }
+            // Bind new filter to statement
             if (!$paramInArray) {
-                $testStmt->bindValue(':spec' . $cnt, $specName);
-                $testStmt->bindValue(':spec' . ($cnt + 1), $value);
+                $productFilterStmt->bindValue(':spec' . $cnt, $specName);
+                $productFilterStmt->bindValue(':spec' . ($cnt + 1), $value);
             }
+            // Bind search phrase to statement
             if (isset($_POST['q']) && !empty($_POST['q'])) {
-                $testStmt->bindParam(':productName', $_POST['q']);
+                $productFilterStmt->bindParam(':productName', $_POST['q']);
             } else {
-                $testStmt->bindValue(':productName', null);
+                $productFilterStmt->bindValue(':productName', null);
             }
-            $testStmt->execute();
-            $specProductCount[$specName][$value] = $testStmt->fetch()['Count'];
+            $productFilterStmt->execute();
+            // Save each filter returned items count
+            $specProductCount[$specName][$value] = $productFilterStmt->fetch()['Count'];
         }
     }
 }
@@ -244,9 +205,10 @@ function getSpecFilters(array $filterParams): array
             }
         }
     }
-    return array($productFilterSql, $specFilters);
+    return array('sql' => $productFilterSql, 'specFilters' => $specFilters);
 }
 
+// Create specification HTML code which is filled with data received from database
 function generateSpecificationHtml(array $productSpecs, array $specProductCount): string
 {
     $specHtml = '<div class="d-block d-lg-none border-bottom w-100 mb-3 pb-2 text-center"><div class="fw-bold fs-5 d-inline-block">Product filters</div><a id="mob_filter_hide" class="float-end text-dark"><i class="fas fa-times-circle fs-2 align-middle"></i></a></div>';
@@ -283,6 +245,7 @@ function generateSpecificationHtml(array $productSpecs, array $specProductCount)
     return '';
 }
 
+// Create product (LIST/ROW view) HTML code which is filled with data received from database
 function generateProductRVHtml(array $products): string
 {
     $productsHtml = '<div class="row product-row">';
@@ -308,7 +271,7 @@ function generateProductRVHtml(array $products): string
             $productsHtml .= '<div class="quantity-container">';
             $productsHtml .= '<div class="quantity-picker-container">';
             $productsHtml .= '<div onclick="objShop.changeQuantityPickerAmount(0,' . $product->id . ')" class="minus d-md-flex d-none"><i class="fas fa-minus"></i></div>';
-            $productsHtml .= '<input class="form-control quantity-picker-input" data-product-id="' . $product->id . '" name="cart_quantity" type="number" value="1" min="1" max="' . $product->inventoryAmount . '" onchange="objShop.validateQuantity(' . $product->id . ')">';
+            $productsHtml .= '<input class="form-control quantity-picker-input" data-product-id="' . $product->id . '" name="cart_quantity" type="number" value="1" min="1" onchange="objShop.validateQuantity(' . $product->id . ')">';
             $productsHtml .= '<input type="hidden" value="' . $product->id . '" name="cart_product_id">';
             $productsHtml .= '<div onclick="objShop.changeQuantityPickerAmount(1,' . $product->id . ')" class="plus d-md-flex d-none"><i class="fas fa-plus"></i></div>';
             $productsHtml .= '</div><div class="total-price-text d-block d-sm-none">' . $product->discountPrice . ' €</td>';
@@ -341,6 +304,7 @@ function generateProductRVHtml(array $products): string
     return $productsHtml;
 }
 
+// Create product (GRID view) HTML code which is filled with data received from database
 function generateProductHtml(array $products): string
 {
     $productsHtml = '<div class="row product-row row-cols-xl-3 row-cols-lg-2 row-cols-sm-2 row-cols-2">';
@@ -363,7 +327,7 @@ function generateProductHtml(array $products): string
                     $productsHtml .= '<li><a class="link-secondary show-more" data-bs-toggle="modal" data-bs-target="#productModal" onclick="objShop.openProductModal(' . $product->id . ', \'' . PRODUCT_TAB_NAME_SPECIFICATIONS . '\')">Show more...</a on></li>';
                     break;
                 }
-                $productsHtml .= '<li><i class="far fa-circle"></i><span>' . $label . '</span><span class="card-info-list-text fw-bold ms-1 text-body">' . $name . '</span></li>';
+                $productsHtml .= '<li><i class="far fa-circle"></i><span style="white-space: nowrap">' . $label . '</span><span class="card-info-list-text fw-bold ms-1 text-body">' . $name . '</span></li>';
                 $specCounter++;
             }
 
@@ -377,7 +341,7 @@ function generateProductHtml(array $products): string
             $productsHtml .= '<div class="text-muted mb-1">Qty</div>';
             $productsHtml .= '<div class="quantity-picker-container">';
             $productsHtml .= '<div onclick="objShop.changeQuantityPickerAmount(0,' . $product->id . ')" class="minus"><i class="fas fa-minus"></i></div>';
-            $productsHtml .= '<input class="form-control quantity-picker-input" data-product-id="' . $product->id . '" name="cart_quantity" type="number" value="1" min="1" max="' . $product->inventoryAmount . '" onchange="objShop.validateQuantity(' . $product->id . ')">';
+            $productsHtml .= '<input class="form-control quantity-picker-input" data-product-id="' . $product->id . '" name="cart_quantity" type="number" value="1" min="1" onchange="objShop.validateQuantity(' . $product->id . ')">';
             $productsHtml .= '<input type="hidden" value="' . $product->id . '" name="cart_product_id">';
             $productsHtml .= '<div onclick="objShop.changeQuantityPickerAmount(1,' . $product->id . ')" class="plus"><i class="fas fa-plus"></i></div>';
             $productsHtml .= '</div></div>';

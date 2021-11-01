@@ -80,41 +80,50 @@ if (isset($_SESSION['sign_error']) || (isset($_SESSION['sign_success']) && isset
 <header>
     <div class="navbar navbar-expand-lg navbar-light bg-dark nav-bot" role="navigation">
         <nav class="container navbar-expand-lg navbar-dark">
-                <button class="mobile-sidebar-toggle me-3 d-block d-sm-none" type="button" onclick="objShop.showSideBar()">
-                    <i class="fas fa-bars"></i>
-                </button>
-                
-                <a class="navbar-brand text-white" href="index.php">
-                    <img src="test_images/<?=$storeSettings['logo_path']?>" alt="logo">
-                </a>
-                
-                <div class="search-container m-auto ps-2 pe-4 d-none d-lg-block">
-                        <div class="input-group">
-                            <input class="form-control" id="search" type="search" name="q" value="<?= isset($_GET['q']) ? htmlspecialchars(urldecode($_GET['q']), ENT_QUOTES, 'UTF-8') : ''?>" placeholder="Product" aria-label="Search">
-                            <button id="search_button" class="btn search-button">
-                                <i class="fas fa-search"></i>
-                            </button>
-                        </div>
-                </div>
-                
-                <div onclick="objShop.mobSearch()" class="search-button-mobile ms-auto mx-4 d-block d-lg-none">
-                    <i class="fas fa-search"></i>
-                </div>
-                
-                <div class="cart-container" onclick="location.href='cart.php'">
-                    <div class="cart-icon-container">
-                        <i class="fas fa-shopping-cart"></i>
+                <div class="row">
+                    <div class="col-md-6 col-7 col-lg-3 d-flex logo-col">
+                        <button class="mobile-sidebar-toggle me-3 d-block d-sm-none" type="button" onclick="objShop.showSideBar()">
+                            <i class="fas fa-bars"></i>
+                        </button>
+
+                        <a class="navbar-brand text-white m-auto" href="index.php">
+                            <img src="test_images/<?=$storeSettings['logo_path']?>" class="<?=$storeSettings['logo_orientation'] ?? 'horizontal'?>" alt="logo">
+                        </a>
                     </div>
-                    <div class="cart-info-container">
-                        <div class="cart-count-container fw-bold">
+
+                    <div class="col-lg-6 col-md-3 col-2 d-flex search-col">
+                        <div class="search-container m-auto ps-2 pe-4 d-none d-lg-block">
+                                <div class="input-group">
+                                    <input class="form-control" id="search" type="search" name="q" value="<?= isset($_GET['q']) ? htmlspecialchars(urldecode($_GET['q']), ENT_QUOTES, 'UTF-8') : ''?>" placeholder="Product" aria-label="Search">
+                                    <button id="search_button" class="btn search-button">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
                         </div>
-                        <div class="cart-text-container fw-bold">
-                            0.00
-                            <span>€</span>
+
+                        <div onclick="objShop.mobSearch()" class="search-button-mobile ms-auto align-items-center d-flex d-lg-none">
+                            <i class="fas fa-search"></i>
                         </div>
                     </div>
+
+                    <div class="col-md-3 col-3 ps-0 pe-4 d-flex justify-content-end cart-col">
+                        <div class="cart-container" onclick="location.href='cart.php'">
+                            <div class="relative-container position-relative d-flex align-items-center text-center">
+                                <div class="cart-icon-container">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </div>
+                                <div class="cart-info-container">
+                                    <div class="cart-count-container fw-bold">0
+                                    </div>
+                                    <div class="cart-text-container fw-bold">
+                                        0.00
+                                        <span>€</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                
         </nav>
     </div>
     
@@ -122,19 +131,6 @@ if (isset($_SESSION['sign_error']) || (isset($_SESSION['sign_success']) && isset
         <nav class="container navbar-expand navbar-light d-none d-sm-flex" role="navigation">
                 
                 <ul class="navbar-nav w-100">
-<!--                    --><?php
-//                    if (isset($_SESSION['user_role']) && $_SESSION['user_role'] == 1)
-//                    {
-//                    ?>
-<!--                    <li class="nav-item">-->
-<!--                        <a class="nav-link py-0 --><?//=$tab === 'Admin' ? 'active' : ''?><!--" aria-current="page" href="admin_dash.php">-->
-<!--                            <i class="fas fa-cogs"></i>-->
-<!--                            <span>Admin</span>-->
-<!--                        </a>-->
-<!--                    </li>-->
-<!--                    --><?php
-//                    }
-//                    ?>
                     <li class="nav-item border-end text-center">
                         <a class="nav-link py-0 <?=$tab === 'Products' ? 'active' : ''?>" aria-current="page" href="index.php">
                             <i class="fas fa-boxes"></i>
@@ -187,19 +183,6 @@ if (isset($_SESSION['sign_error']) || (isset($_SESSION['sign_success']) && isset
             </a>
             <hr>
             <ul class="nav nav-pills flex-column mb-auto">
-<!--                --><?php
-//                if (isset($_SESSION['user_role']) && $_SESSION['user_role'] == 1)
-//                {
-//                ?>
-<!--                <li class="nav-item">-->
-<!--                    <a href="admin_dash.php" class="nav-link text-white py-0 --><?//=$tab === 'Admin' ? 'active' : ''?><!--" aria-current="page">-->
-<!--                        <i class="fas fa-cogs"></i>-->
-<!--                        <span>Admin</span>-->
-<!--                    </a>-->
-<!--                </li>-->
-<!--                --><?php
-//                }
-//                ?>
                 <li class="nav-item py-1">
                     <a href="index.php" class="nav-link text-white <?=$tab === 'Products' ? 'active' : ''?>" aria-current="page">
                         <i class="fas fa-boxes"></i>

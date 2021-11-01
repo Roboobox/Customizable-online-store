@@ -4,12 +4,11 @@ if (!isset($_SESSION['user_id'])) {
     header('Location: index.php');
     exit;
 }
-$tab = 'Contact';
+
 include_once 'conn.php';
 include_once 'head.php';
 include_once 'header.php';
 
-// TODO: Make validation
 $formErrors = getFormValidationErrors($conn);
 if (empty($formErrors)) {
     if (isset($_POST['account_name'], $_POST['account_surname'], $_POST['account_phonenr'])) {

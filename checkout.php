@@ -1,10 +1,10 @@
 <?php
+// TODO : Reduce item inventory on order placed
 session_start();
-// TODO: check if something is in cart to not access 'checkout.php'
-//if ($_SESSION['cart_price'] == '0.00' && empty($_SESSION['cart'])) {
-//    header('Location: cart.php');
-//    exit;
-//}
+if ((!isset($_SESSION['cart_data']['cart_id']) && !isset($_SESSION['cart'])) || $_SESSION['cart_data']['item_count'] < 1) {
+    header('Location: cart.php');
+    exit;
+}
 include_once 'head.php';
 include_once 'header.php';
 
@@ -14,23 +14,22 @@ $checkoutError = false;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['checkout_stage'])) {
     if ($_POST['checkout_stage'] == 1) {
-        if (isset($_POST['billing_name'], $_POST['billing_surname'], $_POST['billing_email'], $_POST['billing_address'], $_POST['billing_country'], $_POST['billing_city'], $_POST['billing_phone'])) {
-            if (!empty($_POST['billing_name']) && !empty($_POST['billing_surname']) && !empty($_POST['billing_email']) && !empty($_POST['billing_address']) && !empty($_POST['billing_country']) && !empty($_POST['billing_city']) && !empty($_POST['billing_phone'])) {
-                if (strlen($_POST['billing_name']) < 256 && strlen($_POST['billing_surname']) < 256 && strlen($_POST['billing_email']) < 256 && strlen($_POST['billing_address']) < 256 && strlen($_POST['billing_country']) < 256 && strlen($_POST['billing_city']) < 256 && strlen($_POST['billing_phone']) < 256) {
-                    $checkoutStage = 2;
-                    $_SESSION['order_data'] = array('name'=>$_POST['billing_name'], 'surname'=>$_POST['billing_surname'], 'email'=>$_POST['billing_email'], 'address'=>$_POST['billing_address'], 'country'=>$_POST['billing_country'], 'city'=>$_POST['billing_city'], 'phone'=>$_POST['billing_phone'], 'type'=>$_POST['shipping_type']);
-                }
+        if (isset($_POST['billing_name'], $_POST['billing_surname'], $_POST['billing_email'], $_POST['billing_address'], $_POST['billing_country'], $_POST['billing_city'], $_POST['billing_phone'], $_POST['shipping_type'])) {
+            $formErrors = validateForm();
+            // If validation returned no errors then proceed to next checkout stage
+            if (empty($formErrors)) {
+                $checkoutStage = 2;
+                $_SESSION['order_data'] = array('name'=>$_POST['billing_name'], 'surname'=>$_POST['billing_surname'], 'email'=>$_POST['billing_email'], 'address'=>$_POST['billing_address'], 'country'=>$_POST['billing_country'], 'city'=>$_POST['billing_city'], 'phone'=>$_POST['billing_phone'], 'type'=>$_POST['shipping_type']);
             }
         }
     } else if ($_POST['checkout_stage'] == 2 && isset($_SESSION['order_data'])) {
         include_once "conn.php";
         // Save shipping information in database
-        $stmt = $conn->prepare("INSERT INTO shipping (shipping_type, address, city, country, postal_code) VALUES (:shippingType, :address, :city, :country, :postalCode)");
+        $stmt = $conn->prepare("INSERT INTO shipping (shipping_type, address, city, country) VALUES (:shippingType, :address, :city, :country)");
         $stmt->bindParam(':shippingType', $_SESSION['order_data']['type']);
         $stmt->bindParam(':address', $_SESSION['order_data']['address']);
         $stmt->bindParam(':city', $_SESSION['order_data']['city']);
         $stmt->bindParam(':country', $_SESSION['order_data']['country']);
-        $stmt->bindParam(':postalCode', $_SESSION['order_data']['phone']);
         $stmt->execute();
         if ($stmt->rowCount() > 0) {
             // Get saved shipping information id
@@ -38,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['checkout_stage'])) {
             
             // Save order information in database
             $stmt = $conn->prepare("INSERT INTO `order` (total, order_name, order_surname, order_email, order_phonenr, status, user_id, shipping_id) VALUES (:total, :name, :surname, :email, :phoneNr, :status, :userId, :shippingId)");
-            $stmt->bindParam(':total', $_SESSION['cart_price']);
+            $stmt->bindParam(':total', $_SESSION['cart_data']['price']);
             $stmt->bindParam(':name', $_SESSION['order_data']['name']);
             $stmt->bindParam(':surname', $_SESSION['order_data']['surname']);
             $stmt->bindParam(':phoneNr', $_SESSION['order_data']['phone']);
@@ -73,6 +72,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['checkout_stage'])) {
                     $cartItemStmt->bindParam(':userId', $_SESSION['user_id']);
                     $cartItemStmt->bindValue(':active', 1);
                     $cartItemStmt->execute();
+
+                    if ($cartItemStmt->rowCount() == 0) {
+                        $checkoutError = true;
+                    }
+
                     $cartItems = $cartItemStmt->fetchAll();
 
                     // Update user cart as not active anymore
@@ -86,7 +90,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['checkout_stage'])) {
                     // Create template for product ids
                     $inQuery = implode(',', array_fill(0, count($cart), '?'));
                     $productStmt = $conn->prepare('SELECT P.id, IFNULL((P.price - P.price * (D.discount_percent / 100)), P.price) AS price FROM product P LEFT JOIN `product_discount` D on D.product_id = P.id WHERE P.id IN ('.$inQuery.')');
-
                     // Bind product ids to prepared template
                     $i = 1;
                     foreach ($cart as $id => $quantity) {
@@ -94,16 +97,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['checkout_stage'])) {
                         $i++;
                     }
                     $productStmt->execute();
-                    // Get results from query
-                    $orderItems = $productStmt->fetchAll();
-                    $cartItems = [];
+                    if ($productStmt->rowCount() > 0) {
+                        // Get results from query
+                        $orderItems = $productStmt->fetchAll();
+                        $cartItems = [];
 
-                    // Create array of cart items from order items
-                    foreach ($orderItems as $item) {
-                        $cartItems[] = array('product_id' => $item['id'], 'quantity' => $cart[$item['id']], 'price' => $item['price']);
+                        // Create array of cart items from order items
+                        foreach ($orderItems as $item) {
+                            $cartItems[] = array('product_id' => $item['id'], 'quantity' => $cart[$item['id']], 'price' => $item['price']);
+                        }
+                        // Clear user cart by unsetting session variable
+                        unset($_SESSION['cart']);
+                    } else {
+                        $checkoutError = true;
                     }
-                    // Clear user cart by unsetting session variable
-                    unset($_SESSION['cart']);
+
                 }
 
                 // If there are any cart items prepare them to be inserted as order items
@@ -127,16 +135,84 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['checkout_stage'])) {
                     // Bind order id to order item insert
                     $orderItemStmt->bindParam(':orderId', $orderId);
                     $orderItemStmt->execute();
+                    if ($orderItemStmt->rowCount() == 0) {
+                        $checkoutError = true;
+                    }
                 }
+                if (!$checkoutError) {
+                    $checkoutStage = 3;
+                }
+            } else {
+                $checkoutError = true;
             }
-
-            $checkoutStage = 3;
         } else {
             $checkoutError = true;
         }
         // Unset order information from session
         unset($_SESSION['order_data']);
+        // Unset cart information from session
+        unset($_SESSION['cart_data']);
     }
+    if ($checkoutError) {
+        $formErrors['general'] = 'Something went wrong, try again later!';
+    }
+}
+
+// Form validation function
+function validateForm() {
+    $formErrors = array();
+
+    // Name validation
+    $formErrors = array_merge($formErrors, simpleValidation(255, 'billing_name', 'Name'));
+
+    // Surname validation
+    $formErrors = array_merge($formErrors, simpleValidation(255, 'billing_surname', 'Surname'));
+
+    // Email validation
+    $email = $_POST['billing_email'];
+    if (empty($email)) {
+        $formErrors['billing_email'] = 'Email is required!';
+    } else if (strlen($email) > 255) {
+        $formErrors['billing_email'] = 'Email cannot exceed 254 characters!';
+    } else if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $formErrors['billing_email'] = 'Email address is not valid!';
+    }
+
+    // Address validation
+    $formErrors = array_merge($formErrors, simpleValidation(255, 'billing_address', 'Address'));
+
+    // Phone number validation
+    $phoneNr = $_POST['billing_phone'];
+    // Checks if length is 1-31 characters and only digits
+    if (!preg_match('/^[0-9]{1,31}$/', $phoneNr)) {
+        $formErrors['billing_phone'] = 'Phone number must only be digits and cannot be less than 1 or more than 31 digits!';
+    }
+
+    // Country validation
+    $formErrors = array_merge($formErrors, simpleValidation(75, 'billing_country', 'Country'));
+
+    // City validation
+    $formErrors = array_merge($formErrors, simpleValidation(255, 'billing_city', 'City'));
+
+    // Shipping type validation
+    $shipType = $_POST['shipping_type'];
+    if (empty($shipType)) {
+        $formErrors['shipping_type'] = 'Shipping type is required!';
+    }
+
+    return $formErrors;
+}
+
+// Simple validation to only check if field is not empty and is not longer than max length
+function simpleValidation($maxLength, $fieldName, $fieldTitle) {
+    $formErrors = array();
+    $field = $_POST[$fieldName];
+    if (empty($field)) {
+        $formErrors[$fieldName] = $fieldTitle . ' is required!';
+    } else if (strlen($field) > $maxLength) {
+        $formErrors[$fieldName] = $fieldTitle . ' cannot exceed '. $maxLength .' characters!';
+    }
+    return $formErrors;
 }
 
 function clean_input($input) {
@@ -147,7 +223,7 @@ function clean_input($input) {
 }
 
 ?>
-<script type="text/javascript" src="./js/checkout.js?v=3"></script>
+<script type="text/javascript" src="./js/checkout.js?v=4"></script>
 <script type="text/javascript">
     $( document ).ready(function() {
         getCartSummary();
@@ -219,11 +295,11 @@ function clean_input($input) {
                                         <div class="text-muted fw-bold text-center">Payment amount: </div>
                                     </div>
                                     <div class="col d-flex align-items-center justify-content-center">
-                                        <div class="fw-bold text-muted text-center order-review-sum"><?=$_SESSION['cart_price']?> €</div>
+                                        <div class="fw-bold text-muted text-center order-review-sum"><?=$_SESSION['cart_data']['price']?> €</div>
                                     </div>
                                 </div>
                                 <div class="order-summary-row-confirm row my-2 mx-2">
-                                    <form action="checkout.php" method="POST">
+                                    <form action="checkout.php" method="POST" class="text-center">
                                         <input type="hidden" name="checkout_stage" value="2"/>
                                         <button type="submit" class="btn btn-primary checkout-continue fs-5 fw-bold">Place an order <i class="fas fa-check"></i></button>
                                     </form>
@@ -238,51 +314,51 @@ function clean_input($input) {
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label for="firstName" class="form-label">First name</label>
-                                    <input type="text" name="billing_name" value="<?=$_SESSION['user_data']['name'] ?? ''?>" class="form-control" id="firstName" placeholder="" required maxlength="255">
+                                    <input type="text" name="billing_name" value="<?=$_POST['billing_name'] ?? $_SESSION['user_data']['name'] ?? ''?>" class="form-control <?=isset($formErrors['billing_name']) ? 'is-invalid' : ''?>" id="firstName" placeholder="" required maxlength="255">
                                     <div class="invalid-feedback">
-                                        Valid first name is required.
+                                        <?=$formErrors['billing_name'] ?? ''?>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <label for="lastName" class="form-label">Last name</label>
-                                    <input type="text" name="billing_surname" value="<?=$_SESSION['user_data']['surname'] ?? ''?>" class="form-control" id="lastName" placeholder="" required maxlength="255">
+                                    <input type="text" name="billing_surname" value="<?=$_POST['billing_surname'] ?? $_SESSION['user_data']['surname'] ?? ''?>" class="form-control <?=isset($formErrors['billing_surname']) ? 'is-invalid' : ''?>" id="lastName" placeholder="" required maxlength="255">
                                     <div class="invalid-feedback">
-                                        Valid last name is required.
+                                        <?=$formErrors['billing_surname'] ?? ''?>
                                     </div>
                                 </div>
                                 <div class="col-12">
                                     <label for="email" class="form-label">Email</label>
-                                    <input type="email" name="billing_email" value="<?=$_SESSION['user_data']['email'] ?? ''?>" class="form-control" id="email" placeholder="you@example.com" required maxlength="255">
+                                    <input type="email" name="billing_email" value="<?=$_POST['billing_email'] ?? $_SESSION['user_data']['email'] ?? ''?>" class="form-control <?=isset($formErrors['billing_email']) ? 'is-invalid' : ''?>" id="email" placeholder="you@example.com" required maxlength="255">
                                     <div class="invalid-feedback">
-                                        Please enter a valid email address.
+                                        <?=$formErrors['billing_email'] ?? ''?>
                                     </div>
                                 </div>
                                 <div class="col-12">
                                     <label for="address" class="form-label">Address</label>
-                                    <input type="text" name="billing_address" class="form-control" id="address" maxlength="255" required>
+                                    <input type="text" name="billing_address" value="<?=$_POST['billing_address'] ?? ''?>" class="form-control  <?=isset($formErrors['billing_address']) ? 'is-invalid' : ''?>" id="address" maxlength="255" required>
                                     <div class="invalid-feedback">
-                                        Please enter your shipping address.
+                                        <?=$formErrors['billing_address'] ?? ''?>
                                     </div>
                                 </div>
                                 <div class="col-lg-4">
                                     <label for="country" class="form-label">Country</label>
-                                    <input type="text" name="billing_country" class="form-control" id="country" placeholder="" value="" required maxlength="255">
+                                    <input type="text" name="billing_country" value="<?=$_POST['billing_country'] ?? ''?>" class="form-control <?=isset($formErrors['billing_country']) ? 'is-invalid' : ''?>" id="country" placeholder="" required maxlength="255">
                                     <div class="invalid-feedback">
-                                        Valid country is required.
+                                        <?=$formErrors['billing_country'] ?? ''?>
                                     </div>
                                 </div>
                                 <div class="col-lg-4">
                                     <label for="city" class="form-label">City</label>
-                                    <input type="text" name="billing_city" class="form-control" id="city" placeholder="" value="" required maxlength="255">
+                                    <input type="text" name="billing_city" value="<?=$_POST['billing_city'] ?? ''?>" class="form-control <?=isset($formErrors['billing_city']) ? 'is-invalid' : ''?>" id="city" placeholder="" required maxlength="255">
                                     <div class="invalid-feedback">
-                                        Valid city is required.
+                                        <?=$formErrors['billing_city'] ?? ''?>
                                     </div>
                                 </div>
                                 <div class="col-lg-4">
                                     <label for="phone" class="form-label">Phone number</label>
-                                    <input type="tel" name="billing_phone" class="form-control" id="phone" placeholder="" required maxlength="31" minlength="1">
+                                    <input type="tel" name="billing_phone" value="<?=$_POST['billing_phone'] ?? ''?>" class="form-control <?=isset($formErrors['billing_phone']) ? 'is-invalid' : ''?>" id="phone" placeholder="" required maxlength="31" minlength="1">
                                     <div class="invalid-feedback">
-                                        Phone number required.
+                                        <?=$formErrors['billing_phone'] ?? ''?>
                                     </div>
                                 </div>
                             </div>
@@ -291,112 +367,35 @@ function clean_input($input) {
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <div class="form-check mb-2">
-                                        <input class="form-check-input" value="address" type="radio" name="shipping_type" id="shippingTypeAddress" checked>
+                                        <input class="form-check-input <?=isset($formErrors['shipping_type']) ? 'is-invalid' : ''?>" value="address" type="radio" name="shipping_type" id="shippingTypeAddress" checked>
                                         <label class="form-check-label" for="shippingTypeAddress">
                                             Recieve at address<br>
                                             <span class="text-muted">Shipping fees will not be included in order total and will be arranged after placing the order</span>
                                         </label>
+                                        <div class="invalid-feedback">
+                                            <?=$formErrors['shipping_type'] ?? ''?>
+                                        </div>
                                     </div>
                                     <?php
                                     if ($storeSettings['store_address'] !== NULL) {
                                     ?>
                                     <div class="form-check my-2">
-                                        <input class="form-check-input" value="store" type="radio" name="shipping_type" id="shippingTypeStore">
+                                        <input class="form-check-input <?=isset($formErrors['shipping_type']) ? 'is-invalid' : ''?>" value="store" type="radio" name="shipping_type" id="shippingTypeStore">
                                         <label class="form-check-label" for="shippingTypeStore">
                                             Recieve at store<br>
                                             <span class="text-muted">Store address: <?=$storeSettings['store_address']?></span>
                                         </label>
+                                        <div class="invalid-feedback">
+                                            <?=$formErrors['shipping_type'] ?? ''?>
+                                        </div>
                                     </div>
                                     <?php
                                     }
                                     ?>
                                 </div>
                             </div>
-                            
-                            <?php
-                            if ($paymentEnabled === true) {
-                            ?>
-                            <div><h4 class="d-none mt-5">Payment method</h4></div>
-                            <div class="d-none row g-3">
-                                <div class="col-12">
-                                    <div class="bg-white p-2 border rounded">
-                                        <div class="form-check">
-                                            <input disabled id="credit" value="Credit card" name="paymentMethod" type="radio" class="form-check-input">
-                                            <label class="form-check-label" for="credit">Credit card</label>
-                                            <div class="cc d-inline-block float-end">
-                                                <i class="fab fa-cc-visa fs-4"></i>
-                                                <i class="fa fa-cc-mastercard text-warning fs-4"></i>
-                                            </div>
-                                        </div>
-                                        
-                                    </div>
-                                </div>
-                                <div class="cc-options row my-3">
-                                    <div class="col-md-6">
-                                        <label for="cc-name" class="form-label">Name on card</label>
-                                        <input type="text" class="form-control" id="cc-name" placeholder="">
-                                        <small class="text-muted">Full name as displayed on card</small>
-                                        <div class="invalid-feedback">
-                                            Name on card is required
-                                        </div>
-                                    </div>
-            
-                                    <div class="col-md-6">
-                                        <label for="cc-number" class="form-label">Credit card number</label>
-                                        <input type="text" class="form-control" id="cc-number" placeholder="">
-                                        <div class="invalid-feedback">
-                                            Credit card number is required
-                                        </div>
-                                    </div>
-            
-                                    <div class="col-md-3">
-                                        <label for="cc-expiration" class="form-label">Expiration</label>
-                                        <input type="text" class="form-control" id="cc-expiration" placeholder=""
-                                               required="">
-                                        <div class="invalid-feedback">
-                                            Expiration date required
-                                        </div>
-                                    </div>
-            
-                                    <div class="col-md-3">
-                                        <label for="cc-cvv" class="form-label">CVV</label>
-                                        <input type="text" class="form-control" id="cc-cvv" placeholder=""">
-                                        <div class="invalid-feedback">
-                                            Security code required
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="col-12 mt-2">
-                                    <div class="bg-white p-2 border rounded">
-                                        <div class="form-check">
-                                            <input disabled id="paypal" value="Paypal" name="paymentMethod" type="radio" class="form-check-input">
-                                            <label class="form-check-label" for="paypal">Paypal</label>
-                                            <div class="cc d-inline-block float-end">
-                                                <i class="fab fa-cc-paypal fs-4 text-primary"></i>
-                                            </div>
-                                        </div>
-                                        
-                                    </div>
-                                </div>
-                                
-                                <div class="col-12 mt-2">
-                                    <div class="bg-white p-2 border rounded">
-                                        <div class="form-check">
-                                            <input id="invoice" name="paymentMethod" type="radio" value="Bank transfer" class="form-check-input" checked>
-                                            <label class="form-check-label" for="invoice">Bank transfer</label>
-                                            <div class="cc d-inline-block float-end">
-                                                <i class="fas fa-file-invoice-dollar fs-4 text-muted"></i>
-                                            </div>
-                                        </div>
-                                        
-                                    </div>
-                                </div>
-                            </div>
-                            <?php
-                            }
-                            ?>
                             <input type="hidden" name="checkout_stage" value="1"/>
+                            <div class="text-danger text-center <?=(isset($formErrors['general']) ? 'd-inline-block' : 'd-none')?>"><?=$formErrors['general'] ?? ''?></div>
                             <button type="submit" class="mt-4 btn btn-primary float-end checkout-continue fs-5 fw-bold">Continue <i class="fas fa-arrow-right"></i></button>
                         </form>
                         <?php

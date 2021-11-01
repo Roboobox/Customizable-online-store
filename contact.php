@@ -4,7 +4,7 @@ include_once 'head.php';
 include_once 'header.php'
 ?>
 <link href="css/contact.css?<?=time()?>" rel="stylesheet">
-<script src="js/contact.js?v=1" type="text/javascript"></script>
+<script src="js/contact.js?v=2" type="text/javascript"></script>
 <div class="container mb-5">
     <div class="row">
         <h2 class="w-100 mt-5 mb-4">Contact us</h2>

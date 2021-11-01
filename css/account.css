@@ -5,9 +5,5 @@ body {
 .container button {
   background-color: var(--primary-color);
 }
-.container .text-update-success {
-  width: fit-content;
-  background-color: #83cd4a;
-}
 
 /*# sourceMappingURL=account.css.map */

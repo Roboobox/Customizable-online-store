@@ -16,7 +16,6 @@ if (isset($_SESSION['user_id'])) {
     if ($stmt->rowCount() > 0) {
         $row = $stmt->fetch();
         $cartId = $row["id"];
-        $_SESSION['cart_id'] = $cartId;
         $cartSql = 'SELECT * FROM `cart_item` WHERE cart_id = :cartId';
         $stmt = $conn->prepare($cartSql);
         $stmt->bindParam(':cartId', $cartId);
@@ -155,8 +154,13 @@ else if (isset($_POST['cart_summary_html'])) {
                         <span class="d-inline-blokc">Total: </span>
                         <span class="d-inline-block fw-bold">' . number_format($totalCartPrice, 2, '.', '') . ' €</span>
                     </div>';
-    $_SESSION['cart_price'] = number_format($totalCartPrice, 2, '.', '');
     $responseArray['cart_summary'] = $cartShortHtml;
+}
+
+// Saving cart data in session
+$_SESSION['cart_data'] = array('item_count' => $cartItemCount, 'price' => number_format($totalCartPrice, 2, '.', ''));
+if (isset($cartId)) {
+    $_SESSION['cart_data']['cart_id'] = $cartId;
 }
 
 $responseArray['cart_items'] = $cartItems;

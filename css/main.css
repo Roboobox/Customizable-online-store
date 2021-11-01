@@ -33,6 +33,21 @@ img {
   border-color: var(--primary-color) !important;
 }
 
+.text-update-success {
+  width: fit-content;
+  background-color: var(--positive-color);
+}
+
+.form-check-input:checked {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+}
+
+.list-group-item.active {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+}
+
 .form-control:focus {
   border-color: inherit;
   -webkit-box-shadow: none;
@@ -59,7 +74,10 @@ img {
   z-index: 1000;
 }
 
-nav .active {
+nav {
+  display: block !important;
+}
+nav .active, nav .active span, nav .active i {
   color: var(--primary-color) !important;
 }
 nav .nav-link {
@@ -69,8 +87,13 @@ nav .navbar-brand {
   display: flex;
 }
 nav .navbar-brand img {
-  max-width: 350px;
-  max-height: 45px;
+  width: 100%;
+}
+nav .navbar-brand img.horizontal {
+  max-height: 50px;
+}
+nav .navbar-brand img.vertical {
+  max-height: 65px;
 }
 nav .mobile-sidebar-toggle {
   background: none;
@@ -80,7 +103,7 @@ nav .mobile-sidebar-toggle {
 }
 nav .search-container {
   position: relative;
-  width: 50%;
+  width: 90%;
 }
 nav .search-container input {
   padding: 9px 15px 9px 20px;
@@ -245,6 +268,11 @@ nav .cart-container:hover > .cart-icon-container {
   padding-left: 0;
   min-height: 77px;
   max-height: 77px;
+}
+.container .product-container .card .card-info-list .card-info-list-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .container .product-container .card .card-info-list li {
   font-size: 13px;
@@ -433,9 +461,6 @@ table .btn-add-cart {
 
 /* Tablet properties (md breakpoint) */
 @media only screen and (max-width: 768px) {
-  nav .navbar-brand img {
-    max-width: 200px;
-  }
   nav .cart-container {
     position: relative;
   }
@@ -460,11 +485,6 @@ table .btn-add-cart {
   }
 }
 /* Mobile phone properties (sm breakpoint) */
-@media only screen and (max-width: 410px) {
-  nav .navbar-brand img {
-    max-width: 124px;
-  }
-}
 /* md breakpoint */
 @media only screen and (max-width: 768px) {
   .product-row table .quantity-picker-input {

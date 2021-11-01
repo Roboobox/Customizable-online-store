@@ -8,13 +8,29 @@ body {
   overflow-y: auto;
 }
 
-.feedback {
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
 .no-transition {
   transition: none;
+}
+
+.feedback-hide {
+  opacity: 0;
+}
+
+.feedback-fade-in {
+  opacity: 1;
+  animation-name: fadeIn;
+  animation-iteration-count: 1;
+  animation-timing-function: ease-in;
+  animation-duration: 0.3s;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 /*# sourceMappingURL=admin.css.map */

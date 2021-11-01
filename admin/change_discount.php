@@ -9,6 +9,7 @@ if (!hash_equals($_SESSION['user_token'], $userToken) || $_SESSION['user_role'] 
 }
 
 if (isset($_GET['id']) || !empty($_GET['id'])) {
+    $formErrors = array();
     include_once "../conn.php";
     $stmt = $conn->prepare("SELECT is_active FROM `product_discount` WHERE id = :id");
     $stmt->bindParam(':id', $_GET['id']);
@@ -19,9 +20,16 @@ if (isset($_GET['id']) || !empty($_GET['id'])) {
         $stmt->bindValue(':isActive', !$result);
         $stmt->bindValue(':id', $_GET['id']);
         $stmt->execute();
-        header('Location: ../admin_dash.php?p=product_discounts');
-        exit;
+        if ($stmt->rowCount() == 0) {
+            $formErrors['general'] = 'Something went wrong, try again later!';
+        }
+    } else {
+        $formErrors['general'] = 'Something went wrong, try again later!';
+    }
+    $_SESSION['formErrors'] = $formErrors;
+    if (empty($formErrors)) {
+        $_SESSION['formSuccess'] = 'Status changed successfully!';
     }
 }
-header('location: index.php');
+header('Location: ../admin_dash.php?p=product_discounts');
 exit;

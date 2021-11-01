@@ -8,7 +8,6 @@ try {
     ) {
         $_SESSION['auth_email'] = $_POST['email'];
         include_once('conn.php');
-        // TODO : Throw exceptions for > 254 email, > 72 password
         $filteredEmail = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_SPECIAL_CHARS);
         $filteredPassword = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_SPECIAL_CHARS);
 
@@ -82,7 +81,7 @@ function syncSessionCartWithDB($conn): void
         } else {
             // If the cart doesn't exist, make a new cart for this user
             $stmt = $conn->prepare("INSERT INTO `cart` (is_active, user_id) VALUES (:cartActive, :userId)");
-            $stmt->bindValue(':cartActive', 1);
+            $stmt->bindValue(':cartActive', 1, PDO::PARAM_INT);
             $stmt->bindParam(':userId', $_SESSION['user_id']);
             $stmt->execute();
             // Get id of the new cart

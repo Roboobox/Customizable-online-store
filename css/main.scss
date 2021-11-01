@@ -30,6 +30,18 @@ img {
   background-color: var(--primary-color) !important;
   border-color: var(--primary-color) !important;
 }
+.text-update-success {
+  width: fit-content;
+  background-color: var(--positive-color);
+}
+.form-check-input:checked {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+}
+.list-group-item.active {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+}
 
 .form-control:focus {
   border-color: inherit;
@@ -59,7 +71,8 @@ img {
 }
 
 nav {
-  .active {
+  display: block !important;
+  .active, .active span, .active i {
     color: var(--primary-color) !important;
   }
 
@@ -71,8 +84,13 @@ nav {
     display: flex;
 
     img {
-      max-width: 350px;
-      max-height: 45px;
+      width: 100%;
+    }
+    img.horizontal {
+      max-height: 50px;
+    }
+    img.vertical {
+      max-height: 65px;
     }
   }
 
@@ -85,7 +103,7 @@ nav {
 
   .search-container {
     position: relative;
-    width: 50%;
+    width: 90%;
 
     input {
       padding: 9px 15px 9px 20px;
@@ -309,7 +327,11 @@ nav {
         padding-left: 0;
         min-height: 77px;
         max-height: 77px;
-
+        .card-info-list-text {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
         li {
           font-size: 13px;
           display: flex;
@@ -547,9 +569,7 @@ table .btn-add-cart {
 
   nav {
     .navbar-brand {
-      img {
-        max-width: 200px;
-      }
+
     }
 
     .cart-container {
@@ -589,9 +609,7 @@ table .btn-add-cart {
 @media only screen and (max-width: 410px) {
   nav {
     .navbar-brand {
-      img {
-        max-width: 124px;
-      }
+
     }
   }
 }

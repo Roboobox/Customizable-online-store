@@ -2,7 +2,7 @@
 include_once 'head.php';
 include_once 'header.php';
 ?>
-<script type="text/javascript" src="./js/cart.js?v=3"></script>
+<script type="text/javascript" src="./js/cart.js?v=4"></script>
 <script type="text/javascript">
     $( document ).ready(function() {
         getCart();
