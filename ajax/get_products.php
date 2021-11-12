@@ -7,7 +7,7 @@ const PRODUCT_TAB_NAME_DESCRIPTION = "description";
 const PRODUCT_TAB_NAME_SPECIFICATIONS = "specifications";
 
 // Small sql to only select search matching products
-$liteProductSql = "SELECT id FROM product P WHERE (P.name LIKE CONCAT('%', :productName, '%') OR :productName is NULL)";
+$liteProductSql = "SELECT id FROM `product` P WHERE (P.name LIKE CONCAT('%', :productName, '%') OR :productName is NULL) AND P.is_deleted = (0)";
 
 // Main product selection sql
 $productSql = "
@@ -15,7 +15,7 @@ $productSql = "
         LEFT JOIN product_inventory I ON P.inventory_id = I.id
         LEFT JOIN product_category C ON P.category_id = C.id
         LEFT JOIN product_discount D ON D.id = (SELECT MAX(PD.id) FROM product_discount PD WHERE PD.product_id = P.id AND PD.is_active = 1 AND (NOW() between PD.starting_at AND PD.ending_at))
-        WHERE (P.name LIKE CONCAT('%', :productName, '%') OR :productName is NULL)
+        WHERE (P.name LIKE CONCAT('%', :productName, '%') OR :productName is NULL) AND P.is_deleted = (0)
 ";
 
 $specFilters = array();
@@ -135,7 +135,7 @@ foreach ($productSpecs as $specName => $specValues) {
             }
             // Get returned product results with filter added
             $specSql = getSpecFilters($params)['sql'];
-            $productFilterSql = "SELECT COUNT(id) as Count FROM product P WHERE (P.name LIKE CONCAT('%', :productName, '%') OR :productName is NULL) AND P.id IN (SELECT product_id FROM product_specification WHERE label = \"".$specName."\" AND info = \"".$value. "\") " . $specSql;
+            $productFilterSql = "SELECT COUNT(id) as Count FROM product P WHERE (P.name LIKE CONCAT('%', :productName, '%') OR :productName is NULL) AND P.is_deleted = (0) AND P.id IN (SELECT product_id FROM product_specification WHERE label = \"".$specName."\" AND info = \"".$value. "\") " . $specSql;
             $productFilterStmt = $conn->prepare($productFilterSql);
             $cnt = 1;
             // Bind currently applied filter (specification) variables to statement

@@ -103,7 +103,7 @@ if (isset($_POST['cart_html'])) {
                     </div>
         ';
 
-            if ($productIdAndQuantity[$cartProduct->id] > $cartProduct->inventoryAmount) {
+            if ($productIdAndQuantity[$cartProduct->id] > $cartProduct->inventoryAmount || $cartProduct->isDeleted) {
                 $error = true;
                 $cartHtml .= '<p class="text-danger pt-2"><i class="fas fa-info-circle"></i> Selected quantity is not available</p>';
             }
@@ -161,6 +161,9 @@ else if (isset($_POST['cart_summary_html'])) {
 $_SESSION['cart_data'] = array('item_count' => $cartItemCount, 'price' => number_format($totalCartPrice, 2, '.', ''));
 if (isset($cartId)) {
     $_SESSION['cart_data']['cart_id'] = $cartId;
+}
+if (isset($productIdAndQuantity)) {
+    $_SESSION['cart_data']['contents'] = $productIdAndQuantity;
 }
 
 $responseArray['cart_items'] = $cartItems;

@@ -1,9 +1,10 @@
 <?php
 header('Content-type: application/json');
 session_start();
-
+// Check if user is logged in
 if (isset($_SESSION['user_id'])) {
     include_once "../conn.php";
+    // Update database cart item with new user selected quantity
     $stmt = $conn->prepare("UPDATE `cart_item` SET quantity = :productQuantity WHERE cart_id = (SELECT id FROM cart WHERE user_id = :userId AND is_active = :active) AND product_id = :productId");
     $stmt->bindParam(':productQuantity', $_POST['quantity']);
     $stmt->bindParam(':userId', $_SESSION['user_id']);
@@ -16,6 +17,7 @@ if (isset($_SESSION['user_id'])) {
     }
 }
 else if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
+    // Update session cart item with new user selected quantity
     $_SESSION['cart'][$_POST['product_id']] = $_POST['quantity'];
     echo json_encode(array('status' => 'success'));
     exit;

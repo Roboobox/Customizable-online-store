@@ -3,6 +3,7 @@ if (!isset($_SESSION)) {
     session_start();
 }
 include_once 'conn.php';
+// TODO : Add escape function for every output
 include_once 'get_settings.php';
 $cartItemCount = 0;
 $cartItems = "";

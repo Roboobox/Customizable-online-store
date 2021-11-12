@@ -1,10 +1,39 @@
 <?php
 // TODO : Reduce item inventory on order placed
 session_start();
-if ((!isset($_SESSION['cart_data']['cart_id']) && !isset($_SESSION['cart'])) || $_SESSION['cart_data']['item_count'] < 1) {
+if ((!isset($_SESSION['cart_data']['cart_id']) && !isset($_SESSION['cart'])) || $_SESSION['cart_data']['item_count'] < 1 || !isset($_SESSION['cart_data']['contents'])) {
     header('Location: cart.php');
     exit;
 }
+
+include_once "conn.php";
+// Check if cart products are not deleted or do not exceed inventory quantity
+// Get cart contents - product id and quantity
+$productIdAndQuantity = $_SESSION['cart_data']['contents'];
+// Prepare query to select cart products and inventory of products
+$productIdsInQuery = implode(',', array_fill(0, count($productIdAndQuantity), '?'));
+$productStmt = $conn->prepare("SELECT P.id, P.is_deleted, I.quantity FROM `product` P LEFT JOIN product_inventory I ON P.inventory_id = I.id WHERE P.id IN (" . $productIdsInQuery . ")");
+$i = 1;
+// Bind cart product ids to statement
+foreach ($productIdAndQuantity as $id => $quantity) {
+    $productStmt->bindValue(($i), $id);
+    $i++;
+}
+// Check if query successful
+if ($productStmt->execute()) {
+    // Check if any of cart products is deleted or exceeds inventory quantity
+    $cartProducts = $productStmt->fetchAll();
+    foreach ($cartProducts as $product) {
+        if ($product['is_deleted'] == 1 || $product['quantity'] < $productIdAndQuantity[$product['id']]) {
+            header('Location: cart.php');
+            exit;
+        }
+    }
+} else {
+    header('Location: cart.php');
+    exit;
+}
+
 include_once 'head.php';
 include_once 'header.php';
 
@@ -23,7 +52,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['checkout_stage'])) {
             }
         }
     } else if ($_POST['checkout_stage'] == 2 && isset($_SESSION['order_data'])) {
-        include_once "conn.php";
         // Save shipping information in database
         $stmt = $conn->prepare("INSERT INTO shipping (shipping_type, address, city, country) VALUES (:shippingType, :address, :city, :country)");
         $stmt->bindParam(':shippingType', $_SESSION['order_data']['type']);
@@ -67,7 +95,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['checkout_stage'])) {
                     // If user is logged in then get cart items and product data from users cart in database
                     $cartItemStmt = $conn->prepare("SELECT CI.product_id, CI.quantity, IFNULL((P.price - P.price * (D.discount_percent / 100)), P.price) AS price FROM cart_item CI
                                                 LEFT JOIN `product` P ON CI.product_id = P.id
-                                                LEFT JOIN `product_discount` D on D.product_id = CI.product_id
+                                                LEFT JOIN `product_discount` D ON D.id = (SELECT MAX(PD.id) FROM product_discount PD WHERE PD.product_id = P.id AND PD.is_active = 1 AND (NOW() between PD.starting_at AND PD.ending_at))
                                                 WHERE CI.cart_id = (SELECT id FROM cart WHERE user_id = :userId AND is_active = :active)");
                     $cartItemStmt->bindParam(':userId', $_SESSION['user_id']);
                     $cartItemStmt->bindValue(':active', 1);
@@ -78,7 +106,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['checkout_stage'])) {
                     }
 
                     $cartItems = $cartItemStmt->fetchAll();
-
                     // Update user cart as not active anymore
                     $cartStmt = $conn->prepare("UPDATE cart SET is_active = 0 WHERE user_id = :userId AND is_active = :active");
                     $cartStmt->bindParam(':userId', $_SESSION['user_id']);
@@ -89,7 +116,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['checkout_stage'])) {
                     $cart = $_SESSION['cart'];
                     // Create template for product ids
                     $inQuery = implode(',', array_fill(0, count($cart), '?'));
-                    $productStmt = $conn->prepare('SELECT P.id, IFNULL((P.price - P.price * (D.discount_percent / 100)), P.price) AS price FROM product P LEFT JOIN `product_discount` D on D.product_id = P.id WHERE P.id IN ('.$inQuery.')');
+                    $productStmt = $conn->prepare('SELECT P.id, IFNULL((P.price - P.price * (D.discount_percent / 100)), P.price) AS price FROM product P LEFT JOIN `product_discount` D ON D.id = (SELECT MAX(PD.id) FROM product_discount PD WHERE PD.product_id = P.id AND PD.is_active = 1 AND (NOW() between PD.starting_at AND PD.ending_at)) WHERE P.id IN ('.$inQuery.')');
                     // Bind product ids to prepared template
                     $i = 1;
                     foreach ($cart as $id => $quantity) {
@@ -356,7 +383,7 @@ function clean_input($input) {
                                 </div>
                                 <div class="col-lg-4">
                                     <label for="phone" class="form-label">Phone number</label>
-                                    <input type="tel" name="billing_phone" value="<?=$_POST['billing_phone'] ?? ''?>" class="form-control <?=isset($formErrors['billing_phone']) ? 'is-invalid' : ''?>" id="phone" placeholder="" required maxlength="31" minlength="1">
+                                    <input type="tel" name="billing_phone" value="<?=$_POST['billing_phone'] ?? $_SESSION['user_data']['phoneNr'] ?? ''?>" class="form-control <?=isset($formErrors['billing_phone']) ? 'is-invalid' : ''?>" id="phone" placeholder="" required maxlength="31" minlength="1">
                                     <div class="invalid-feedback">
                                         <?=$formErrors['billing_phone'] ?? ''?>
                                     </div>

@@ -18,6 +18,8 @@ class Product {
     public int $discountPercent;
     
     public string $photoPath;
+
+    public bool $isDeleted;
     
     public array $photos = array();
     
@@ -26,6 +28,7 @@ class Product {
     private float $priceFloat;
     
     private float $discountPriceFloat;
+
     
     public function getProductDataFromRow(array $row): void {
         $this->id = $row['id'];
@@ -35,9 +38,8 @@ class Product {
         $this->price = $row['price'];
         $this->category = $row['category'];
         $this->inventoryAmount = $row['quantity'];
-//        $this->photoPath = $row['photo_path'];
-//        $this->photos[] = $row['photo_path'];
         $this->discountPercent = $row['discount_percent'] ?? 0;
+        $this->isDeleted = $row['is_deleted'];
         
         $discountPrice = $this->priceFloat - ($this->priceFloat * ($this->discountPercent / 100));
         $this->discountPriceFloat = $discountPrice;

@@ -22,7 +22,7 @@ foreach ($orderRows as $row) {
 
 ?>
 <link href="css/purchase_history.css?<?=time()?>" rel="stylesheet">
-<div class="container">
+<div class="container mb-5">
     <div class="row">
         <h2 class="w-100 mt-5 mb-4">Order history</h2>
     </div>
@@ -31,20 +31,20 @@ foreach ($orderRows as $row) {
             <?php
             if (!empty($orders)) {
                 foreach ($orders as $order) {?>
-                    <div class="order border border-bottom-0 shadow-sm p-4 d-flex justify-content-between flex-wrap" data-id="<?=$order->id?>" onclick="location.href='order.php?id=<?=$order->id?>'">
-                        <div class="order-number order-info">
+                    <div class="order row row-cols-md-4 row-cols-2 bg-white border border-bottom-0 p-4 d-flex justify-content-between flex-wrap" data-id="<?=$order->id?>" onclick="location.href='order.php?id=<?=$order->id?>'">
+                        <div class="order-number order-info col">
                             <div class="text-muted order-label">Order number:</div>
                             <div class="fw-bold">#<?=$order->id?></div>
                         </div>
-                        <div class="order-info">
+                        <div class="order-info col">
                             <div class="text-muted order-label">Date:</div>
                             <div class="fw-bold text-muted"><?=$order->getCreatedAt()?></div>
                         </div>
-                        <div class="order-info">
+                        <div class="order-info col">
                             <div class="text-muted order-label">Total:</div>
                             <div class="fw-bold"><?=$order->total?> €</div>
                         </div>
-                        <div class="order-info">
+                        <div class="order-info col">
                             <div class="text-muted order-label">Status:</div>
                             <div class="order-status-container yellow-label"><?=$order->status?></div>
                         </div>

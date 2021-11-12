@@ -91,7 +91,6 @@ function syncSessionCartWithDB($conn): void
         }
 
         // Check if session cart item is in database
-        //$querySql = "";
         $insertQuerySql = "INSERT INTO `cart_item` (cart_id, product_id, quantity) VALUES ";
         $insertData = array();
         $insertCounter = 0;
@@ -104,13 +103,11 @@ function syncSessionCartWithDB($conn): void
                 $stmt->bindParam(':quantity', $quantity);
                 $stmt->bindParam(':userCartId', $userDbCartId);
                 $stmt->execute();
-                //$querySql .= "UPDATE `cart_item` SET quantity = quantity + " . (int)$quantity . " WHERE cart_id = " . (int)$userDbCartId . ";";
             } else {
                 // Creates batch insert template (inserts multiple rows with one query)
                 $insertQuerySql .= "(" . ":cartId" . $insertCounter . ", :productId" . $insertCounter . ", :quantity" . $insertCounter . "), ";
                 $insertData[$insertCounter] = array($userDbCartId, $product_id, $quantity);
                 $insertCounter++;
-                //$querySql .= "INSERT INTO `cart_item` (cart_id, product_id, quantity) VALUES(" . (int)$userDbCartId . "," . (int)$product_id . "," . (int)$quantity . ");";
             }
         }
         if ($insertCounter > 0) {
@@ -125,8 +122,5 @@ function syncSessionCartWithDB($conn): void
             }
             $stmt->execute();
         }
-//        if (!empty($querySql)) {
-//            $conn->query($querySql);
-//        }
     }
 }

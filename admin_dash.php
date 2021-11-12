@@ -25,13 +25,14 @@ if ($page === 'create_product' || $page === 'delete_product') {
         SELECT P.name, P.id, P.price, D.discount_percent, C.name AS category FROM `product` P
         LEFT JOIN product_category C ON P.category_id = C.id
         LEFT JOIN product_discount D ON D.id = (SELECT MAX(PD.id) FROM product_discount PD WHERE PD.product_id = P.id AND PD.is_active = 1 AND (NOW() between PD.starting_at AND PD.ending_at))
+        WHERE P.is_deleted = (0)
     ");
     $products = $productQuery->fetchAll();
 } else if ($page === 'contact_messages') {
     $messageQuery = $conn->query("SELECT * FROM contact_message ORDER BY ID DESC");
     $messages = $messageQuery->fetchAll();
 } else if ($page === 'store_settings') {
-    include_once "admin/edit_store_settings.php";
+    //include_once "admin/edit_store_settings.php";
     $settingsQuery = $conn->query("SELECT * FROM store_setting");
     $storeSettings = $settingsQuery->fetch();
 } else if ($page === 'store_orders') {
@@ -46,7 +47,7 @@ if ($page === 'create_product' || $page === 'delete_product') {
     }
 } else if ($page === 'product_discounts') {
     include_once "admin/create_discount.php";
-    $discountQuery = $conn->query("SELECT PD.*, P.name FROM `product_discount` PD LEFT JOIN `product` P ON P.id = PD.product_id  WHERE (NOW() between starting_at AND ending_at)");
+    $discountQuery = $conn->query("SELECT PD.*, P.name FROM `product_discount` PD LEFT JOIN `product` P ON P.id = PD.product_id  WHERE (NOW() between starting_at AND ending_at) ORDER BY PD.id DESC LIMIT 1");
     $discounts = $discountQuery->fetchAll();
     $productQuery = $conn->query("SELECT id, name FROM product");
     $products = $productQuery->fetchAll();
@@ -62,7 +63,7 @@ if (isset($_SESSION['formSuccess'])) {
 }
 
 ?>
-<script type="text/javascript" src="./js/admin.js?v=2"></script>
+<script type="text/javascript" src="./js/admin.js?v=3"></script>
 <link href="css/admin.css?<?=time()?>" rel="stylesheet">
 <div class="container mb-5">
     <div class="row">
@@ -90,28 +91,28 @@ if (isset($_SESSION['formSuccess'])) {
                     <form action="" method="post" enctype="multipart/form-data" novalidate>
                         <div class="mb-3">
                             <label for="inputProductName" class="form-label">Product name</label>
-                            <input name="prodName" value="<?=$_POST['prodName'] ?? ''?>" type="text" class="form-control <?=isset($formErrors['prodName']) ? 'is-invalid' : ''?>" id="inputProductName" required>
+                            <input name="prodName" value="<?=htmlspecialchars($_POST['prodName'] ?? '')?>" type="text" class="form-control <?=isset($formErrors['prodName']) ? 'is-invalid' : ''?>" id="inputProductName" required>
                             <div class="invalid-feedback">
                                 <?=$formErrors['prodName'] ?? ''?>
                             </div>
                         </div>
                         <div class="mb-3">
                             <label for="inputProductCategory" class="form-label">Product category</label>
-                            <input name="prodCat" value="<?=$_POST['prodCat'] ?? ''?>" type="text" class="form-control <?=isset($formErrors['prodCat']) ? 'is-invalid' : ''?>" id="inputProductCategory" required>
+                            <input name="prodCat" value="<?=htmlspecialchars($_POST['prodCat'] ?? '')?>" type="text" class="form-control <?=isset($formErrors['prodCat']) ? 'is-invalid' : ''?>" id="inputProductCategory" required>
                             <div class="invalid-feedback">
                                 <?=$formErrors['prodCat'] ?? ''?>
                             </div>
                         </div>
                         <div class="mb-3">
                             <label for="inputProductPrice" class="form-label">Product retail price</label>
-                            <input name="prodPrice" value="<?=$_POST['prodPrice'] ?? ''?>" type="number" class="form-control <?=isset($formErrors['prodPrice']) ? 'is-invalid' : ''?>" id="inputProductPrice" min="0.00" step="0.01" required />
+                            <input name="prodPrice" value="<?=htmlspecialchars($_POST['prodPrice'] ?? '')?>" type="number" class="form-control <?=isset($formErrors['prodPrice']) ? 'is-invalid' : ''?>" id="inputProductPrice" min="0.00" step="0.01" required />
                             <div class="invalid-feedback">
                                 <?=$formErrors['prodPrice'] ?? ''?>
                             </div>
                         </div>
                         <div class="mb-3">
                             <label for="inputProductDescription" class="form-label">Product description</label>
-                            <textarea name="prodDesc" class="form-control <?=isset($formErrors['prodDesc']) ? 'is-invalid' : ''?>" id="inputProductDescription" rows="3"><?=$_POST['prodDesc'] ?? ''?></textarea>
+                            <textarea name="prodDesc" class="form-control <?=isset($formErrors['prodDesc']) ? 'is-invalid' : ''?>" id="inputProductDescription" rows="3"><?=htmlspecialchars($_POST['prodDesc'] ?? '')?></textarea>
                             <div class="invalid-feedback">
                                 <?=$formErrors['prodDesc'] ?? ''?>
                             </div>
@@ -121,9 +122,9 @@ if (isset($_SESSION['formSuccess'])) {
                             <div class="row" id="inputProductSpecifications">
                                 <?php
                                 if (isset($_POST['specsLabel'], $_POST['specsValue'])) {
-                                    echo '<div class="col-6" id="inputProductSpecificationsLabel"><label for="inputProductSpecificationsLabel" class="form-label text-muted">Label</label>';
+                                    echo '<div class="col-6" id="inputProductSpecificationsLabel"><label for="inputProductSpecificationsLabel" class="form-label text-muted">Label</label><input name="labelCategory" type="text" value="Category" class="form-control my-2" disabled/>';
                                     $specCount = count($_POST['specsLabel']);
-                                    $specValueHtml = '<div class="col-6" id="inputProductSpecificationsValue"><label for="inputProductSpecificationsValue" class="form-label text-muted">Value</label>';
+                                    $specValueHtml = '<div class="col-6" id="inputProductSpecificationsValue"><label for="inputProductSpecificationsValue" class="form-label text-muted">Value</label><input name="valueCategory" type="text" value="'.htmlspecialchars($_POST['prodCat'] ?? '').'" class="form-control my-2" disabled/>';
                                     for ($i = 0; $i < $specCount; $i++) {
                                         if (!empty($_POST['specsLabel'][$i]) || !empty($_POST['specsValue'][$i])) {
                                             echo '<input name="specsLabel[]" value="'.$_POST['specsLabel'][$i].'" type="text" class="form-control my-2"/>';
@@ -137,10 +138,12 @@ if (isset($_SESSION['formSuccess'])) {
                                 ?>
                                 <div class="col-6" id="inputProductSpecificationsLabel">
                                     <label for="inputProductSpecificationsLabel" class="form-label text-muted">Label</label>
+                                    <input name="labelCategory" type="text" value="Category" class="form-control my-2" disabled/>
                                     <input name="specsLabel[]" type="text" class="form-control my-2"/>    
                                 </div>
                                 <div class="col-6" id="inputProductSpecificationsValue">
                                     <label for="inputProductSpecificationsValue" class="form-label text-muted">Value</label>
+                                    <input name="valueCategory" type="text" value="<?=htmlspecialchars($_POST['prodCat'] ?? '')?>" class="form-control my-2" disabled/>
                                     <input name="specsValue[]" type="text" class="form-control my-2"/>
                                 </div>
                                 <?php
@@ -214,7 +217,7 @@ if (isset($_SESSION['formSuccess'])) {
                     <h5>Store settings</h5>
                     <div class="px-3 py-1 mb-3 text-white text-update-success <?=(isset($formSuccessMsg) ? 'feedback-fade-in' : 'd-none')?>"><?=$formSuccessMsg ?? ''?></div>
                     <div style="width: fit-content" class="bg-danger px-3 py-1 mb-3 text-white <?=(isset($formErrors['general']) ? 'feedback-fade-in' : 'd-none')?>"><?=$formErrors['general'] ?? ''?></div>
-                    <form action="admin_dash.php?p=store_settings" method="post" enctype="multipart/form-data" novalidate>
+                    <form action="admin/edit_store_settings.php" method="post" enctype="multipart/form-data" novalidate>
                         <div class="mb-3">
                             <label for="inputStoreEmail" class="form-label">Store email address</label>
                             <input name="storeEmail" value="<?=$_POST['storeEmail'] ?? $storeSettings['store_email'] ?? ''?>" type="text" class="form-control <?=isset($formErrors['storeEmail']) ? 'is-invalid' : ''?>" id="inputStoreEmail">

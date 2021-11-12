@@ -1,11 +1,13 @@
 <?php
 // Check if user is admin
-//session_start();
-//if ($_SESSION['user_role'] != 1) {
-//    header('Location: index.php');
-//    exit;
-//}
+session_start();
+if ($_SESSION['user_role'] != 1) {
+    header('Location: index.php');
+    exit;
+}
+
 if (isset($_POST['storeEmail'], $_POST['storeAddress'], $_POST['storePhone'], $_POST['storePrimaryClr'], $_POST['storeSaleClr'], $_POST['storePositiveClr'], $_POST['storeAbout'])) {
+    include_once "../conn.php";
     $formErrors = validateForm();
     // If there are no form errors after validation
     if (empty($formErrors)) {
@@ -43,11 +45,11 @@ if (isset($_POST['storeEmail'], $_POST['storeAddress'], $_POST['storePhone'], $_
                 $logoPath = $logoQuery->fetch()['logo_path'];
                 // Delete previous logo except if it is default logo
                 if ($logoPath != 'logo.png') {
-                    $filePath = 'test_images/' . $logoPath;
+                    $filePath = '../test_images/' . $logoPath;
                     unlink($filePath);
                 }
                 // Determine new logo path and save it
-                $dir = 'test_images/';
+                $dir = '../test_images/';
                 $newLogoFilename = 'logo_' . md5($_FILES['storeLogo']['name']) . '.' . pathinfo($_FILES['storeLogo']['name'], PATHINFO_EXTENSION);
                 $newLogoPath = $dir . $newLogoFilename;
                 // If file saved successfully, save path to database
@@ -64,6 +66,7 @@ if (isset($_POST['storeEmail'], $_POST['storeAddress'], $_POST['storePhone'], $_
             $formErrors['general'] = 'Something went wrong, try again later!';
         }
     }
+    // Return validation results
     $_SESSION['formErrors'] = $formErrors;
     if (empty($formErrors)) {
         $_SESSION['formSuccess'] = 'Store settings saved successfully!';
@@ -110,5 +113,6 @@ function validateForm(): array {
 
     return $formErrors;
 }
-//header('location: ../admin_dash.php');
-//exit;
+
+header('location: ../admin_dash.php?p=store_settings');
+exit;

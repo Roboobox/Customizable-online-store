@@ -1,30 +1,31 @@
 <?php
-
-// Check if user is admin
-//session_start();
-//if ($_SESSION['user_role'] != 1) {
-//    header('Location: index.php');
-//    exit;
-//}
-
+// Check if post variables set
 if (isset($_POST['prodName'], $_POST['prodCat'], $_POST['prodPrice'], $_FILES['prodImg'], $_POST['prodInventory'])) {
     $formErrors = validateForm();
     // If there are no form errors after validation
     if (empty($formErrors)) {
-        //include_once "conn.php";
-        $error = false;
+        // Remove whitespaces from start and end of strings
+        $_POST['prodName'] = trim($_POST['prodName']);
+        $_POST['prodCat'] = trim($_POST['prodCat']);
+        if (isset($_POST['prodDesc']) && !empty($_POST['prodDesc'])) {
+            $_POST['prodDesc'] = trim($_POST['prodDesc']);
+        }
         $conn->beginTransaction();
         try {
+            // Get user product category and check if it already exists
             $catSql = "SELECT name, id FROM product_category WHERE name = :catName";
             $stmt = $conn->prepare($catSql);
             $stmt->bindParam(':catName', $_POST['prodCat']);
             $stmt->execute();
             if ($stmt->rowCount() > 0) {
+                // If category exists then get its ID
                 $catId = $stmt->fetch()['id'];
             } else {
+                // If category does not exist, then insert a new category
                 $stmt = $conn->prepare("INSERT INTO product_category (name) VALUES (:prodCat)");
                 $stmt->bindParam(':prodCat', $_POST['prodCat']);
                 $stmt->execute();
+                // If query successful then get ID of inserted category
                 if ($stmt->rowCount() > 0) {
                     $catId = $conn->lastInsertId();
                 } else {
@@ -32,19 +33,22 @@ if (isset($_POST['prodName'], $_POST['prodCat'], $_POST['prodPrice'], $_FILES['p
                 }
             }
 
+            // Insert product inventory amount
             $stmt = $conn->prepare("INSERT INTO product_inventory (quantity) VALUES (:prodInventory)");
             $stmt->bindParam(':prodInventory', $_POST['prodInventory']);
             $stmt->execute();
+            // If query successful then get inserted inventory's ID
             if ($stmt->rowCount() > 0) {
                 $invId = $conn->lastInsertId();
             } else {
                 throw new Exception('Failed to get inventory');
             }
 
-            //INSERT INTO product (name, description, price, category_id, inventory_id) VALUES ('Sbox Screen Cleaner 200ml CS-02', NULL, 3.20, 1, 1);
+            // Prepare product insertion SQL and bind values
             $prodSql = "INSERT INTO product (name, description, price, category_id, inventory_id) VALUES (:prodName, :prodDesc, :prodPrice, :prodCatId, :prodInvId)";
             $stmt = $conn->prepare($prodSql);
             $stmt->bindParam(':prodName', $_POST['prodName']);
+            // Bind description if it is set
             if (isset($_POST['prodDesc']) && !empty($_POST['prodDesc'])) {
                 $stmt->bindParam(':prodDesc', $_POST['prodDesc']);
             } else {
@@ -54,35 +58,45 @@ if (isset($_POST['prodName'], $_POST['prodCat'], $_POST['prodPrice'], $_FILES['p
             $stmt->bindParam(':prodCatId', $catId);
             $stmt->bindParam(':prodInvId', $invId);
             $stmt->execute();
+            // If product inserted successfully, start product image and specification insertion
             if ($stmt->rowCount() > 0) {
+                // Get inserted product ID
                 $prodId = $conn->lastInsertId();
-                // Product images
+
+                // Get user uploaded photos
                 $uploadedImages = $_FILES['prodImg'];
                 $uploadedCount = count($uploadedImages['name']);
                 for ($i = 0; $i < $uploadedCount; $i++) {
+                    // Get new filename and path for photo
                     $dir = "test_images/";
                     $fileName = $prodId . '_' . $i . '_' . md5($uploadedImages["name"][$i]) . '.' . pathinfo($uploadedImages["name"][$i], PATHINFO_EXTENSION);
                     $path = $dir . $fileName;
+                    // If photo successfully saved then insert path into database
                     if (move_uploaded_file($uploadedImages['tmp_name'][$i], $path)) {
                         $stmt = $conn->prepare("INSERT INTO product_photo (photo_path, product_id) VALUES (:fileName, :prodId)");
                         $stmt->bindParam(':fileName', $fileName);
                         $stmt->bindParam(':prodId', $prodId);
-                        $stmt->execute();
+                        if (!$stmt->execute()) {
+                            throw new Exception('Failed to save image');
+                        }
                     } else {
                         throw new Exception('Failed to save image');
                     }
                 }
 
-                // Product specs
+                // Check if product specifications set and are not empty
                 if (isset($_POST['specsLabel'], $_POST['specsValue']) && !empty($_POST['specsLabel']) && !empty($_POST['specsValue'])) {
                     $specCount = count($_POST['specsLabel']);
                     for ($i = 0; $i < $specCount; $i++) {
+                        // If both specification values are set then insert them into database
                         if (!empty($_POST['specsLabel'][$i]) && !empty($_POST['specsValue'][$i])) {
                             $stmt = $conn->prepare("INSERT INTO product_specification (label, info, product_id) VALUES (:specLabel, :specValue, :prodId)");
-                            $stmt->bindParam(':specLabel', $_POST['specsLabel'][$i]);
-                            $stmt->bindParam(':specValue', $_POST['specsValue'][$i]);
+                            $stmt->bindValue(':specLabel', trim($_POST['specsLabel'][$i]));
+                            $stmt->bindValue(':specValue', trim($_POST['specsValue'][$i]));
                             $stmt->bindParam(':prodId', $prodId);
-                            $stmt->execute();
+                            if (!$stmt->execute()) {
+                                throw new Exception('Failed to insert specification');
+                            }
                         }
                     }
                 }
@@ -95,6 +109,7 @@ if (isset($_POST['prodName'], $_POST['prodCat'], $_POST['prodPrice'], $_FILES['p
             $conn->rollBack();
         }
     }
+    // Return validation results
     $_SESSION['formErrors'] = $formErrors;
     if (empty($formErrors)) {
         $_SESSION['formSuccess'] = 'Product created successfully!';
@@ -128,16 +143,18 @@ function validateForm() {
     }
 
     // Product specification validation
-    $specCount = count($_POST['specsLabel']);
-    for ($i = 0; $i < $specCount; $i++) {
-        if (!empty($_POST['specsLabel'][$i]) || !empty($_POST['specsValue'][$i])) {
-            if (empty($_POST['specsLabel'][$i]) || empty($_POST['specsValue'][$i])) {
-                $formErrors['specs'] = 'Product specification must have both values filled!';
-                break;
-            }
-            if (strlen($_POST['specsLabel'][$i]) > 50 || strlen($_POST['specsValue'][$i]) > 100) {
-                $formErrors['specs'] = 'Product specification label cannot exceed 50 characters and value cannot exceed 100 characters!';
-                break;
+    if (isset($_POST['specsLabel'])) {
+        $specCount = count($_POST['specsLabel']);
+        for ($i = 0; $i < $specCount; $i++) {
+            if (!empty($_POST['specsLabel'][$i]) || !empty($_POST['specsValue'][$i])) {
+                if (empty($_POST['specsLabel'][$i]) || empty($_POST['specsValue'][$i])) {
+                    $formErrors['specs'] = 'Product specification must have both values filled!';
+                    break;
+                }
+                if (strlen($_POST['specsLabel'][$i]) > 50 || strlen($_POST['specsValue'][$i]) > 100) {
+                    $formErrors['specs'] = 'Product specification label cannot exceed 50 characters and value cannot exceed 100 characters!';
+                    break;
+                }
             }
         }
     }

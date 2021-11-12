@@ -1,22 +1,16 @@
 <?php
-
-// Check if user is admin
-//session_start();
-//if ($_SESSION['user_role'] != 1) {
-//    header('Location: index.php');
-//    exit;
-//}
-
+// Check if post variables set
 if (isset($_POST['discountProduct'], $_POST['discountPercent'], $_POST['discountStart'], $_POST['discountEnd'])) {
     $formErrors = validateForm();
+    // If there are no form errors after validation
     if (empty($formErrors)) {
-        //include_once "../conn.php";
-        // Check if product exists
-        $stmtProduct = $conn->prepare("SELECT id FROM product WHERE id = :productId");
+        // Select product with provided product id and check if it exists
+        $stmtProduct = $conn->prepare("SELECT id FROM product WHERE id = :productId AND is_deleted = (0)");
         $stmtProduct->bindParam(':productId', $_POST['discountProduct']);
         $stmtProduct->execute();
 
         if ($stmtProduct->rowCount() == 1) {
+            // Insert a new discount with user values
             $stmt = $conn->prepare('INSERT INTO product_discount (discount_percent, is_active, starting_at, ending_at, product_id) VALUES (:percent, :active, :start, :end, :productId)');
             $stmt->bindParam(':percent', $_POST['discountPercent']);
             $stmt->bindValue(':active', 1, PDO::PARAM_INT);
@@ -24,6 +18,7 @@ if (isset($_POST['discountProduct'], $_POST['discountPercent'], $_POST['discount
             $stmt->bindParam(':end', $_POST['discountEnd']);
             $stmt->bindParam(':productId', $_POST['discountProduct']);
             $stmt->execute();
+            // Check if query successful
             if ($stmt->rowCount() == 0) {
                 $formErrors['general'] = 'Something went wrong, try again later!';
             }
@@ -31,12 +26,11 @@ if (isset($_POST['discountProduct'], $_POST['discountPercent'], $_POST['discount
             $formErrors['general'] = 'Something went wrong, try again later!';
         }
     }
+    // Return validation results
     $_SESSION['formErrors'] = $formErrors;
     if (empty($formErrors)) {
         $_SESSION['formSuccess'] = 'Discount added successfully!';
     }
-//    header('Location: ../admin_dash.php?p=product_discounts');
-//    exit;
 }
 
 function validateForm(): array {

@@ -29,7 +29,7 @@ $orderItemStmt->bindParam(':orderId', $order->id);
 $orderItemStmt->execute();
 $orderItems = $orderItemStmt->fetchAll();
 
-if ($stmt->rowCount() != 1 || ($_SESSION['user_id'] != $order->id && $_SESSION['user_role'] != 1)) {
+if ($stmt->rowCount() != 1 || ($_SESSION['user_id'] != $order->userId && $_SESSION['user_role'] != 1)) {
     header('Location: index.php');
     exit;
 }
