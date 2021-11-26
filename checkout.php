@@ -147,9 +147,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['checkout_stage'])) {
                     $i = 0;
                     // Creating insert template for order items
                     foreach ($cartItems as $item) {
+                        // Save prepared values
                         if ($i != 0) $orderItemSql .= ",";
                         $orderItemSql .= "(:prodId".$i.", :price".$i.", :quantity".$i.", :orderId)";
                         $preparedValues[$i] = array($item['product_id'], $item['quantity'], $item['price']);
+                        // Update product inventory quantity
+                        $productQuantityStmt = $conn->prepare("UPDATE `product_inventory` SET quantity = (quantity - :itemQuantity) WHERE id = :itemProductId");
+                        $productQuantityStmt->bindParam(':itemQuantity', $item['quantity'], PDO::PARAM_INT);
+                        $productQuantityStmt->bindParam(':itemProductId', $item['product_id']);
+                        $productQuantityStmt->execute();
                         $i++;
                     }
                     $orderItemStmt = $conn->prepare($orderItemSql);
@@ -322,7 +328,7 @@ function clean_input($input) {
                                         <div class="text-muted fw-bold text-center">Payment amount: </div>
                                     </div>
                                     <div class="col d-flex align-items-center justify-content-center">
-                                        <div class="fw-bold text-muted text-center order-review-sum"><?=$_SESSION['cart_data']['price']?> €</div>
+                                        <div class="fw-bold text-muted text-center order-review-sum"><?=htmlspecialchars($_SESSION['cart_data']['price'])?> €</div>
                                     </div>
                                 </div>
                                 <div class="order-summary-row-confirm row my-2 mx-2">
@@ -340,49 +346,49 @@ function clean_input($input) {
                             <div><h4 class="mt-md-2 mt-4">Billing details</h4></div>
                             <div class="row g-3">
                                 <div class="col-md-6">
-                                    <label for="firstName" class="form-label">First name</label>
-                                    <input type="text" name="billing_name" value="<?=$_POST['billing_name'] ?? $_SESSION['user_data']['name'] ?? ''?>" class="form-control <?=isset($formErrors['billing_name']) ? 'is-invalid' : ''?>" id="firstName" placeholder="" required maxlength="255">
+                                    <label for="firstName" class="form-label">First name *</label>
+                                    <input type="text" name="billing_name" value="<?=htmlspecialchars($_POST['billing_name'] ?? $_SESSION['user_data']['name'] ?? '')?>" class="form-control <?=isset($formErrors['billing_name']) ? 'is-invalid' : ''?>" id="firstName" placeholder="" required maxlength="255">
                                     <div class="invalid-feedback">
                                         <?=$formErrors['billing_name'] ?? ''?>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
-                                    <label for="lastName" class="form-label">Last name</label>
-                                    <input type="text" name="billing_surname" value="<?=$_POST['billing_surname'] ?? $_SESSION['user_data']['surname'] ?? ''?>" class="form-control <?=isset($formErrors['billing_surname']) ? 'is-invalid' : ''?>" id="lastName" placeholder="" required maxlength="255">
+                                    <label for="lastName" class="form-label">Last name *</label>
+                                    <input type="text" name="billing_surname" value="<?=htmlspecialchars($_POST['billing_surname'] ?? $_SESSION['user_data']['surname'] ?? '')?>" class="form-control <?=isset($formErrors['billing_surname']) ? 'is-invalid' : ''?>" id="lastName" placeholder="" required maxlength="255">
                                     <div class="invalid-feedback">
                                         <?=$formErrors['billing_surname'] ?? ''?>
                                     </div>
                                 </div>
                                 <div class="col-12">
-                                    <label for="email" class="form-label">Email</label>
-                                    <input type="email" name="billing_email" value="<?=$_POST['billing_email'] ?? $_SESSION['user_data']['email'] ?? ''?>" class="form-control <?=isset($formErrors['billing_email']) ? 'is-invalid' : ''?>" id="email" placeholder="you@example.com" required maxlength="255">
+                                    <label for="email" class="form-label">Email *</label>
+                                    <input type="email" name="billing_email" value="<?=htmlspecialchars($_POST['billing_email'] ?? $_SESSION['user_data']['email'] ?? '')?>" class="form-control <?=isset($formErrors['billing_email']) ? 'is-invalid' : ''?>" id="email" placeholder="you@example.com" required maxlength="255">
                                     <div class="invalid-feedback">
                                         <?=$formErrors['billing_email'] ?? ''?>
                                     </div>
                                 </div>
                                 <div class="col-12">
-                                    <label for="address" class="form-label">Address</label>
-                                    <input type="text" name="billing_address" value="<?=$_POST['billing_address'] ?? ''?>" class="form-control  <?=isset($formErrors['billing_address']) ? 'is-invalid' : ''?>" id="address" maxlength="255" required>
+                                    <label for="address" class="form-label">Address *</label>
+                                    <input type="text" name="billing_address" value="<?=htmlspecialchars($_POST['billing_address'] ?? '')?>" class="form-control  <?=isset($formErrors['billing_address']) ? 'is-invalid' : ''?>" id="address" maxlength="255" required>
                                     <div class="invalid-feedback">
                                         <?=$formErrors['billing_address'] ?? ''?>
                                     </div>
                                 </div>
                                 <div class="col-lg-4">
-                                    <label for="country" class="form-label">Country</label>
-                                    <input type="text" name="billing_country" value="<?=$_POST['billing_country'] ?? ''?>" class="form-control <?=isset($formErrors['billing_country']) ? 'is-invalid' : ''?>" id="country" placeholder="" required maxlength="255">
+                                    <label for="country" class="form-label">Country *</label>
+                                    <input type="text" name="billing_country" value="<?=htmlspecialchars($_POST['billing_country'] ?? '')?>" class="form-control <?=isset($formErrors['billing_country']) ? 'is-invalid' : ''?>" id="country" placeholder="" required maxlength="255">
                                     <div class="invalid-feedback">
                                         <?=$formErrors['billing_country'] ?? ''?>
                                     </div>
                                 </div>
                                 <div class="col-lg-4">
-                                    <label for="city" class="form-label">City</label>
+                                    <label for="city" class="form-label">City *</label>
                                     <input type="text" name="billing_city" value="<?=$_POST['billing_city'] ?? ''?>" class="form-control <?=isset($formErrors['billing_city']) ? 'is-invalid' : ''?>" id="city" placeholder="" required maxlength="255">
                                     <div class="invalid-feedback">
                                         <?=$formErrors['billing_city'] ?? ''?>
                                     </div>
                                 </div>
                                 <div class="col-lg-4">
-                                    <label for="phone" class="form-label">Phone number</label>
+                                    <label for="phone" class="form-label">Phone number *</label>
                                     <input type="tel" name="billing_phone" value="<?=$_POST['billing_phone'] ?? $_SESSION['user_data']['phoneNr'] ?? ''?>" class="form-control <?=isset($formErrors['billing_phone']) ? 'is-invalid' : ''?>" id="phone" placeholder="" required maxlength="31" minlength="1">
                                     <div class="invalid-feedback">
                                         <?=$formErrors['billing_phone'] ?? ''?>
@@ -390,7 +396,7 @@ function clean_input($input) {
                                 </div>
                             </div>
                             
-                            <div><h4 class="mt-4">Shipping details</h4></div>
+                            <div><h4 class="mt-4">Shipping details *</h4></div>
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <div class="form-check mb-2">

@@ -31,22 +31,22 @@ foreach ($orderRows as $row) {
             <?php
             if (!empty($orders)) {
                 foreach ($orders as $order) {?>
-                    <div class="order row row-cols-md-4 row-cols-2 bg-white border border-bottom-0 p-4 d-flex justify-content-between flex-wrap" data-id="<?=$order->id?>" onclick="location.href='order.php?id=<?=$order->id?>'">
+                    <div class="order row row-cols-md-4 row-cols-2 bg-white border border-bottom-0 p-4 d-flex justify-content-between flex-wrap" data-id="<?=htmlspecialchars($order->id)?>" onclick="location.href='order.php?id=<?=htmlspecialchars($order->id)?>'">
                         <div class="order-number order-info col">
                             <div class="text-muted order-label">Order number:</div>
-                            <div class="fw-bold">#<?=$order->id?></div>
+                            <div class="fw-bold">#<?=htmlspecialchars($order->id)?></div>
                         </div>
                         <div class="order-info col">
                             <div class="text-muted order-label">Date:</div>
-                            <div class="fw-bold text-muted"><?=$order->getCreatedAt()?></div>
+                            <div class="fw-bold text-muted"><?=htmlspecialchars($order->getCreatedAt())?></div>
                         </div>
                         <div class="order-info col">
                             <div class="text-muted order-label">Total:</div>
-                            <div class="fw-bold"><?=$order->total?> €</div>
+                            <div class="fw-bold"><?=htmlspecialchars($order->total)?> €</div>
                         </div>
                         <div class="order-info col">
                             <div class="text-muted order-label">Status:</div>
-                            <div class="order-status-container yellow-label"><?=$order->status?></div>
+                            <div class="order-status-container yellow-label"><?=htmlspecialchars($order->status)?></div>
                         </div>
                     </div>
             <?php

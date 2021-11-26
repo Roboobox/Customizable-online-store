@@ -220,15 +220,15 @@ function generateSpecificationHtml(array $productSpecs, array $specProductCount)
             }
             $specHtml .= '
             <div class="filter-option">
-            <h6 class="mb-3">' . $specName . '</h6>
+            <h6 class="mb-3">' . htmlspecialchars($specName) . '</h6>
             <div class="filter-buttons">';
 
             foreach ($specValues as $value) {
                 $specHtml .= '
                 <div class="form-check">
-                <input '.((!isset($specProductCount[$specName][$value]) || $specProductCount[$specName][$value] == 0) ? 'disabled' : '').' class="form-check-input filter-input-button" type="checkbox" value="' . $value . '" name="fs_' . $specName . '" id="check' . $specName . $value . '">
-                <label class="form-check-label" for="check' . $specName . $value . '">
-                    ' . $value . '<span class="text-muted">' . ((!isset($specProductCount[$specName][$value]) || $specProductCount[$specName][$value] == 0) ? '' : ' ('.$specProductCount[$specName][$value].')') . '</span>
+                <input '.((!isset($specProductCount[$specName][$value]) || $specProductCount[$specName][$value] == 0) ? 'disabled' : '').' class="form-check-input filter-input-button" type="checkbox" value="' . htmlspecialchars($value) . '" name="fs_' . htmlspecialchars($specName) . '" id="check' . htmlspecialchars($specName) . htmlspecialchars($value) . '">
+                <label class="form-check-label" for="check' . htmlspecialchars($specName) . htmlspecialchars($value) . '">
+                    ' . htmlspecialchars($value) . '<span class="text-muted">' . ((!isset($specProductCount[$specName][$value]) || $specProductCount[$specName][$value] == 0) ? '' : ' ('.htmlspecialchars($specProductCount[$specName][$value]).')') . '</span>
                 </label>
                 </div>';
             }
@@ -262,24 +262,24 @@ function generateProductRVHtml(array $products): string
                         <th></th>
                     </tr>';
         foreach ($products as $product) {
-            $productsHtml .= '<tr class="product mb-2 mb-sm-3 px-1 px-sm-2" data-product-id="' . $product->id . '">';
-            $productsHtml .= '<td class="row-view-image" onclick="objShop.openProductModal(' . $product->id . ')" data-bs-toggle="modal" data-bs-target="#productModal"><i class="far fa-eye"></i></td>';
-            $productsHtml .= '<td class="text-start d-sm-table-cell d-none">' . $product->category . '</td>';
-            $productsHtml .= '<td class="text-start">' . $product->name . '</td>';
-            $productsHtml .= '<td class="retail-price-text fs-6 '.(($product->discountPercent > 0) ? "row-price-sale" : "").'"><b>' . $product->discountPrice . ' €</b></td>';
+            $productsHtml .= '<tr class="product mb-2 mb-sm-3 px-1 px-sm-2" data-product-id="' . htmlspecialchars($product->id) . '">';
+            $productsHtml .= '<td class="row-view-image" onclick="objShop.openProductModal(' . htmlspecialchars($product->id) . ')" data-bs-toggle="modal" data-bs-target="#productModal"><i class="far fa-eye"></i></td>';
+            $productsHtml .= '<td class="text-start d-sm-table-cell d-none">' . htmlspecialchars($product->category) . '</td>';
+            $productsHtml .= '<td class="text-start">' . htmlspecialchars($product->name) . '</td>';
+            $productsHtml .= '<td class="retail-price-text fs-6 '.(($product->discountPercent > 0) ? "row-price-sale" : "").'"><b>' . htmlspecialchars($product->discountPrice) . ' €</b></td>';
             $productsHtml .= '<td>';
             $productsHtml .= '<div class="quantity-container">';
             $productsHtml .= '<div class="quantity-picker-container">';
-            $productsHtml .= '<div onclick="objShop.changeQuantityPickerAmount(0,' . $product->id . ')" class="minus d-md-flex d-none"><i class="fas fa-minus"></i></div>';
-            $productsHtml .= '<input class="form-control quantity-picker-input" data-product-id="' . $product->id . '" name="cart_quantity" type="number" value="1" min="1" onchange="objShop.validateQuantity(' . $product->id . ')">';
-            $productsHtml .= '<input type="hidden" value="' . $product->id . '" name="cart_product_id">';
-            $productsHtml .= '<div onclick="objShop.changeQuantityPickerAmount(1,' . $product->id . ')" class="plus d-md-flex d-none"><i class="fas fa-plus"></i></div>';
-            $productsHtml .= '</div><div class="total-price-text d-block d-sm-none">' . $product->discountPrice . ' €</td>';
+            $productsHtml .= '<div onclick="objShop.changeQuantityPickerAmount(0,' . htmlspecialchars($product->id) . ')" class="minus d-md-flex d-none"><i class="fas fa-minus"></i></div>';
+            $productsHtml .= '<input class="form-control quantity-picker-input" data-product-id="' . htmlspecialchars($product->id) . '" name="cart_quantity" type="number" value="1" min="1" onchange="objShop.validateQuantity(' . htmlspecialchars($product->id) . ')">';
+            $productsHtml .= '<input type="hidden" value="' . htmlspecialchars($product->id) . '" name="cart_product_id">';
+            $productsHtml .= '<div onclick="objShop.changeQuantityPickerAmount(1,' . htmlspecialchars($product->id) . ')" class="plus d-md-flex d-none"><i class="fas fa-plus"></i></div>';
+            $productsHtml .= '</div><div class="total-price-text d-block d-sm-none">' . htmlspecialchars($product->discountPrice()) . ' €</td>';
             $productsHtml .= '</div>';
             $productsHtml .= '</td>';
-            $productsHtml .= '<td class="total-price-text fs-6 d-sm-table-cell d-none">' . $product->discountPrice . ' €</td>';
+            $productsHtml .= '<td class="total-price-text fs-6 d-sm-table-cell d-none">' . htmlspecialchars($product->discountPrice) . ' €</td>';
             $productsHtml .= '<td>
-                            <button class="btn-add-cart" data-product="' . $product->id . '">
+                            <button class="btn-add-cart" data-product="' . htmlspecialchars($product->id) . '">
                                 <span class="btn-text">
                                     <span class="d-md-flex d-none justify-content-center">Add to cart</span>
                                     <span class="d-md-none d-flex"><i class="fas fa-shopping-cart"></i></span>
@@ -311,23 +311,23 @@ function generateProductHtml(array $products): string
     if (!empty($products)) {
         foreach ($products as $product) {
             $productsHtml .= '<div class="col mb-2 mb-sm-3 px-1 px-sm-2">';
-            $productsHtml .= '<div class="product card product-card h-100 shadow-sm" data-product-id="' . $product->id . '">';
-            $productsHtml .= '<div class="card-image-container p-1 p-sm-3 border-bottom" onclick="objShop.openProductModal(' . $product->id . ')" data-bs-toggle="modal" data-bs-target="#productModal">';
-            $productsHtml .= '<img src="test_images/' . $product->photoPath . '" class="card-img-top" alt="Product photo">';
+            $productsHtml .= '<div class="product card product-card h-100 shadow-sm" data-product-id="' . htmlspecialchars($product->id) . '">';
+            $productsHtml .= '<div class="card-image-container p-1 p-sm-3 border-bottom" onclick="objShop.openProductModal(' . htmlspecialchars($product->id) . ')" data-bs-toggle="modal" data-bs-target="#productModal">';
+            $productsHtml .= '<img src="test_images/' . htmlspecialchars($product->photoPath) . '" class="card-img-top" alt="Product photo">';
             $productsHtml .= '</div>';
             $productsHtml .= '<div class="card-body">';
-            $productsHtml .= '<span class="card-subtitle fw-light text-uppercase text-muted">' . $product->category . '</span>';
-            $productsHtml .= '<h5 class="card-title mb-3" onclick="objShop.openProductModal(' . $product->id . ')" data-bs-toggle="modal" data-bs-target="#productModal">' . $product->name . '</h5>';
+            $productsHtml .= '<span class="card-subtitle fw-light text-uppercase text-muted">' . htmlspecialchars($product->category) . '</span>';
+            $productsHtml .= '<h5 class="card-title mb-3" onclick="objShop.openProductModal(' . htmlspecialchars($product->id) . ')" data-bs-toggle="modal" data-bs-target="#productModal">' . htmlspecialchars($product->name) . '</h5>';
             $productsHtml .= '<div class="card-text text-muted d-none d-sm-block">';
             $productsHtml .= '<ul class="card-info-list">';
 
             $specCounter = 1;
             foreach ($product->specifications as $label => $name) {
                 if ($specCounter > 3) {
-                    $productsHtml .= '<li><a class="link-secondary show-more" data-bs-toggle="modal" data-bs-target="#productModal" onclick="objShop.openProductModal(' . $product->id . ', \'' . PRODUCT_TAB_NAME_SPECIFICATIONS . '\')">Show more...</a on></li>';
+                    $productsHtml .= '<li><a class="link-secondary show-more" data-bs-toggle="modal" data-bs-target="#productModal" onclick="objShop.openProductModal(' . htmlspecialchars($product->id) . ', \'' . PRODUCT_TAB_NAME_SPECIFICATIONS . '\')">Show more...</a on></li>';
                     break;
                 }
-                $productsHtml .= '<li><i class="far fa-circle"></i><span style="white-space: nowrap">' . $label . '</span><span class="card-info-list-text fw-bold ms-1 text-body">' . $name . '</span></li>';
+                $productsHtml .= '<li><i class="far fa-circle"></i><span style="white-space: nowrap">' . htmlspecialchars($label) . '</span><span class="card-info-list-text fw-bold ms-1 text-body">' . htmlspecialchars($name) . '</span></li>';
                 $specCounter++;
             }
 
@@ -340,28 +340,28 @@ function generateProductHtml(array $products): string
             $productsHtml .= '<div class="quantity-container mb-2">';
             $productsHtml .= '<div class="text-muted mb-1">Qty</div>';
             $productsHtml .= '<div class="quantity-picker-container">';
-            $productsHtml .= '<div onclick="objShop.changeQuantityPickerAmount(0,' . $product->id . ')" class="minus"><i class="fas fa-minus"></i></div>';
-            $productsHtml .= '<input class="form-control quantity-picker-input" data-product-id="' . $product->id . '" name="cart_quantity" type="number" value="1" min="1" onchange="objShop.validateQuantity(' . $product->id . ')">';
-            $productsHtml .= '<input type="hidden" value="' . $product->id . '" name="cart_product_id">';
-            $productsHtml .= '<div onclick="objShop.changeQuantityPickerAmount(1,' . $product->id . ')" class="plus"><i class="fas fa-plus"></i></div>';
+            $productsHtml .= '<div onclick="objShop.changeQuantityPickerAmount(0,' . htmlspecialchars($product->id) . ')" class="minus"><i class="fas fa-minus"></i></div>';
+            $productsHtml .= '<input class="form-control quantity-picker-input" data-product-id="' . htmlspecialchars($product->id) . '" name="cart_quantity" type="number" value="1" min="1" onchange="objShop.validateQuantity(' . htmlspecialchars($product->id) . ')">';
+            $productsHtml .= '<input type="hidden" value="' . htmlspecialchars($product->id) . '" name="cart_product_id">';
+            $productsHtml .= '<div onclick="objShop.changeQuantityPickerAmount(1,' . htmlspecialchars($product->id) . ')" class="plus"><i class="fas fa-plus"></i></div>';
             $productsHtml .= '</div></div>';
 
             $productsHtml .= '<div class="retail-price-container">';
             $productsHtml .= '<span class="retail-price-label text-muted">Price</span>';
             if ($product->discountPercent > 0) {
-                $productsHtml .= '<span class="retail-price-text fw-bold price-sale">' . $product->price . ' €</span>';
-                $productsHtml .= '<span class="retail-price-text fw-bold price-new">' . $product->discountPrice . ' €</span>';
+                $productsHtml .= '<span class="retail-price-text fw-bold price-sale">' . htmlspecialchars($product->price) . ' €</span>';
+                $productsHtml .= '<span class="retail-price-text fw-bold price-new">' . htmlspecialchars($product->discountPrice) . ' €</span>';
             } else {
-                $productsHtml .= '<span class="retail-price-text fw-bold">' . $product->price . ' €</span>';
+                $productsHtml .= '<span class="retail-price-text fw-bold">' . htmlspecialchars($product->price) . ' €</span>';
             }
             $productsHtml .= '</div>';
             $productsHtml .= '</div>';
             $productsHtml .= '<div class="col">';
 
-            $productsHtml .= '<button class="btn-add-cart mb-2" data-product="' . $product->id . '"><span class="btn-text">Add to cart</span><i class="fas fa-spinner fa-spin loading"></i></button>';
+            $productsHtml .= '<button class="btn-add-cart mb-2" data-product="' . htmlspecialchars($product->id) . '"><span class="btn-text">Add to cart</span><i class="fas fa-spinner fa-spin loading"></i></button>';
             $productsHtml .= '<div class="total-price">
                           <div class="text-muted">Total</div>
-                          <span class="fw-bold total-price-text">' . $product->discountPrice . ' €</span>
+                          <span class="fw-bold total-price-text">' . htmlspecialchars($product->discountPrice) . ' €</span>
                           </div>';
 
             $productsHtml .= '</div>';

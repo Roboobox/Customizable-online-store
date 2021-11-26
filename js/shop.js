@@ -14,8 +14,8 @@ function ShopScript()
     this.intNavFixedGap = 130;
     
     var self = this;
+    // Window scroll event for navigation bar fixation
     $(window).scroll( function(){
-        //console.log(window.scrollY, self.intBotNavBarHeight, self.intTopNavBarHeight + self.intBotNavBarHeight + self.intNavFixedGap, self.intNavFixedGap)
         if(window.scrollY > self.intTopNavBarHeight + self.intBotNavBarHeight + self.intNavFixedGap){
             self.jqBotNavbar.addClass('nav-fixed');
             self.jqBotNavbar.css('visibility', 'visible');
@@ -67,19 +67,24 @@ function ShopScript()
         
         this.productSearch(false);
     }
-    
+
+    // Initializes search events
     this.initSearch = function(tabName)
     {
+        // Checks if user is in product tab and checks if more than 3 cjaracters typed in search bar
         if (tabName == 'Products') {
             $('#search').keyup(function () {
                 if ($('#search').val().length > 3) {
+                    // Makes product search
                     self.productSearch(true);
                 }
             });
         }
-        
+        // Search button clicked event
         $('#search_button').click(function(){
+            // Checks if search phrase not empty
             if ($('#search').val().length > 1) {
+                // If user is not in product tab then redirect to product page and mnake product search then
                 if (tabName != 'Products') {
                     let searchValue = $('#search').val();
                     window.location.href = "index.php?q=" + searchValue;
@@ -364,7 +369,7 @@ function ShopScript()
         $('#authModal .form-signup-option').html('<span>Already a member? <a onclick="objShop.showLoginForm(); objShop.hideAuthModalErrors();" class="link-primary">Log in now</a></span>');
         $('#authModal .form-submit button').text('Sign up');
         $('#authModal .modal-title').text('Sign up');
-        $('#login_form').attr('action', 'register_new.php');
+        $('#login_form').attr('action', 'register.php');
     }
     
     this.showLoginForm = function()

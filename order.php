@@ -54,12 +54,12 @@ include_once 'header.php'
     <div class="row border order-info mb-5">
         <div class="order-top px-4 py-3 bg-light d-flex">
             <div class="d-inline-block">
-            <h4 class="w-100">Order #<?=$order->id?></h4>
+            <h4 class="w-100">Order #<?=htmlspecialchars($order->id)?></h4>
             <div class="text-muted d-inline-block">Date:</div>
-            <div class="fw-bold text-muted d-inline-block"><?=$order->getCreatedAt()?></div>
+            <div class="fw-bold text-muted d-inline-block"><?=htmlspecialchars($order->getCreatedAt())?></div>
             </div>
             <div class="d-inline-block ms-3">
-            <div class="order-status-container yellow-label"><?=$order->status?></div>
+            <div class="order-status-container yellow-label"><?=htmlspecialchars($order->status)?></div>
             </div>
         </div>
         <div class="order-content p-4">
@@ -70,15 +70,15 @@ include_once 'header.php'
                     </div>
                     <ul class="list-unstyled">
                         <li>
-                            <?=$order->getFullName() ?? ''?>
+                            <?=htmlspecialchars($order->getFullName() ?? '')?>
                         </li>
                         <li>
-                            <?=$order->email ?? ''?>
+                            <?=htmlspecialchars($order->email ?? '')?>
                         </li>
                         <li>
-                            <?=$order->phoneNr ?? ''?>
+                            <?=htmlspecialchars($order->phoneNr ?? '')?>
                         </li>
-                        <li>Total: <?=$order->total?> €</li>
+                        <li>Total: <?=htmlspecialchars($order->total)?> €</li>
                     </ul>
                 </div>
                 <div class="order-delivery-info order-info-container">
@@ -87,16 +87,16 @@ include_once 'header.php'
                     </div>
                     <ul class="list-unstyled">
                         <li>
-                            <?=$shipping->country?>
+                            <?=htmlspecialchars($shipping->country)?>
                         </li>
                         <li>
-                            <?=$shipping->city?>
+                            <?=htmlspecialchars($shipping->city)?>
                         </li>
                         <li>
-                            <?=$shipping->address?>
+                            <?=htmlspecialchars($shipping->address)?>
                         </li>
                         <li>
-                            Recieve at <?=$shipping->type?>
+                            Recieve at <?=htmlspecialchars($shipping->type)?>
                         </li>
                     </ul>
                 </div>
@@ -108,23 +108,23 @@ include_once 'header.php'
                 foreach ($orderItems as $item) {?>
                     <div class="order-item bg-light p-3 row border-bottom">
                         <div class="col-md text-center text-md-start my-1 my-md-0">
-                            <img src="test_images/<?=$item['photo_path']?>" height="90" width="90" class="d-inline-block" alt="Product image">
+                            <img src="test_images/<?=htmlspecialchars($item['photo_path'])?>" height="90" width="90" class="d-inline-block" alt="Product image">
                         </div>
                         <div class="d-inline-block px-3 product-title col-md my-1 my-md-0 w-100">
                             <span class="text-muted">Product:</span>
-                            <div class="d-inline-block d-md-block"><?=$item['name']?></div>
+                            <div class="d-inline-block d-md-block"><?=htmlspecialchars($item['name'])?></div>
                         </div>
                         <div class="d-inline-block px-3 col-md my-1 my-md-0">
                             <span class="text-muted">Quantity:</span>
-                            <div class="d-inline-block d-md-block"><?=$item['quantity']?> pcs.</div>
+                            <div class="d-inline-block d-md-block"><?=htmlspecialchars($item['quantity'])?> pcs.</div>
                         </div>
                         <div class="d-inline-block px-3 col-md my-1 my-md-0">
                             <span class="text-muted">Price per piece:</span>
-                            <div class="d-inline-block d-md-block"><?=$item['product_price']?> €</div>
+                            <div class="d-inline-block d-md-block"><?=htmlspecialchars($item['product_price'])?> €</div>
                         </div>
                         <div class="d-inline-block px-3 col-md my-1 my-md-0">
                             <span class="text-muted">Total:</span>
-                            <div class="fw-bold d-inline-block d-md-block"><?=number_format((float)($item['product_price'] * $item['quantity']), 2, '.', '')?> €</div>
+                            <div class="fw-bold d-inline-block d-md-block"><?=htmlspecialchars(number_format((float)($item['product_price'] * $item['quantity']), 2, '.', ''))?> €</div>
                         </div>
                     </div>
                     <?php
@@ -133,7 +133,7 @@ include_once 'header.php'
             </div>
             <div class="text-end my-2 fs-5 me-3">
                 <div>Total:</div>
-                <div class="fw-bold"><?=$order->total?> €</div>
+                <div class="fw-bold"><?=htmlspecialchars($order->total)?> €</div>
             </div>
         </div>
     </div>

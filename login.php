@@ -8,16 +8,16 @@ try {
     ) {
         $_SESSION['auth_email'] = $_POST['email'];
         include_once('conn.php');
-        $filteredEmail = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_SPECIAL_CHARS);
-        $filteredPassword = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_SPECIAL_CHARS);
+        $userEmail = $_POST['email'];
+        $userPassword = $_POST['password'];
 
         $stmt = $conn->prepare("SELECT * FROM `user` WHERE email=:email");
-        $stmt->bindParam(':email', $filteredEmail);
+        $stmt->bindParam(':email', $userEmail);
         $stmt->execute();
 
         if ($stmt->rowCount() === 1) {
             $row = $stmt->fetch();
-            if (password_verify($filteredPassword, $row['password_hash'])) {
+            if (password_verify($userPassword, $row['password_hash'])) {
                     session_regenerate_id();
                     $userToken = bin2hex(random_bytes(16));
 

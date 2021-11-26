@@ -88,7 +88,7 @@ if (isset($_SESSION['sign_error']) || (isset($_SESSION['sign_success']) && isset
                         </button>
 
                         <a class="navbar-brand text-white m-auto" href="index.php">
-                            <img src="test_images/<?=$storeSettings['logo_path']?>" class="<?=$storeSettings['logo_orientation'] ?? 'horizontal'?>" alt="logo">
+                            <img src="test_images/<?=htmlspecialchars($storeSettings['logo_path'])?>" class="<?=$storeSettings['logo_orientation'] ?? 'horizontal'?>" alt="logo">
                         </a>
                     </div>
 
@@ -180,7 +180,7 @@ if (isset($_SESSION['sign_error']) || (isset($_SESSION['sign_success']) && isset
     <div class="mobile-sidebar-container">
         <div class="d-flex flex-column flex-shrink-0 p-3 bg-dark text-white mobile-sidebar-content" style="width: 280px;">
             <a href="/" class="d-flex align-items-center mb-1 mb-md-0 me-md-auto text-white text-decoration-none">
-                <img class="me-2 img-fluid" src="test_images/<?=$storeSettings['logo_path']?>" alt="logo" height="50">
+                <img class="me-2 img-fluid" src="test_images/<?=htmlspecialchars($storeSettings['logo_path'])?>" alt="logo" height="50">
             </a>
             <hr>
             <ul class="nav nav-pills flex-column mb-auto">
@@ -250,16 +250,16 @@ if (isset($_SESSION['sign_error']) || (isset($_SESSION['sign_success']) && isset
                     
                         <input type="hidden" name="redirect" value="<?php echo $_SERVER['REQUEST_URI']; ?>" />
                     
-                        <label for="formEmail" class="form-label">Email address</label>
+                        <label for="formEmail" class="form-label">Email address *</label>
                         <div class="input-group input-group-lg mb-3">
                             <span class="input-group-text text-secondary"><i class="fas fa-envelope"></i></span>
-                            <input type="email" class="form-control <?php echo (isset($formError['email'])) ? 'is-invalid' : '' ?>" id="formEmail" name="email" value="<?=$_SESSION['auth_email'] ?? ''?>">
+                            <input type="email" class="form-control <?php echo (isset($formError['email'])) ? 'is-invalid' : '' ?>" id="formEmail" name="email" value="<?=htmlspecialchars($_SESSION['auth_email'] ?? '')?>">
                             <div class="invalid-feedback">
                                 <?php echo (isset($formError['email'])) ? htmlspecialchars($formError['email']) : ''?>
                             </div>
                         </div>
                         
-                        <label for="formPass" class="form-label">Password</label>
+                        <label for="formPass" class="form-label">Password *</label>
                         <div class="input-group input-group-lg mb-2 ">
                             <span class="input-group-text text-secondary"><i class="fas fa-unlock-alt"></i></span>
                             <input type="password" class="form-control <?php echo (isset($formError['password'])) ? 'is-invalid' : '' ?>" id="formPass" name="password">
@@ -268,11 +268,7 @@ if (isset($_SESSION['sign_error']) || (isset($_SESSION['sign_success']) && isset
                             </div>
                         </div>
                         
-                        <div class="mb-1 forgot-pass-container">
-                            <a class="link-primary text-decoration-none">Forgot Password?</a>
-                        </div>
-                        
-                        <label for="formPassRepeat" class="form-label d-none form-pass-repeat mt-2">Confirm Password</label>
+                        <label for="formPassRepeat" class="form-label d-none form-pass-repeat mt-2">Confirm Password *</label>
                         <div class="input-group input-group-lg mb-4 d-none form-pass-repeat">
                             <span class="input-group-text text-secondary"><i class="fas fa-unlock-alt"></i></span>
                             <input type="password" class="form-control" id="formPassRepeat" name="c_password">

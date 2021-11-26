@@ -65,21 +65,25 @@ function setEvents() {
 }
 
 function updateCart(productId, productQuantity) {
-    showLoadingOverlay();
-    $.ajax({
-        url: "ajax/update_cart.php",
-        method: "POST",
-        dataType: "json",
-        data: {'product_id' : productId, 'quantity' : productQuantity},
-        success: function (data) {
-            if (data['status'] === 'success') {
-                getCart();
+    if (productQuantity > 0) {
+        showLoadingOverlay();
+        $.ajax({
+            url: "ajax/update_cart.php",
+            method: "POST",
+            dataType: "json",
+            data: {'product_id' : productId, 'quantity' : productQuantity},
+            success: function (data) {
+                if (data['status'] === 'success') {
+                    getCart();
+                } else {
+                    hideLoadingOverlay();
+                }
+            },
+            error: function () {
+                hideLoadingOverlay();
             }
-        },
-        error: function () {
-            hideLoadingOverlay();
-        }
-    });
+        });
+    }
 }
 
 function deleteCartItem(productId, userToken, cartId) {

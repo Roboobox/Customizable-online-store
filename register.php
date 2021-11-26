@@ -10,33 +10,33 @@ try {
         $_SESSION['auth_email'] = $_POST['email'];
         include_once('conn.php');
 
-        $filteredEmail = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_SPECIAL_CHARS);
-        $filteredPassword = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_SPECIAL_CHARS);
-        $filteredConfirmPassword = filter_input(INPUT_POST, 'c_password', FILTER_SANITIZE_SPECIAL_CHARS);
+        $userEmail = $_POST['email'];
+        $userPassword = $_POST['password'];
+        $userConfirmPassword = $_POST['c_password'];
 
-        if (strlen($filteredEmail) > 254) {
+        if (strlen($userEmail) > 254) {
             throw new Exception("Email address cannot exceed 254 characters!", 1);
         }
-        if (!filter_var($filteredEmail, FILTER_VALIDATE_EMAIL)) {
+        if (!filter_var($userEmail, FILTER_VALIDATE_EMAIL)) {
             throw new Exception("Email address is not valid!", 1);
         }
-        else if (empty($filteredPassword) || strlen($filteredPassword) < 8) {
+        else if (empty($userPassword) || strlen($userPassword) < 8) {
             throw new Exception("Password must be at least 8 characters!", 2);
         }
-        else if (strlen($filteredPassword) > 72) {
+        else if (strlen($userPassword) > 72) {
             throw new Exception("Password cannot exceed 72 characters!", 2);
         }
 
         $stmt = $conn->prepare("SELECT * FROM `user` WHERE email=:email");
-        $stmt->bindParam(':email', $filteredEmail);
+        $stmt->bindParam(':email', $userEmail);
         $stmt->execute();
 
         if ($stmt->rowCount() === 0) {
-            if ($filteredPassword === $filteredConfirmPassword) {
-                $hashedPassword = password_hash($filteredPassword, PASSWORD_DEFAULT);
+            if ($userPassword === $userConfirmPassword) {
+                $hashedPassword = password_hash($userPassword, PASSWORD_DEFAULT);
 
                 $stmt = $conn->prepare("INSERT INTO `user` (`email`, `password_hash`, `role_id`) VALUES (:email, :passwordHash, :roleId)");
-                $stmt->bindParam(':email', $filteredEmail);
+                $stmt->bindParam(':email', $userEmail);
                 $stmt->bindParam(':passwordHash', $hashedPassword);
                 $stmt->bindValue(':roleId', 0);
                 $queryResult = $stmt->execute();

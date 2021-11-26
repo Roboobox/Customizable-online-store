@@ -124,7 +124,7 @@ function getFormValidationErrors($conn) {
 <div class="container mb-5">
     <div class="row">
         <h2 class="w-100 mt-5 <?=(isset($formSuccessMsg) ? '' : 'mb-4')?>">Account settings</h2>
-        <div class="ms-2 px-3 py-1 mb-3 text-white text-update-success <?=(isset($formSuccessMsg) ? '' : 'd-none')?>"><?=$formSuccessMsg ?? ''?></div>
+        <div class="ms-2 px-3 py-1 mb-3 text-white text-update-success <?=(isset($formSuccessMsg) ? '' : 'd-none')?>"><?=htmlspecialchars($formSuccessMsg ?? '')?></div>
     </div>
     <div class="row">
         <div class="col p-4 bg-white shadow-sm border">
@@ -134,22 +134,22 @@ function getFormValidationErrors($conn) {
                     <div class="col-md-4 pe-sm-3">
                         <label for="firstName" class="form-label fw-bold">First name</label>
                         <input type="text" required name="account_name" value="<?=htmlspecialchars($_POST['account_name'] ?? $_SESSION['user_data']['name'] ?? '')?>" class="form-control <?=(isset($formErrors['account_name']) ? 'is-invalid' : '')?>" id="firstName" placeholder="John">
-                        <div class="invalid-feedback"><?=$formErrors['account_name'] ?? ''?></div>
+                        <div class="invalid-feedback"><?=htmlspecialchars($formErrors['account_name'] ?? '')?></div>
                     </div>
                     <div class="col-md-4 pe-sm-3 ps-sm-3">
                         <label for="lastName" class="form-label fw-bold">Last name</label>
                         <input type="text" required name="account_surname" value="<?=htmlspecialchars($_POST['account_surname'] ?? $_SESSION['user_data']['surname'] ?? '')?>" class="form-control <?=(isset($formErrors['account_surname']) ? 'is-invalid' : '')?>" id="lastName" placeholder="Smith">
-                        <div class="invalid-feedback"><?=$formErrors['account_surname'] ?? ''?></div>
+                        <div class="invalid-feedback"><?=htmlspecialchars($formErrors['account_surname'] ?? '')?></div>
                     </div>
                     <div class="col-md-4 ps-sm-3">
-                        <label for="email" class="form-label fw-bold">Email</label>
+                        <label for="email" class="form-label fw-bold">Email *</label>
                         <input disabled type="email" name="account_email" value="<?=htmlspecialchars($_SESSION['user_data']['email'] ?? '')?>" class="form-control" id="email" required maxlength="255">
                         <div class="invalid-feedback"></div>
                     </div>
                     <div class="col-md-4 pe-sm-3">
                         <label for="phoneNr" class="form-label fw-bold">Phone number</label>
                         <input type="tel" pattern="[0-9]+" name="account_phonenr" title="Numbers only" value="<?=htmlspecialchars($_POST['account_phonenr'] ?? $_SESSION['user_data']['phoneNr'] ?? '')?>" class="form-control  <?=(isset($formErrors['account_phonenr']) ? 'is-invalid' : '')?>" id="phoneNr" maxlength="255">
-                        <div class="invalid-feedback"><?=$formErrors['account_phonenr'] ?? ''?></div>
+                        <div class="invalid-feedback"><?=htmlspecialchars($formErrors['account_phonenr'] ?? '')?></div>
                     </div>
                     <div class="row g-3 mt-1">
                         <div class="col-md-4 pe-sm-3 d-flex align-items-end">
@@ -162,19 +162,19 @@ function getFormValidationErrors($conn) {
             <form method="POST" action="account.php">
                 <div class="row g-3 mt-3 pb-4 border-bottom text-muted">
                     <div class="col-md-4 pe-sm-3">
-                        <label for="passwordOld" class="form-label fw-bold">Current password</label>
+                        <label for="passwordOld" class="form-label fw-bold">Current password *</label>
                         <input type="password" name="account_passold" class="form-control <?=(isset($formErrors['account_passold']) ? 'is-invalid' : '')?>" id="passwordOld" placeholder="" value="" required maxlength="255">
-                        <div class="invalid-feedback"><?=$formErrors['account_passold'] ?? ''?></div>
+                        <div class="invalid-feedback"><?=htmlspecialchars($formErrors['account_passold'] ?? '')?></div>
                     </div>
                     <div class="col-md-4 pe-sm-3">
-                        <label for="passwordNew" class="form-label fw-bold">New password</label>
+                        <label for="passwordNew" class="form-label fw-bold">New password *</label>
                         <input type="password" name="account_passnew" class="form-control <?=(isset($formErrors['account_passnew']) ? 'is-invalid' : '')?>" id="passwordNew" placeholder="" value="" required maxlength="255">
-                        <div class="invalid-feedback"><?=$formErrors['account_passnew'] ?? ''?></div>
+                        <div class="invalid-feedback"><?=htmlspecialchars($formErrors['account_passnew'] ?? '')?></div>
                     </div>
                     <div class="col-md-4 pe-sm-3">
-                        <label for="passwordConfirm" class="form-label fw-bold">Confirm password</label>
+                        <label for="passwordConfirm" class="form-label fw-bold">Confirm password *</label>
                         <input type="password" name="account_passconfirm" class="form-control <?=(isset($formErrors['account_passconfirm']) ? 'is-invalid' : '')?>" id="passwordConfirm" placeholder="" value="" required maxlength="255">
-                        <div class="invalid-feedback"><?=$formErrors['account_passconfirm'] ?? ''?></div>
+                        <div class="invalid-feedback"><?=htmlspecialchars($formErrors['account_passconfirm'] ?? '')?></div>
                     </div>
                     <div class="col-md-4 d-flex align-items-end">
                         <button type="submit" id="submit_password" class="btn w-50 btn-primary fw-bold">Change</button>
@@ -185,22 +185,22 @@ function getFormValidationErrors($conn) {
             <form method="POST" action="account.php">
                 <div class="row g-3 mt-3 pb-4 text-muted">
                     <div class="col-md-4 pe-sm-3">
-                        <label for="productSort" class="form-label fw-bold">Default product sorting</label>
+                        <label for="productSort" class="form-label fw-bold">Default product sorting *</label>
                         <select id="productSort" name="account_sort" class="form-select w-auto <?=(isset($formErrors['account_sort']) ? 'is-invalid' : '')?>" aria-label="Sorting select">
                             <option value="A to Z" <?=(!isset($_SESSION['sort']) || $_SESSION['sort'] == 'A to Z') ? 'selected' : ''?>>A to Z</option>
                             <option value="Z to A" <?=(isset($_SESSION['sort']) && $_SESSION['sort'] == 'Z to A') ? 'selected' : ''?>>Z to A</option>
                             <option value="Price desc" <?=(isset($_SESSION['sort']) && $_SESSION['sort'] == 'Price desc') ? 'selected' : ''?>>Price descending</option>
                             <option value="Price asc" <?=(isset($_SESSION['sort']) && $_SESSION['sort'] == 'Price asc') ? 'selected' : ''?>>Price ascending</option>
                         </select>
-                        <div class="invalid-feedback"><?=$formErrors['account_sort'] ?? ''?></div>
+                        <div class="invalid-feedback"><?=htmlspecialchars($formErrors['account_sort'] ?? '')?></div>
                     </div>
                     <div class="col-md-4 pe-sm-3">
-                        <label for="productLayout" class="form-label fw-bold">Default product layout</label>
+                        <label for="productLayout" class="form-label fw-bold">Default product layout *</label>
                         <select id="productLayout" name="account_layout" class="form-select w-auto <?=(isset($formErrors['account_layout']) ? 'is-invalid' : '')?>" aria-label="Layout select">
                             <option value="grid" <?=(!isset($_SESSION['layout']) || $_SESSION['layout'] == 'grid') ? 'selected' : ''?>>Grid</option>
                             <option value="list" <?=(isset($_SESSION['layout']) && $_SESSION['layout'] == 'list') ? 'selected' : ''?>>List</option>
                         </select>
-                        <div class="invalid-feedback"><?=$formErrors['account_layout'] ?? ''?></div>
+                        <div class="invalid-feedback"><?=htmlspecialchars($formErrors['account_layout'] ?? '')?></div>
                     </div>
                     <div class="row g-3 mt-3">
                         <div class="col-md-4 mt-0 d-flex align-items-end">
