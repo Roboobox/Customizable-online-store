@@ -16,17 +16,20 @@ function ShopScript()
     var self = this;
     // Window scroll event for navigation bar fixation
     $(window).scroll( function(){
+        // Make navigation bar fixed after certain scrollY value has been reached
         if(window.scrollY > self.intTopNavBarHeight + self.intBotNavBarHeight + self.intNavFixedGap){
             self.jqBotNavbar.addClass('nav-fixed');
             self.jqBotNavbar.css('visibility', 'visible');
             self.jqBotNavbar.css('opacity', 1);
             $('body').css('padding-top', self.intBotNavBarHeight);
         }
+        // Make top navigation bar hidden once it is scrolled down enough for it not to be seen
         else if (window.scrollY > self.intBotNavBarHeight) {
             self.jqBotNavbar.css('opacity', 0);
             self.jqBotNavbar.addClass('transition');
             self.jqBotNavbar.css('visibility', 'hidden');
         }
+        // Reset top navigation bar and show it
         else if(window.scrollY <= self.intNavFixedGap){
             self.jqBotNavbar.removeClass('nav-fixed');
             $('body').css('padding-top', '0');
@@ -35,36 +38,40 @@ function ShopScript()
             self.jqBotNavbar.css('opacity', 1);
         }
     });
-    
+
+    // Initialize product page events
     this.init = function(productSort = 'A to Z', productLayout = 'grid')
     {
         var self = this;
         this.productLayout = productLayout;
         this.productSort = productSort;
-        
+        // Event for selecting new product sort type
         $('.product-container #productSort').change(function(){
             self.productSort = $('#productSort option:selected').val();
             self.productSearch(false);
         });
-        
+
+        // Event for clicking on grid view button in product page
         $('.product-container #gridSelect').click(function(){
             if (self.productLayout !== "grid") {
                 self.productLayout = "grid"
                 self.productSearch(false);    
             }
         });
-        
+
+        // Event for clicking on list view button in product page
         $('.product-container #listSelect').click(function(){
             if (self.productLayout !== "list") {
                 self.productLayout = "list"
                 self.productSearch(false);    
             }
         });
-        
+
+        // Event for clicking on open filters button in mobile view
         $('#mob_filter_open').click(function(){
            self.showMobileFilter(); 
         });
-        
+        // Perform product search
         this.productSearch(false);
     }
 
@@ -93,7 +100,7 @@ function ShopScript()
             }
         });
     }
-    
+    // Makes AJAX call to get cart info for header cart element
     this.updateCartPreview = function()
     {
         $.ajax({
@@ -111,7 +118,8 @@ function ShopScript()
             }
         });
     }
-    
+
+    // Makes AJAX call to save product and its quantity in users cart
     this.addItemToCart = function(productId, quantity)
     {
         var self = this;
@@ -126,6 +134,7 @@ function ShopScript()
             'cart_quantity' : quantity
             },
             success: function (data) {
+                // Show toast message with result
                 if (data['status'] === 'success') {
                     $('.toast .cart-success').show();
                     $('.toast').toast('show');
@@ -160,7 +169,8 @@ function ShopScript()
         $('.product-container .product[' + "data-product-id=" + productId + '] .btn-add-cart .btn-text').show();
         $('.product-container .product[' + "data-product-id=" + productId + '] .btn-add-cart .loading').hide();
     }
-    
+
+    // Check if quantity input is valid when adding a product to cart
     this.validateQuantity = function(productId)
     {
         var product = this.products[productId];
@@ -180,7 +190,8 @@ function ShopScript()
             quantityPickerInput.val(1);
         }
     }
-    
+
+    // Gets selected specification filters in product page
     this.getSearchFilters = function()
     {
         var filters = [];
@@ -192,19 +203,22 @@ function ShopScript()
         });
         return filters;
     }
-    
+
+    // Sets specification filters as checked from url variables
     this.setSearchFiltersChecked = function(urlFilters)
     {
         for (var filter of urlFilters) {
             if (filter[0].length > 1) {
                 // Slice is used to remove numbering from fs_X
-                $('.filter-option .filter-input-button[name="' + filter[0].slice(0, -2)  + '"][value="' + decodeURI(filter[1]) + '"]').prop('checked', true);
+                $('.filter-option .filter-input-button[name="' + decodeURI(filter[0].slice(0, -2))  + '"][value="' + decodeURI(filter[1]) + '"]').prop('checked', true);
             }
         }
     }
-    
+
+    // Removes all (GET) url parameters except for product search phrase variable
     this.clearUrlFilterParams = function()
     {
+        // Constructs a new url with only search phrase variable
         let urlParams = new URLSearchParams(window.location.search);
         var newUrl = window.location.href.split('?')[0];
         if (urlParams.has('q')) {
@@ -212,17 +226,20 @@ function ShopScript()
             newUrl = new URL(newUrl);
             newUrl.searchParams.set('q', encodeURI(searchQuestion));
         }
+        // Sets it as the new url
         window.history.replaceState(null, null, newUrl);
     }
-    
+
+    // Perform a AJAX product search
     this.productSearch = function(clearUrl)
     {
         const self = this;
-        
+        // Get all selected filters
         var sideFilters = this.getSearchFilters();
         if (clearUrl) {
             this.clearUrlFilterParams();
         }
+        // Sets url parameters based on checked specification filters
         const url = new URL(window.location.href);
         for (const [key, value] of Object.entries(sideFilters)) {
             let i = 1;
@@ -231,6 +248,7 @@ function ShopScript()
                 i++;
             }
         }
+        // Sets search phrase from input, adds it to url and shows search message if needed
         if ($('#search').val().length > 0) {
             url.searchParams.set('q', encodeURI($('#search').val()));
             $('.search-results-text').text($('#search').val());
@@ -238,7 +256,7 @@ function ShopScript()
         } else {
             $('.search-results').hide();
         }
-        //url.searchParams.set('param1', 'val1');
+        // Replace url with the new url
         window.history.replaceState(null, null, url);
 
         let urlParams = [];
@@ -247,6 +265,7 @@ function ShopScript()
         let searchQuestion = "";
         const MAX_PARAM_COUNT = 25;
 
+        // Gets search filters from url
         let paramCount = 0;
         for (const entry of searchParams.entries()) {
             if (entry[0] === 'q') {
@@ -260,13 +279,14 @@ function ShopScript()
             }
             paramCount++;
         }
-        
+
+        // Saves product view height so to not reduce scrollY value
         var previousHeight = $('.product-container .product-row').height();
         
         $('.product-container .product-row').hide();
         
         $('.product-container #products_loading').height(previousHeight).show();
-        
+        // Makes AJAX call to get products with filters
         $.ajax({
             url: "ajax/get_products.php",
             method: "POST",
@@ -278,7 +298,9 @@ function ShopScript()
             'sort' : self.productSort
             },
             success: function (data) {
+                // Gets product HTML
                 self.products = data['products'];
+                // Set specification HTML
                 if (data['spec_html'] !== '') {
                     $('.spec-filters').html(data['spec_html']).parent().addClass('d-lg-block');
                 }
@@ -299,25 +321,30 @@ function ShopScript()
             }
         });
     }
-    
+
+    // Set events after AJAX products and specification filters are created
     this.setSearchEvents = function()
     {
         var self = this;
+        // Event for clicking on specification filter
         $('.filter-option .filter-input-button').unbind('click');
         $('.filter-option .filter-input-button').click(function () {
             self.productSearch(true);
         });
+        // Event for clicking on hide filters on mobile
         $('#mob_filter_hide').unbind('click');
         $('#mob_filter_hide').click(function(){
            self.hideMobileFilter(); 
         });
+        // Event for clicking on add product to cart button
         $('.product-container .btn-add-cart').click(function(){
             var productId = $(this).data('product');
             var quantity = $('.product[data-product-id=' + productId + '] .quantity-picker-input').val();
             self.addItemToCart(productId, quantity, this);
         });
     }
-        
+
+    // Show mobile menu side bar
     this.showSideBar = function()
     {
         $('.mobile-sidebar-container').css('opacity', '1');
@@ -333,7 +360,8 @@ function ShopScript()
         $('.mobile-sidebar-container .mobile-sidebar-content').css('left', '-100%');
         $('body').css('overflow', '');
     }
-    
+
+    // Show or hide mobile search field
     this.mobSearch = function()
     {
         if ($('.nav-bot .search-button-mobile i').hasClass('fa-search')) {
@@ -361,7 +389,8 @@ function ShopScript()
         $('.filter-container').addClass('d-none').removeClass('d-block');
         $('body').css('overflow', '');
     }
-    
+
+    // Show sign up section in login/sign up form
     this.showSignUpForm = function()
     {
         $('#authModal .forgot-pass-container').hide();
@@ -371,7 +400,8 @@ function ShopScript()
         $('#authModal .modal-title').text('Sign up');
         $('#login_form').attr('action', 'register.php');
     }
-    
+
+    // Show login section in login/sign up form
     this.showLoginForm = function()
     {
         $('#authModal .forgot-pass-container').show();
@@ -381,7 +411,8 @@ function ShopScript()
         $('#authModal .modal-title').text('Sign in');
         $('#login_form').attr('action', 'login.php');
     }
-    
+
+    // Remove all errors from login/signup form
     this.hideAuthModalErrors = function()
     {
         $('#authModal .login-gn-error').removeClass('visible');
@@ -393,12 +424,13 @@ function ShopScript()
     {
         $('#cartAddModal').modal('show');
     }
-    
+
+    // Open and show specific product modal with additional information about product
     this.openProductModal = function(productId, tab = PRODUCT_TAB_NAME_DESCRIPTION)
     {
         var product = this.products[productId];
         
-        
+        // Change HTML to match opened product
         var imageCarouselHtml = '<div id="carouselProductPhotos" class="carousel carousel-dark slide" data-bs-ride="carousel">' +
          '<div class="carousel-indicators">';
          var photoCnt = product['photos'].length;
@@ -411,12 +443,12 @@ function ShopScript()
          }
          imageCarouselHtml += '</div><div class="carousel-inner">' +
           '<div class="carousel-item active">' +
-           '<img class="d-block w-100" src="test_images/'+product['photoPath']+'" alt="Product image"></div>';
+           '<img class="d-block w-100" src="images/'+product['photoPath']+'" alt="Product image"></div>';
          i = 1;
          for (var photo of product['photos']) {
             if (i !== 1) {
                 imageCarouselHtml += '<div class="carousel-item">' +
-                    '<img class="d-block w-100" src="test_images/' + photo + '" alt="Product image"></div>';
+                    '<img class="d-block w-100" src="images/' + photo + '" alt="Product image"></div>';
             }
             i++;
          }
@@ -436,10 +468,11 @@ function ShopScript()
         $('#productModal .product-images-mobile [data-bs-target="#carouselProductPhotos"]').attr('data-bs-target', "#carouselProductPhotosMobile");
         $('#productModal .product-images-mobile #carouselProductPhotos').attr("id", "carouselProductPhotosMobile");
         
-        //$('#productModal .product-images').html('<img src="test_images/' + product['photoPath'] + '" class="card-img-top float-start" alt="Product photo">');
+        //$('#productModal .product-images').html('<img src="images/' + product['photoPath'] + '" class="card-img-top float-start" alt="Product photo">');
         $('#productModal .card-subtitle').html(product['category']);
         $('#productModal .card-title').html(product['name']);
-        
+
+        // Check if discount must be shown for this product
         if (product['discountPercent'] > 0)
         {
             $('#productModal .retail-price-default').addClass('price-sale');
@@ -453,7 +486,7 @@ function ShopScript()
         }
         
         $('#productModal .retail-price-default').html(product['price'] + ' €');
-        
+        // Set description
         if (product['description'] == null) {
             $('#productModal .product-description').html("Product has no description");
         }
@@ -462,7 +495,8 @@ function ShopScript()
         }
         
         var specificationHtml = '';
-        
+
+        // Create HTML for product specifications
         for (var spec in product['specifications'])
         {
             specificationHtml += '<tr>';
@@ -472,6 +506,7 @@ function ShopScript()
         }
         
         $('#productModal .product-specification-table').html(specificationHtml);
+        // Show one of the product modal tabs (Description or specifications)
         if (tab === PRODUCT_TAB_NAME_SPECIFICATIONS) {
             $('#productModal .product-specifications').show();
             $('#productModal .product-description').hide();
@@ -487,7 +522,8 @@ function ShopScript()
             
         }
     }
-    
+
+    // Change product modal tab to a new one (description or specifications)
     this.changeProductModalTab = function(clickedButton)
     {
         var jqClickedTab = $(clickedButton);
@@ -497,7 +533,8 @@ function ShopScript()
         jqClickedTab.addClass('active');
         $('#productModal .product-tab.product-' + jqClickedTab.data('tab')).show();
     }
-    
+
+    // Add or decrease quantity picker amount when clicking on "+" or "-" buttons
     this.changeQuantityPickerAmount = function(add, productId)
     {
         var product = this.products[productId];
@@ -512,14 +549,7 @@ function ShopScript()
         }
         
         if (quantityPickerInput.val() > 0) {
-            //$('.card[' + "data-product-id=" + productId + '] .quantity-container .total-price').css('visibility', 'visible');
             $('.product[' + "data-product-id=" + productId + '] .total-price-text').text((product['discountPrice'] * Number(quantityPickerInput.val())).toFixed(2) + ' €');
-            
-            //$('.card[' + "data-product-id=" + productId + '] .quantity-container .total-price .btn-add-cart').css('display', 'block');
         }
-        // else {
-        //     $('.quantity-container .total-price').css('visibility', 'hidden');
-        //     $('.card[' + "data-product-id=" + productId + '] .quantity-container .total-price .btn-add-cart').hide();
-        // }
     }
 }

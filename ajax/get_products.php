@@ -313,7 +313,7 @@ function generateProductHtml(array $products): string
             $productsHtml .= '<div class="col mb-2 mb-sm-3 px-1 px-sm-2">';
             $productsHtml .= '<div class="product card product-card h-100 shadow-sm" data-product-id="' . htmlspecialchars($product->id) . '">';
             $productsHtml .= '<div class="card-image-container p-1 p-sm-3 border-bottom" onclick="objShop.openProductModal(' . htmlspecialchars($product->id) . ')" data-bs-toggle="modal" data-bs-target="#productModal">';
-            $productsHtml .= '<img src="test_images/' . htmlspecialchars($product->photoPath) . '" class="card-img-top" alt="Product photo">';
+            $productsHtml .= '<img src="images/' . htmlspecialchars($product->photoPath) . '" class="card-img-top" alt="Product photo">';
             $productsHtml .= '</div>';
             $productsHtml .= '<div class="card-body">';
             $productsHtml .= '<span class="card-subtitle fw-light text-uppercase text-muted">' . htmlspecialchars($product->category) . '</span>';

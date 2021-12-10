@@ -93,10 +93,12 @@ try {
         }
         $response_array['status'] = 'success';
         
+    } else {
+        $response_array['status'] = 'error';
     }
 }
 catch (Exception $e) {
-    $response_array['satus'] = 'error';
+    $response_array['status'] = 'error';
 }
 
 echo json_encode($response_array);

@@ -7,12 +7,12 @@ if (!isset($_SESSION['user_id'])) {
 include_once 'head.php';
 include_once 'header.php';
 require_once('objects/Order.php');
-
+// Get user orders
 $stmt = $conn->prepare("SELECT id, total, created_at, order_name, status FROM `order` WHERE user_id = :userId");
 $stmt->bindParam(':userId', $_SESSION['user_id']);
 $stmt->execute();
 $orderRows = $stmt->fetchAll();
-
+// Save order objects
 $orders = [];
 foreach ($orderRows as $row) {
     $order = new Order();

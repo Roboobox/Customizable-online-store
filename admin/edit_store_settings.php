@@ -13,10 +13,10 @@ if (isset($_POST['storeEmail'], $_POST['storeAddress'], $_POST['storePhone'], $_
     if (empty($formErrors)) {
         try {
             // Make prepared update statement
-            $stmt = $conn->prepare("UPDATE `store_setting` SET store_email = :email, store_address = :address, store_phonenr = :phoneNr, primary_color = :primaryColor, sale_color = :saleColor, positive_color = :positiveColor, about_text = :aboutText");
+            $stmt = $conn->prepare("UPDATE `store_setting` SET store_name = :name, store_email = :email, store_address = :address, store_phonenr = :phoneNr, primary_color = :primaryColor, sale_color = :saleColor, positive_color = :positiveColor, about_text = :aboutText");
             $updateCounter = 0;
 
-            $formPostValues = [':email' => 'storeEmail', ':address' => 'storeAddress', ':phoneNr' => 'storePhone', ':primaryColor' => 'storePrimaryClr', ':saleColor' => 'storeSaleClr', ':positiveColor' => 'storePositiveClr', ':aboutText' => 'storeAbout'];
+            $formPostValues = [':name' => 'storeName', ':email' => 'storeEmail', ':address' => 'storeAddress', ':phoneNr' => 'storePhone', ':primaryColor' => 'storePrimaryClr', ':saleColor' => 'storeSaleClr', ':positiveColor' => 'storePositiveClr', ':aboutText' => 'storeAbout'];
 
             foreach ($formPostValues as $paramValue => $postValue) {
                 // Bind other values to prepared statement
@@ -45,11 +45,11 @@ if (isset($_POST['storeEmail'], $_POST['storeAddress'], $_POST['storePhone'], $_
                 $logoPath = $logoQuery->fetch()['logo_path'];
                 // Delete previous logo except if it is default logo
                 if ($logoPath != 'logo.png') {
-                    $filePath = '../test_images/' . $logoPath;
+                    $filePath = '../images/' . $logoPath;
                     unlink($filePath);
                 }
                 // Determine new logo path and save it
-                $dir = '../test_images/';
+                $dir = '../images/';
                 $newLogoFilename = 'logo_' . md5($_FILES['storeLogo']['name']) . '.' . pathinfo($_FILES['storeLogo']['name'], PATHINFO_EXTENSION);
                 $newLogoPath = $dir . $newLogoFilename;
                 // If file saved successfully, save path to database
@@ -75,6 +75,13 @@ if (isset($_POST['storeEmail'], $_POST['storeAddress'], $_POST['storePhone'], $_
 
 function validateForm(): array {
     $formErrors = array();
+
+    // Name validation
+    $storeName = $_POST['storeName'];
+    if (!empty($storeName) && strlen($storeName) > 255) {
+        $formErrors['storeName'] = 'Store name cannot exceed 255 characters!';
+    }
+
     // Email validation
     $storeEmail = $_POST['storeEmail'];
     if (!empty($storeEmail)) {
@@ -109,6 +116,15 @@ function validateForm(): array {
     $storeAbout = $_POST['storeAbout'];
     if (!empty($storeAbout) && strlen($storeAbout) > 65535) {
         $formErrors['storeAbout'] = 'About us information cannot exceed 65,535 characters!';
+    }
+
+    // Color validation
+    $storeColors = array($_POST['storePrimaryClr'] ?? '', $_POST['storeSaleClr'] ?? '', $_POST['storePrimaryClr'] ?? '');
+    foreach ($storeColors as $color) {
+        if (!empty($color) && !preg_match('/#[a-zA-Z0-9]{6}/', $color)) {
+            $formErrors['general'] = 'Something went wrong, try again later!';
+            break;
+        }
     }
 
     return $formErrors;

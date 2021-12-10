@@ -247,7 +247,7 @@ function simpleValidation($maxLength, $fieldName, $fieldTitle) {
     }
     return $formErrors;
 }
-
+// Sanitize input to be displayed
 function clean_input($input) {
     $input = trim($input);
     $input = stripslashes($input);

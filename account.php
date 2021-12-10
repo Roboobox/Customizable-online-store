@@ -1,5 +1,6 @@
 <?php
 session_start();
+// Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
     header('Location: index.php');
     exit;
@@ -8,50 +9,59 @@ if (!isset($_SESSION['user_id'])) {
 include_once 'conn.php';
 include_once 'head.php';
 include_once 'header.php';
-
+// Check for form validation errors
 $formErrors = getFormValidationErrors($conn);
 if (empty($formErrors)) {
+    // Account section submitted
     if (isset($_POST['account_name'], $_POST['account_surname'], $_POST['account_phonenr'])) {
+        // Created prepared update statement
         $userUpdateSql = "UPDATE user SET name = :name, surname = :surname, mobile = :phoneNr WHERE id = :userId";
         $stmt = $conn->prepare($userUpdateSql);
 
+        // Set account name
         if (empty($_POST['account_name'])) {
             $stmt->bindValue(':name', null, PDO::PARAM_NULL);
         } else {
             $stmt->bindParam(':name', $_POST['account_name']);
         }
-
+        // Set account surname
         if (empty($_POST['account_surname'])) {
             $stmt->bindValue(':surname', null, PDO::PARAM_NULL);
         } else {
             $stmt->bindParam(':surname', $_POST['account_surname']);
         }
-
+        // Set account phone number
         if (empty($_POST['account_phonenr'])) {
             $stmt->bindValue(':phoneNr', null, PDO::PARAM_NULL);
         } else {
             $stmt->bindParam(':phoneNr', $_POST['account_phonenr']);
         }
+        // Bind user id to statement to find user
         $stmt->bindParam(':userId', $_SESSION['user_id']);
 
         $stmt->execute();
         if ($stmt->rowCount() > 0) {
+            // If update successful save new values in session
             $_SESSION['user_data']['name'] = $_POST['account_name'];
             $_SESSION['user_data']['surname'] = $_POST['account_surname'];
             $_SESSION['user_data']['phoneNr'] = $_POST['account_phonenr'];
             $formSuccessMsg = "Account info updated!";
         }
-
+    // Password change section submitted
     } else if (isset($_POST['account_passold'], $_POST['account_passnew'], $_POST['account_passconfirm'])) {
         $userUpdateSql = "UPDATE user SET password_hash = :passwordHash WHERE id = :userId";
+        // Create password hash from new password
         $hashedPassword = password_hash($_POST['account_passconfirm'], PASSWORD_DEFAULT);
         $stmt = $conn->prepare($userUpdateSql);
         $stmt->bindParam(':passwordHash', $hashedPassword);
         $stmt->bindParam(':userId', $_SESSION['user_id']);
+        // Save new password in database
         $stmt->execute();
         $formSuccessMsg = "Password updated!";
+    // Preference section submitted
     } else if (isset($_POST['account_sort'], $_POST['account_layout'])) {
         $userUpdateSql = "UPDATE user SET product_sort = :sort, product_layout = :layout WHERE id = :userId";
+        // Get and save selected sort and layout type
         $stmt = $conn->prepare($userUpdateSql);
         $stmt->bindParam(':sort', $_POST['account_sort']);
         $stmt->bindParam(':layout', $_POST['account_layout']);
@@ -68,16 +78,19 @@ if (empty($formErrors)) {
 
 function getFormValidationErrors($conn) {
     $formErrors = array();
+    // Account section validation
     if (isset($_POST['account_name'], $_POST['account_surname'], $_POST['account_phonenr'])) {
         $fields = array('account_name' => 'Name', 'account_surname' => 'Surname', 'account_phonenr' => 'Phone number');
         
         foreach ($fields as $field => $label) {
             if (!empty($_POST[$field])) {
+                // Check name and surname length
                 if (($field === 'account_name' || $field === 'account_surname')) {
                     if (strlen($_POST[$field]) > 255) {
                         $formErrors[$field] = $label . ' cannot exceed 255 characters';
                     }
                 } else if ($field === 'account_phonenr') {
+                    // Check if phone number is only numbers and its length is valid
                     if (strlen($_POST[$field]) > 31) {
                         $formErrors[$field] = $label . ' cannot be longer than 31 digits';
                     } else if (!preg_match("/[0-9]/", $_POST[$field])) {
@@ -86,16 +99,19 @@ function getFormValidationErrors($conn) {
                 }
             }
         }
-        
+    // Password section validation
     } else if (isset($_POST['account_passold'], $_POST['account_passnew'], $_POST['account_passconfirm'])) {
+        // Check if new password and confirm password matches
         if ($_POST['account_passnew'] !== $_POST['account_passconfirm']) {
             $formErrors['account_passnew'] = "Passwords do not match";
             $formErrors['account_passconfirm'] = "";
+        // Check for new password length requirements
         } else if (strlen($_POST['account_passnew']) < 8) {
             $formErrors['account_passnew'] = "Password must be at least 8 characters";
         } else if (strlen($_POST['account_passnew']) > 72) {
             $formErrors['account_passnew'] = "Password cannot exceed 72 characters";
         } else {
+            // Check if current password matches users entered current password
             $stmt = $conn->prepare("SELECT password_hash FROM user WHERE id=:userId");
             $stmt->bindParam(':userId', $_SESSION['user_id']);
             $stmt->execute();
@@ -108,8 +124,10 @@ function getFormValidationErrors($conn) {
                 $formErrors['account_passold'] = "Incorrect password";
             }
         }
+    // Preference section validation
     } else if (isset($_POST['account_sort'], $_POST['account_layout'])) {
         $fieldValues = array('account_sort' => array('A to Z', 'Z to A', 'Price desc', 'Price asc'), 'account_layout' => array('grid', 'list'));
+        // Check if selected values matches the possible values
         foreach ($fieldValues as $field => $values) {
             if (!in_array($_POST[$field], $values, true)) {
                 $formErrors[$field] = 'Incorrect option picked';

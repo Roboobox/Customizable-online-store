@@ -4,4 +4,8 @@ body {
   overflow-x: hidden;
 }
 
+#mob_filter_open, #mob_filter_hide {
+  cursor: pointer;
+}
+
 /*# sourceMappingURL=index.css.map */

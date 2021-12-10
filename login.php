@@ -3,6 +3,7 @@ session_start();
 
 $formErrors = array();
 try {
+    // Check if data is passed
     if (isset($_POST['email'], $_POST['password'])
         && $_SERVER['REQUEST_METHOD'] === "POST"
     ) {
@@ -11,13 +12,17 @@ try {
         $userEmail = $_POST['email'];
         $userPassword = $_POST['password'];
 
+        // Get user from database by email that user had entered in login form
         $stmt = $conn->prepare("SELECT * FROM `user` WHERE email=:email");
         $stmt->bindParam(':email', $userEmail);
         $stmt->execute();
 
+        // Check if user was found
         if ($stmt->rowCount() === 1) {
             $row = $stmt->fetch();
+            // Check if password matches the password that user entered in login form
             if (password_verify($userPassword, $row['password_hash'])) {
+                    // Regenerate session id and save necessary user data in session
                     session_regenerate_id();
                     $userToken = bin2hex(random_bytes(16));
 
@@ -28,7 +33,9 @@ try {
                     $_SESSION['layout'] = $row['product_layout'];
                     $_SESSION['user_data'] = array('email' => $row['email'], 'name' => $row['name'], 'surname' => $row['surname'], 'phoneNr' => $row['mobile']);
 
+                    // Save session cat data to user database cart
                     syncSessionCartWithDB($conn);
+                    // Redirect to page where login form was opened
                     header("Location: " . $_POST['redirect']);
                     exit;
             }
@@ -36,9 +43,13 @@ try {
         } else {
             throw new Exception("Incorrect email or password!", 3);
         }
+    } else {
+        header("Location: index.php");
+        exit;
     }
 }
 catch (Exception $e) {
+    // Return error messages
     if ($e->getCode() === 1) {
         $formErrors['email'] = $e->getMessage();
     }

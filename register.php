@@ -4,6 +4,7 @@ session_start();
 $formErrors = array();
 
 try {
+    // Check if data is passed
     if (isset($_POST['email'], $_POST['password'], $_POST['c_password'])
         && $_SERVER['REQUEST_METHOD'] === "POST"
     ) {
@@ -14,6 +15,7 @@ try {
         $userPassword = $_POST['password'];
         $userConfirmPassword = $_POST['c_password'];
 
+        // Validate email, password and password matching confirm password
         if (strlen($userEmail) > 254) {
             throw new Exception("Email address cannot exceed 254 characters!", 1);
         }
@@ -26,33 +28,39 @@ try {
         else if (strlen($userPassword) > 72) {
             throw new Exception("Password cannot exceed 72 characters!", 2);
         }
+        else if ($userPassword !== $userConfirmPassword) {
+            throw new Exception("Passwords do not match!", 2);
+        }
 
+        // Try to get user with email entered by user in registration form
         $stmt = $conn->prepare("SELECT * FROM `user` WHERE email=:email");
         $stmt->bindParam(':email', $userEmail);
         $stmt->execute();
 
+        // Check if user did not exist
         if ($stmt->rowCount() === 0) {
-            if ($userPassword === $userConfirmPassword) {
-                $hashedPassword = password_hash($userPassword, PASSWORD_DEFAULT);
+            // Hash user's password
+            $hashedPassword = password_hash($userPassword, PASSWORD_DEFAULT);
+            // Insert new user
+            $stmt = $conn->prepare("INSERT INTO `user` (`email`, `password_hash`, `role_id`) VALUES (:email, :passwordHash, :roleId)");
+            $stmt->bindParam(':email', $userEmail);
+            $stmt->bindParam(':passwordHash', $hashedPassword);
+            $stmt->bindValue(':roleId', 0);
+            $queryResult = $stmt->execute();
 
-                $stmt = $conn->prepare("INSERT INTO `user` (`email`, `password_hash`, `role_id`) VALUES (:email, :passwordHash, :roleId)");
-                $stmt->bindParam(':email', $userEmail);
-                $stmt->bindParam(':passwordHash', $hashedPassword);
-                $stmt->bindValue(':roleId', 0);
-                $queryResult = $stmt->execute();
-
-                if ($queryResult) {
-                    $_SESSION['sign_success'] = "Account created, you can log in now!";
-                    header("Location: " . $_POST['redirect'] . '?&su=1');
-                    exit;
-                }
-                throw new Exception();
-            } else {
-                throw new Exception("Passwords do not match!", 2);
+            // If successful then set message and redirect
+            if ($queryResult) {
+                $_SESSION['sign_success'] = "Account created, you can log in now!";
+                header("Location: " . $_POST['redirect'] . '?&su=1');
+                exit;
             }
+            throw new Exception();
         } else {
             throw new Exception("User with this email address already exists!", 1);
         }
+    } else {
+        header("Location: index.php");
+        exit;
     }
 }
 catch (Exception $e) {

@@ -4,6 +4,11 @@ body {
 
 .container button {
   background-color: var(--primary-color);
+  color: var(--primary-text-color);
+  border: 1px solid var(--primary-element-color) !important;
+}
+.container button:hover {
+  color: var(--primary-text-color);
 }
 
 /*# sourceMappingURL=account.css.map */

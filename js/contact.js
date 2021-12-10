@@ -1,10 +1,12 @@
 var formError = false;
 
 $( document ).ready(function() {
+    // Event for submitting contact message form
     $('#contactForm').submit(function( event ){
         event.preventDefault();
         resetFormMessages();
 
+        // Get fields
         let messageField = $('#message_textarea');
         let emailField = $('#email_input');
         let messageError = $('#message_error');
@@ -12,13 +14,14 @@ $( document ).ready(function() {
         let emailInput = emailField.val();
         let messageInput = messageField.val();
 
+        // Check message length
         if (messageInput.length === 0) {
-            console.log('here')
             showError(messageError, messageField, 'Message is required!');
         } else if (messageInput.length > 65535) {
             showError(messageError, messageField, 'Message cannot exceed 65,535 characters!');
         }
 
+        // Check email length
         if (emailInput.length === 0) {
             showError(emailError, emailField, 'Email is required!');
         } else if (emailInput.length > 254) {
@@ -28,6 +31,7 @@ $( document ).ready(function() {
           showError(emailError, emailField, 'Email address is not valid!')
         }
 
+        // If there are no validation errors then make AJAX call to save message in database
         if (!formError) {
             showLoading();
             $.ajax({
@@ -37,6 +41,7 @@ $( document ).ready(function() {
                 data: {'email': emailInput, 'message': messageInput},
                 success: function (data) {
                     if (data['status'] === 'success') {
+                        // Check for server validation errors and show them
                         if ('email' in data) {
                             showError(emailError, emailField, data['email']);
                         } else if ('message' in data) {
@@ -59,12 +64,13 @@ $( document ).ready(function() {
     });
 });
 
+// Display error message
 function showError(errorField, inputField, errorMessage) {
     errorField.text(errorMessage).show();
     inputField.addClass('is-invalid');
     formError = true;
 }
-
+// Remove all error and success messages
 function resetFormMessages() {
     $('.invalid-feedback').text('').hide();
     $('.form-control').removeClass('is-invalid');

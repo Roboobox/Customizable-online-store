@@ -3,43 +3,14 @@ if (!isset($_SESSION)) {
     session_start();
 }
 include_once 'conn.php';
-// TODO : Add escape function for every output
-include_once 'get_settings.php';
 $cartItemCount = 0;
 $cartItems = "";
-
+// Set tab as empty string if there is no active header tab
 if (!isset($tab)) {
     $tab = '';
 }
 
-if (isset($_SESSION['user_id']))
-{
-    $cartSql = 'SELECT id FROM `cart` WHERE user_id = :userId AND is_active = :isActive';
-    $stmt = $conn->prepare($cartSql);
-    $stmt->bindParam(':userId', $_SESSION['user_id']);
-    $stmt->bindValue(':isActive', 1);
-    $stmt->execute();
-    
-    if ($stmt->rowCount() === 1)
-    {
-        $row = $stmt->fetch();
-        $cartId = $row['id'];
-        
-        $cartSql = 'SELECT * FROM `cart_item` WHERE cart_id = :cartId';
-        $stmt = $conn->prepare($cartSql);
-        $stmt->bindParam(':cartId', $cartId);
-        $stmt->execute();
-        
-        $cartItemCount = $stmt->rowCount();
-        $cartItems = $stmt->fetchAll();
-    }
-}
-else if (isset($_SESSION['cart']))
-{
-    $cartItemCount = count($_SESSION['cart']);
-    $cartItems = $_SESSION['cart'];
-}
-
+// Include script which will set up search bar and header cart information
 ?>
 <script>
 var objShop;
@@ -52,7 +23,7 @@ var objShop;
 </script>
 
 <?php
-
+// Check if there a sign in/up result data to show and open auth modal with correct tab
 if (isset($_SESSION['sign_error']) || (isset($_SESSION['sign_success']) && isset($_GET['su']) && $_GET['su'] == '1'))
 {
 ?>
@@ -72,6 +43,7 @@ if (isset($_SESSION['sign_error']) || (isset($_SESSION['sign_success']) && isset
     </script>
     <?php
     }
+    // Save error in variable and delete session variable
     $formError = $_SESSION['sign_error'] ?? array();
     unset($_SESSION['sign_error']);
 }
@@ -88,7 +60,7 @@ if (isset($_SESSION['sign_error']) || (isset($_SESSION['sign_success']) && isset
                         </button>
 
                         <a class="navbar-brand text-white m-auto" href="index.php">
-                            <img src="test_images/<?=htmlspecialchars($storeSettings['logo_path'])?>" class="<?=$storeSettings['logo_orientation'] ?? 'horizontal'?>" alt="logo">
+                            <img src="images/<?=htmlspecialchars($storeSettings['logo_path'])?>" class="<?=$storeSettings['logo_orientation'] ?? 'horizontal'?>" alt="logo">
                         </a>
                     </div>
 
@@ -180,7 +152,7 @@ if (isset($_SESSION['sign_error']) || (isset($_SESSION['sign_success']) && isset
     <div class="mobile-sidebar-container">
         <div class="d-flex flex-column flex-shrink-0 p-3 bg-dark text-white mobile-sidebar-content" style="width: 280px;">
             <a href="/" class="d-flex align-items-center mb-1 mb-md-0 me-md-auto text-white text-decoration-none">
-                <img class="me-2 img-fluid" src="test_images/<?=htmlspecialchars($storeSettings['logo_path'])?>" alt="logo" height="50">
+                <img class="me-2 img-fluid" src="images/<?=htmlspecialchars($storeSettings['logo_path'])?>" alt="logo" height="50">
             </a>
             <hr>
             <ul class="nav nav-pills flex-column mb-auto">

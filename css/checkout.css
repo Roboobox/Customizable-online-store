@@ -1,5 +1,5 @@
 .progress-container hr {
-  color: var(--primary-color);
+  color: var(--primary-element-color);
   width: 150px;
   height: 2px;
   opacity: 0.8;
@@ -12,8 +12,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 3px solid var(--primary-color);
-  color: var(--primary-color);
+  border: 3px solid var(--primary-element-color);
+  color: var(--primary-element-color);
   border-radius: 50%;
   text-align: center;
   font-weight: bold;
@@ -21,12 +21,12 @@
 
 .progress-icon.active {
   color: white;
-  background: var(--primary-color);
+  background: var(--primary-element-color);
 }
 
 .checkout-continue {
   background: var(--primary-color);
-  color: white;
+  color: var(--primary-text-color);
   padding: 8px 35px;
   border-radius: 2px;
 }

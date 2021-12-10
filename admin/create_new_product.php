@@ -68,7 +68,7 @@ if (isset($_POST['prodName'], $_POST['prodCat'], $_POST['prodPrice'], $_FILES['p
                 $uploadedCount = count($uploadedImages['name']);
                 for ($i = 0; $i < $uploadedCount; $i++) {
                     // Get new filename and path for photo
-                    $dir = "test_images/";
+                    $dir = "images/";
                     $fileName = $prodId . '_' . $i . '_' . md5($uploadedImages["name"][$i]) . '.' . pathinfo($uploadedImages["name"][$i], PATHINFO_EXTENSION);
                     $path = $dir . $fileName;
                     // If photo successfully saved then insert path into database

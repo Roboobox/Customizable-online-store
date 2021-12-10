@@ -1,5 +1,6 @@
 <?php
 session_start();
+// Check if user is logged in and request has order id
 if (!isset($_SESSION['user_id']) || !isset($_GET['id'])) {
     header('Location: index.php');
     exit;
@@ -8,18 +9,28 @@ if (!isset($_SESSION['user_id']) || !isset($_GET['id'])) {
 include_once 'conn.php';
 require_once('objects/Order.php');
 require_once('objects/Product.php');
+// Get order by passed id
 $stmt = $conn->prepare("SELECT * FROM `order` WHERE id = :orderId");
 $stmt->bindParam(':orderId', $_GET['id'], PDO::PARAM_INT);
 $stmt->execute();
 
+// If order does not exist then redirect
 if ($stmt->rowCount() === 0) {
     header('Location: notfound.php');
     exit;
 }
 
+// Create order object and get order data
 $order = new Order();
 $order->getOrderFromRow($stmt->fetch());
 
+// Check if user owns the order or user is administrator
+if ($stmt->rowCount() != 1 || ($_SESSION['user_id'] != $order->userId && $_SESSION['user_role'] != 1)) {
+    header('Location: index.php');
+    exit;
+}
+
+// Get order items
 $orderItemStmt = $conn->prepare('SELECT P.name, OI.product_price, OI.quantity, (SELECT photo_path FROM product_photo PP WHERE P.id = PP.product_id LIMIT 1) AS photo_path
                                         FROM `order_item` OI
                                         LEFT JOIN product P ON P.id = OI.product_id 
@@ -29,11 +40,7 @@ $orderItemStmt->bindParam(':orderId', $order->id);
 $orderItemStmt->execute();
 $orderItems = $orderItemStmt->fetchAll();
 
-if ($stmt->rowCount() != 1 || ($_SESSION['user_id'] != $order->userId && $_SESSION['user_role'] != 1)) {
-    header('Location: index.php');
-    exit;
-}
-
+// Get order shipping data
 $stmt = $conn->prepare("SELECT * FROM shipping WHERE id = :shippingId");
 $stmt->bindParam(':shippingId', $order->shippingId);
 $stmt->execute();
@@ -108,7 +115,7 @@ include_once 'header.php'
                 foreach ($orderItems as $item) {?>
                     <div class="order-item bg-light p-3 row border-bottom">
                         <div class="col-md text-center text-md-start my-1 my-md-0">
-                            <img src="test_images/<?=htmlspecialchars($item['photo_path'])?>" height="90" width="90" class="d-inline-block" alt="Product image">
+                            <img src="images/<?=htmlspecialchars($item['photo_path'])?>" height="90" width="90" class="d-inline-block" alt="Product image">
                         </div>
                         <div class="d-inline-block px-3 product-title col-md my-1 my-md-0 w-100">
                             <span class="text-muted">Product:</span>

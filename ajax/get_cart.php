@@ -7,7 +7,9 @@ $responseArray = array();
 $cartItems = array();
 $cartItemCount = 0;
 
+// Get cart from database if user is logged in otherwise get cart from session
 if (isset($_SESSION['user_id'])) {
+    // Select active user cart from database
     $cartIdSql = 'SELECT id FROM cart WHERE user_id = :userId AND is_active = :active';
     $stmt = $conn->prepare($cartIdSql);
     $stmt->bindParam(':userId', $_SESSION['user_id']);
@@ -16,6 +18,7 @@ if (isset($_SESSION['user_id'])) {
     if ($stmt->rowCount() > 0) {
         $row = $stmt->fetch();
         $cartId = $row["id"];
+        // Select cart items with cart id
         $cartSql = 'SELECT * FROM `cart_item` WHERE cart_id = :cartId';
         $stmt = $conn->prepare($cartSql);
         $stmt->bindParam(':cartId', $cartId);
@@ -37,6 +40,7 @@ $productIdAndQuantity = array();
 $products = array();
 $totalCartPrice = 0.00;
 
+// Save cart items into assoc array of product id and quantity
 if (isset($_SESSION['user_id'])) {
     foreach ($cartItems as $item) {
         $productIdAndQuantity[(int)$item['product_id']] = (int)$item['quantity'];
@@ -46,6 +50,8 @@ if (isset($_SESSION['user_id'])) {
 }
 
 if (!empty($productIdAndQuantity)) {
+    // Select products that match cart items
+    // Create template for using sql "IN" for product ids
     $inQuery = implode(',', array_fill(0, count($productIdAndQuantity), '?'));
     $productSql = "
         SELECT P.*, I.quantity, D.discount_percent, C.name AS category, (SELECT photo_path FROM product_photo PP WHERE P.id = PP.product_id LIMIT 1) AS photo_path  FROM `product` P
@@ -56,7 +62,7 @@ if (!empty($productIdAndQuantity)) {
         ORDER BY P.name
     ";
     $stmt = $conn->prepare($productSql);
-
+    // Fill "IN" template with product ids from assoc cart items array
     $i = 1;
     foreach ($productIdAndQuantity as $id => $quantity) {
         $stmt->bindValue(($i), $id);
@@ -66,7 +72,7 @@ if (!empty($productIdAndQuantity)) {
 
     $productRows = $stmt->fetchAll();
     $products = array();
-
+    // Get returned products, create product objects, save objects in array and calculate total price of cart
     foreach ($productRows as $row) {
         $product = new Product();
         $product->getProductDataFromRow($row);
@@ -75,18 +81,18 @@ if (!empty($productIdAndQuantity)) {
         $totalCartPrice += (float)$product->getProductTotalPrice($productIdAndQuantity[$product->id]);
     }
 }
-
+// Check if html should be returned
 if (isset($_POST['cart_html'])) {
     $error = false;
     $cartHtml = '';
-
+    // Iterate cart products and create HTML for displaying cart items
     if (!empty($products)) {
         foreach ($products as $cartProduct) {
 
             $cartHtml .= '
             <div class="row cart-item p-3 border">
             <div class="col-md text-center text-md-start">
-                <img src="test_images/' . htmlspecialchars($cartProduct->photoPath) . '" height="130" width="130" class="d-inline-block" alt="Product image">
+                <img src="images/' . htmlspecialchars($cartProduct->photoPath) . '" height="130" width="130" class="d-inline-block" alt="Product image">
             </div>
             <div class="d-inline-block px-3 product-title col-md text-center text-md-start my-md-0 my-3">
                 <div>' . htmlspecialchars($cartProduct->name) . '</div>
@@ -102,7 +108,7 @@ if (isset($_POST['cart_html'])) {
                         <div class="plus quantity-btn"><i class="fas fa-plus"></i></div>
                     </div>
         ';
-
+            // Check if user selected quantity is more than available product inventory and display message
             if ($productIdAndQuantity[$cartProduct->id] > $cartProduct->inventoryAmount || $cartProduct->isDeleted) {
                 $error = true;
                 $cartHtml .= '<p class="text-danger pt-2"><i class="fas fa-info-circle"></i> Selected quantity is not available</p>';
@@ -123,7 +129,6 @@ if (isset($_POST['cart_html'])) {
             </div>
         </div>
         ';
-           // $totalCartPrice += (float)$cartProduct->getProductTotalPrice($productIdAndQuantity[$cartProduct->id]);
         }
     } else {
         $cartHtml = '<div class="row cart-item p-3 border justify-content-center fs-5">Cart is empty!</div>';
@@ -136,13 +141,15 @@ if (isset($_POST['cart_html'])) {
 </div>
 
 ';
-//onclick="location.href=\'checkout.php\'"
+    // If there are some cart errors then make button disabled
     $cartFooterHtml .= '<button ' . (($error || empty($products)) ? 'disabled' : '') . ' class="ms-4 btn btn-primary cart-continue fs-5 fw-bold">Continue <i class="fas fa-arrow-right"></i></button>';
 
     $responseArray['cart'] = $cartHtml;
     $responseArray['footer'] = $cartFooterHtml;
 }
+// Check if cart summary html should be returned
 else if (isset($_POST['cart_summary_html'])) {
+    // Iterate products and create cart summary HTML (used in checkout for displaying simple cart contents)
     $cartShortHtml = '';
     foreach ($products as $cartProduct) {
         $cartShortHtml .= '<div class="cart-item border-bottom text-muted p-2 row">';
@@ -168,7 +175,7 @@ if (isset($productIdAndQuantity)) {
 
 $responseArray['cart_items'] = $cartItems;
 $responseArray['cart_total'] = number_format($totalCartPrice, 2, '.', '') . ' €';
-
+// Check if output is needed
 if (isset($_POST['output']) && $_POST['output'] == true) {
     echo json_encode($responseArray);
 }

@@ -10,17 +10,21 @@ include_once 'head.php';
 include_once 'header.php';
 include_once "conn.php";
 require_once('objects/Order.php');
-// TODO : add product editing page or inventory amount editing
+// Get which tab/page is opened, default 'create_product'
 $page = $_GET['p'] ?? 'create_product';
+// Set available pages
 $availablePages = ['create_product', 'delete_product', 'store_orders', 'store_settings', 'contact_messages', 'product_discounts'];
+// If current page is not one from the available pages then open create_product page
 if (!in_array($page, $availablePages, false)) {
     $page = 'create_product';
 }
 
 if ($page === 'create_product' || $page === 'delete_product') {
+    // If page opened is product creation then include product creation file
     if ($page === 'create_product') {
         include_once "admin/create_new_product.php";
     }
+    // Select all products for use in there pages
     $productQuery = $conn->query("
         SELECT P.name, P.id, P.price, D.discount_percent, C.name AS category FROM `product` P
         LEFT JOIN product_category C ON P.category_id = C.id
@@ -29,16 +33,19 @@ if ($page === 'create_product' || $page === 'delete_product') {
     ");
     $products = $productQuery->fetchAll();
 } else if ($page === 'contact_messages') {
+    // If page is contact messages then select all contact messages from database
     $messageQuery = $conn->query("SELECT * FROM contact_message ORDER BY ID DESC");
     $messages = $messageQuery->fetchAll();
 } else if ($page === 'store_settings') {
-    //include_once "admin/edit_store_settings.php";
+    // If page is store settings then select all store settings
     $settingsQuery = $conn->query("SELECT * FROM store_setting");
     $storeSettings = $settingsQuery->fetch();
 } else if ($page === 'store_orders') {
+    // If page is store orders then select all store orders
     $orderQuery = $conn->query("SELECT * FROM `order` ORDER BY id DESC");
     $orderRows = $orderQuery->fetchAll();
 
+    // Save order objects
     $orders = [];
     foreach ($orderRows as $row) {
         $order = new Order();
@@ -46,6 +53,7 @@ if ($page === 'create_product' || $page === 'delete_product') {
         $orders[] = $order;
     }
 } else if ($page === 'product_discounts') {
+    // If page is product discounts then include create discount file and select all active discounts and products for new discount creation
     include_once "admin/create_discount.php";
     $discountQuery = $conn->query("SELECT PD.*, P.name FROM `product_discount` PD LEFT JOIN `product` P ON P.id = PD.product_id  WHERE (NOW() between starting_at AND ending_at) ORDER BY PD.id DESC LIMIT 1");
     $discounts = $discountQuery->fetchAll();
@@ -53,6 +61,7 @@ if ($page === 'create_product' || $page === 'delete_product') {
     $products = $productQuery->fetchAll();
 }
 
+// Save errors or success messages from session and clear the session
 $formErrors = $_SESSION['formErrors'] ?? array();
 unset($_SESSION['formErrors']);
 
@@ -224,6 +233,13 @@ if (isset($_SESSION['formSuccess'])) {
                     <div style="width: fit-content" class="bg-danger px-3 py-1 mb-3 text-white <?=(isset($formErrors['general']) ? 'feedback-fade-in' : 'd-none')?>"><?=$formErrors['general'] ?? ''?></div>
                     <form action="admin/edit_store_settings.php" method="post" enctype="multipart/form-data" novalidate>
                         <div class="mb-3">
+                            <label for="inputStoreName" class="form-label">Store name</label>
+                            <input name="storeName" value="<?=$_POST['storeName'] ?? $storeSettings['store_name'] ?? ''?>" type="text" class="form-control <?=isset($formErrors['storeName']) ? 'is-invalid' : ''?>" id="inputStoreName">
+                            <div class="invalid-feedback">
+                                <?=$formErrors['storeName'] ?? ''?>
+                            </div>
+                        </div>
+                        <div class="mb-3">
                             <label for="inputStoreEmail" class="form-label">Store email address</label>
                             <input name="storeEmail" value="<?=$_POST['storeEmail'] ?? $storeSettings['store_email'] ?? ''?>" type="text" class="form-control <?=isset($formErrors['storeEmail']) ? 'is-invalid' : ''?>" id="inputStoreEmail">
                             <div class="invalid-feedback">
@@ -247,7 +263,7 @@ if (isset($_SESSION['formSuccess'])) {
                         <div class="mb-3">
                             <label for="inputStoreLogo" class="form-label">Store logo</label>
                             <br>
-                            <img class="mb-2" src="test_images/<?=$storeSettings['logo_path']?>" height="60" width="100%" alt="Store logo"/>
+                            <img class="mb-2" src="images/<?=$storeSettings['logo_path']?>" height="60" width="100%" alt="Store logo"/>
                             <input name="storeLogo" type="file" class="form-control <?=isset($formErrors['storeLogo']) ? 'is-invalid' : ''?>" id="inputStoreLogo" accept="image/png, image/jpeg" aria-labelledby="imageInfo" />
                             <div id="imageInfo" class="form-text">Allowed image formats: jpg, png</div>
                             <div class="invalid-feedback">
@@ -287,8 +303,6 @@ if (isset($_SESSION['formSuccess'])) {
                 <section class="p-4" id="store_orders">
                     <h5 class="mb-4">Store orders</h5>
                     <div class="feedback feedback-hide text-white px-3 py-1 mb-3"></div>
-<!--                    <div class="feedback feedback-hide order_success text-white text-update-success px-3 py-1 mb-3">Order status updated!</div>-->
-<!--                    <div class="feedback feedback-hide order_error text-danger">Order status failed to update!</div>-->
                     <table class="table table-striped table-bordered text-center">
                         <tr>
                             <th>Number</th>
