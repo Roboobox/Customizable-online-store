@@ -133,6 +133,8 @@ function getFormValidationErrors($conn) {
                 $formErrors[$field] = 'Incorrect option picked';
             }    
         }
+    } else if (!empty($_POST)) {
+        $formErrors['general'] = 'Something went wrong. Please try again later!';
     }
     
     return $formErrors;    
@@ -143,6 +145,7 @@ function getFormValidationErrors($conn) {
     <div class="row">
         <h2 class="w-100 mt-5 <?=(isset($formSuccessMsg) ? '' : 'mb-4')?>">Account settings</h2>
         <div class="ms-2 px-3 py-1 mb-3 text-white text-update-success <?=(isset($formSuccessMsg) ? '' : 'd-none')?>"><?=htmlspecialchars($formSuccessMsg ?? '')?></div>
+        <div style="width: fit-content" class="bg-danger px-3 py-1 mb-3 text-white <?=(isset($formErrors['general']) ? 'd-block' : 'd-none')?>"><?=$formErrors['general'] ?? ''?></div>
     </div>
     <div class="row">
         <div class="col p-4 bg-white shadow-sm border">
@@ -161,12 +164,12 @@ function getFormValidationErrors($conn) {
                     </div>
                     <div class="col-md-4 ps-sm-3">
                         <label for="email" class="form-label fw-bold">Email *</label>
-                        <input disabled type="email" name="account_email" value="<?=htmlspecialchars($_SESSION['user_data']['email'] ?? '')?>" class="form-control" id="email" required maxlength="255">
+                        <input disabled type="email" name="account_email" value="<?=htmlspecialchars($_SESSION['user_data']['email'] ?? '')?>" class="form-control" id="email" required>
                         <div class="invalid-feedback"></div>
                     </div>
                     <div class="col-md-4 pe-sm-3">
                         <label for="phoneNr" class="form-label fw-bold">Phone number</label>
-                        <input type="tel" pattern="[0-9]+" name="account_phonenr" title="Numbers only" value="<?=htmlspecialchars($_POST['account_phonenr'] ?? $_SESSION['user_data']['phoneNr'] ?? '')?>" class="form-control  <?=(isset($formErrors['account_phonenr']) ? 'is-invalid' : '')?>" id="phoneNr" maxlength="255">
+                        <input type="tel" pattern="[0-9]+" name="account_phonenr" title="Numbers only" value="<?=htmlspecialchars($_POST['account_phonenr'] ?? $_SESSION['user_data']['phoneNr'] ?? '')?>" class="form-control  <?=(isset($formErrors['account_phonenr']) ? 'is-invalid' : '')?>" id="phoneNr">
                         <div class="invalid-feedback"><?=htmlspecialchars($formErrors['account_phonenr'] ?? '')?></div>
                     </div>
                     <div class="row g-3 mt-1">
@@ -177,21 +180,21 @@ function getFormValidationErrors($conn) {
                 </div>
             </form>
             <h4 class="mt-4">Password</h4>
-            <form method="POST" action="account.php">
+            <form method="POST" action="account.php" novalidate>
                 <div class="row g-3 mt-3 pb-4 border-bottom text-muted">
                     <div class="col-md-4 pe-sm-3">
                         <label for="passwordOld" class="form-label fw-bold">Current password *</label>
-                        <input type="password" name="account_passold" class="form-control <?=(isset($formErrors['account_passold']) ? 'is-invalid' : '')?>" id="passwordOld" placeholder="" value="" required maxlength="255">
+                        <input type="password" name="account_passold" class="form-control <?=(isset($formErrors['account_passold']) ? 'is-invalid' : '')?>" id="passwordOld" placeholder="" value="" required>
                         <div class="invalid-feedback"><?=htmlspecialchars($formErrors['account_passold'] ?? '')?></div>
                     </div>
                     <div class="col-md-4 pe-sm-3">
                         <label for="passwordNew" class="form-label fw-bold">New password *</label>
-                        <input type="password" name="account_passnew" class="form-control <?=(isset($formErrors['account_passnew']) ? 'is-invalid' : '')?>" id="passwordNew" placeholder="" value="" required maxlength="255">
+                        <input type="password" name="account_passnew" class="form-control <?=(isset($formErrors['account_passnew']) ? 'is-invalid' : '')?>" id="passwordNew" placeholder="" value="" required>
                         <div class="invalid-feedback"><?=htmlspecialchars($formErrors['account_passnew'] ?? '')?></div>
                     </div>
                     <div class="col-md-4 pe-sm-3">
                         <label for="passwordConfirm" class="form-label fw-bold">Confirm password *</label>
-                        <input type="password" name="account_passconfirm" class="form-control <?=(isset($formErrors['account_passconfirm']) ? 'is-invalid' : '')?>" id="passwordConfirm" placeholder="" value="" required maxlength="255">
+                        <input type="password" name="account_passconfirm" class="form-control <?=(isset($formErrors['account_passconfirm']) ? 'is-invalid' : '')?>" id="passwordConfirm" placeholder="" value="" required>
                         <div class="invalid-feedback"><?=htmlspecialchars($formErrors['account_passconfirm'] ?? '')?></div>
                     </div>
                     <div class="col-md-4 d-flex align-items-end">
@@ -200,7 +203,7 @@ function getFormValidationErrors($conn) {
                 </div>
             </form>
             <h4 class="mt-4">Preferences</h4>
-            <form method="POST" action="account.php">
+            <form method="POST" action="account.php" novalidate>
                 <div class="row g-3 mt-3 pb-4 text-muted">
                     <div class="col-md-4 pe-sm-3">
                         <label for="productSort" class="form-label fw-bold">Default product sorting *</label>
@@ -231,4 +234,7 @@ function getFormValidationErrors($conn) {
     </div>
 </div>
 
-<?php include_once 'footer.php'?>
+<?php
+unset($_POST);
+include_once 'footer.php'
+?>

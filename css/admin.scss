@@ -23,11 +23,58 @@ body {
   animation-duration: 0.3s;
 }
 
+.product-image-container {
+  .product-image {
+    transition: 0.2s;
+    cursor: pointer;
+    width: fit-content;
+    position: relative;
+    .delete-image {
+      bottom: 3px;
+      right: 3px;
+    }
+  }
+  .product-image:hover {
+    border-color: #dc3545 !important;
+  }
+  .product-image.delete {
+    background-color: #dc3545;
+    opacity: 0.8;
+    .delete-image i {
+      color: white;
+    }
+  }
+}
+
 @keyframes fadeIn {
   0% {
     opacity: 0;
   }
   100% {
     opacity: 1;
+  }
+}
+
+/* lg breakpoint */
+@media only screen and (max-width: 992px) {
+  #inputProductSpecificationsLabel {
+    padding-right: 0 !important;
+  }
+  #inputProductSpecificationsValue {
+    padding-left: 0.25rem !important;
+    padding-right: 0.25rem !important;
+  }
+}
+
+@media only screen and (max-width: 375px) {
+  #inputSpecRemove {
+    button {
+      i {
+        display: none !important;
+      }
+      span {
+        display: block !important;
+      }
+    }
   }
 }

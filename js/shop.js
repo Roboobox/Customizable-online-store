@@ -39,6 +39,11 @@ function ShopScript()
         }
     });
 
+    function escapeTags(text) {
+        if (!text) return '';
+        return text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
     // Initialize product page events
     this.init = function(productSort = 'A to Z', productLayout = 'grid')
     {
@@ -82,6 +87,8 @@ function ShopScript()
         if (tabName == 'Products') {
             $('#search').keyup(function () {
                 if ($('#search').val().length > 3) {
+                    // Clear checked filters
+                    $('.spec-filters .filter-option .filter-input-button').prop("checked", false);
                     // Makes product search
                     self.productSearch(true);
                 }
@@ -303,9 +310,11 @@ function ShopScript()
                 // Set specification HTML
                 if (data['spec_html'] !== '') {
                     $('.spec-filters').html(data['spec_html']).parent().addClass('d-lg-block');
+                    $('#mob_filter_open').show();
                 }
                 else {
                     $('.spec-filters').parent().removeClass('d-lg-block');
+                    $('#mob_filter_open').hide();
                 }
                 $('.product-container .product-view-container').html(data['product_html']);
                 self.setSearchEvents();
@@ -347,16 +356,14 @@ function ShopScript()
     // Show mobile menu side bar
     this.showSideBar = function()
     {
-        $('.mobile-sidebar-container').css('opacity', '1');
-        $('.mobile-sidebar-container').css('z-index', '9999');
+        $('.mobile-sidebar-container').css('opacity', '1').css('z-index', '9999');
         $('.mobile-sidebar-container .mobile-sidebar-content').css('left', '0');
         $('body').css('overflow', 'hidden');
     }
     
     this.hideSideBar = function()
     {
-        $('.mobile-sidebar-container').css('opacity', '0');
-        $('.mobile-sidebar-container').css('z-index', '-1');
+        $('.mobile-sidebar-container').css('opacity', '0').css('z-index', '-1');
         $('.mobile-sidebar-container .mobile-sidebar-content').css('left', '-100%');
         $('body').css('overflow', '');
     }
@@ -415,8 +422,7 @@ function ShopScript()
     // Remove all errors from login/signup form
     this.hideAuthModalErrors = function()
     {
-        $('#authModal .login-gn-error').removeClass('visible');
-        $('#authModal .login-gn-error').addClass('invisible');
+        $('#authModal .login-gn-error').removeClass('visible').addClass('invisible');
         $('#authModal input').removeClass('is-invalid');
     }
     
@@ -443,17 +449,17 @@ function ShopScript()
          }
          imageCarouselHtml += '</div><div class="carousel-inner">' +
           '<div class="carousel-item active">' +
-           '<img class="d-block w-100" src="images/'+product['photoPath']+'" alt="Product image"></div>';
+           '<img class="d-block w-100" src="images/'+escapeTags(product['photoPath'])+'" alt="Product image"></div>';
          i = 1;
          for (var photo of product['photos']) {
             if (i !== 1) {
                 imageCarouselHtml += '<div class="carousel-item">' +
-                    '<img class="d-block w-100" src="images/' + photo + '" alt="Product image"></div>';
+                    '<img class="d-block w-100" src="images/' + escapeTags(photo) + '" alt="Product image"></div>';
             }
             i++;
          }
          imageCarouselHtml += '</div>';
-         imageCarouselHtml += '<button type="button" class="carousel-control-prev" data-bs-target="#carouselProductPhotos"data-bs-slide="prev">' +
+         imageCarouselHtml += '<button type="button" class="carousel-control-prev" data-bs-target="#carouselProductPhotos" data-bs-slide="prev">' +
              '<span class="carousel-control-prev-icon" aria-hidden="true"></span>' +
              '<span class="visually-hidden">Previous</span>' +
              '</button>' +
@@ -468,16 +474,14 @@ function ShopScript()
         $('#productModal .product-images-mobile [data-bs-target="#carouselProductPhotos"]').attr('data-bs-target', "#carouselProductPhotosMobile");
         $('#productModal .product-images-mobile #carouselProductPhotos').attr("id", "carouselProductPhotosMobile");
         
-        //$('#productModal .product-images').html('<img src="images/' + product['photoPath'] + '" class="card-img-top float-start" alt="Product photo">');
-        $('#productModal .card-subtitle').html(product['category']);
-        $('#productModal .card-title').html(product['name']);
+        $('#productModal .card-subtitle').text(product['category']);
+        $('#productModal .card-title').text(product['name']);
 
         // Check if discount must be shown for this product
         if (product['discountPercent'] > 0)
         {
             $('#productModal .retail-price-default').addClass('price-sale');
-            $('#productModal .price-new').text(product['discountPrice'] + ' €');
-            $('#productModal .price-new').show();
+            $('#productModal .price-new').text(product['discountPrice'] + ' €').show();
         }
         else
         {
@@ -485,13 +489,13 @@ function ShopScript()
             $('#productModal .price-new').hide();
         }
         
-        $('#productModal .retail-price-default').html(product['price'] + ' €');
+        $('#productModal .retail-price-default').text(product['price'] + ' €');
         // Set description
         if (product['description'] == null) {
-            $('#productModal .product-description').html("Product has no description");
+            $('#productModal .product-description').text("Product has no description");
         }
         else {
-            $('#productModal .product-description').html(product['description']);
+            $('#productModal .product-description').text(product['description']);
         }
         
         var specificationHtml = '';
@@ -500,8 +504,8 @@ function ShopScript()
         for (var spec in product['specifications'])
         {
             specificationHtml += '<tr>';
-            specificationHtml += '<th scope="row">' + spec + '</th>';
-            specificationHtml += '<td>' + product['specifications'][spec] + '</td>';
+            specificationHtml += '<th scope="row">' + escapeTags(spec) + '</th>';
+            specificationHtml += '<td>' + escapeTags(product['specifications'][spec]) + '</td>';
             specificationHtml += '</tr>';
         }
         

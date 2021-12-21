@@ -66,6 +66,8 @@ if (isset($_POST['storeEmail'], $_POST['storeAddress'], $_POST['storePhone'], $_
             $formErrors['general'] = 'Something went wrong, try again later!';
         }
     }
+    // Save POST variables
+    $_SESSION['store_settings_post'] = $_POST;
     // Return validation results
     $_SESSION['formErrors'] = $formErrors;
     if (empty($formErrors)) {
@@ -95,7 +97,7 @@ function validateForm(): array {
     // Address validation
     $storeAddress = $_POST['storeAddress'];
     if (!empty($storeAddress) && strlen($storeAddress) > 255) {
-        $formErrors['storeErrors'] = 'Store address cannot exceed 255 characters!';
+        $formErrors['storeAddress'] = 'Store address cannot exceed 255 characters!';
     }
 
     // Phone number validation
@@ -122,7 +124,7 @@ function validateForm(): array {
     $storeColors = array($_POST['storePrimaryClr'] ?? '', $_POST['storeSaleClr'] ?? '', $_POST['storePrimaryClr'] ?? '');
     foreach ($storeColors as $color) {
         if (!empty($color) && !preg_match('/#[a-zA-Z0-9]{6}/', $color)) {
-            $formErrors['general'] = 'Something went wrong, try again later!';
+            $formErrors['storeColor'] = 'Store colors must match hex format #xxxxxx!';
             break;
         }
     }

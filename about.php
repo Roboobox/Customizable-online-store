@@ -14,9 +14,8 @@ if (empty($aboutData)) {
 $aboutData = '<p>' . preg_replace("/\*{2}([^*]*)\*{2}/", '</p><h4 class="mb-1 mt-3">$1</h4><hr><p>', $aboutData). '</p>';
 // Remove empty paragraphs
 $aboutData = str_replace('<p></p>', '', $aboutData);
-
-
 ?>
+
 <link href="css/about.css?<?=time()?>" rel="stylesheet">
 <div class="container mb-5">
     <div class="row">

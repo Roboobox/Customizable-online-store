@@ -43,7 +43,7 @@ $checkoutError = false;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['checkout_stage'])) {
     if ($_POST['checkout_stage'] == 1) {
-        if (isset($_POST['billing_name'], $_POST['billing_surname'], $_POST['billing_email'], $_POST['billing_address'], $_POST['billing_country'], $_POST['billing_city'], $_POST['billing_phone'], $_POST['shipping_type'])) {
+        if (isset($_POST['billing_name'], $_POST['billing_surname'], $_POST['billing_email'], $_POST['billing_address'], $_POST['billing_country'], $_POST['billing_city'], $_POST['billing_phone'])) {
             $formErrors = validateForm();
             // If validation returned no errors then proceed to next checkout stage
             if (empty($formErrors)) {
@@ -228,7 +228,7 @@ function validateForm() {
     $formErrors = array_merge($formErrors, simpleValidation(255, 'billing_city', 'City'));
 
     // Shipping type validation
-    $shipType = $_POST['shipping_type'];
+    $shipType = $_POST['shipping_type'] ?? '';
     if (empty($shipType)) {
         $formErrors['shipping_type'] = 'Shipping type is required!';
     }
@@ -256,7 +256,7 @@ function clean_input($input) {
 }
 
 ?>
-<script type="text/javascript" src="./js/checkout.js?v=4"></script>
+<script type="text/javascript" src="./js/checkout.js?v=5"></script>
 <script type="text/javascript">
     $( document ).ready(function() {
         getCartSummary();
@@ -347,49 +347,49 @@ function clean_input($input) {
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label for="firstName" class="form-label">First name *</label>
-                                    <input type="text" name="billing_name" value="<?=htmlspecialchars($_POST['billing_name'] ?? $_SESSION['user_data']['name'] ?? '')?>" class="form-control <?=isset($formErrors['billing_name']) ? 'is-invalid' : ''?>" id="firstName" placeholder="" required maxlength="255">
+                                    <input type="text" name="billing_name" value="<?=htmlspecialchars($_POST['billing_name'] ?? $_SESSION['user_data']['name'] ?? '')?>" class="form-control <?=isset($formErrors['billing_name']) ? 'is-invalid' : ''?>" id="firstName" placeholder="" required>
                                     <div class="invalid-feedback">
                                         <?=$formErrors['billing_name'] ?? ''?>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <label for="lastName" class="form-label">Last name *</label>
-                                    <input type="text" name="billing_surname" value="<?=htmlspecialchars($_POST['billing_surname'] ?? $_SESSION['user_data']['surname'] ?? '')?>" class="form-control <?=isset($formErrors['billing_surname']) ? 'is-invalid' : ''?>" id="lastName" placeholder="" required maxlength="255">
+                                    <input type="text" name="billing_surname" value="<?=htmlspecialchars($_POST['billing_surname'] ?? $_SESSION['user_data']['surname'] ?? '')?>" class="form-control <?=isset($formErrors['billing_surname']) ? 'is-invalid' : ''?>" id="lastName" placeholder="" required>
                                     <div class="invalid-feedback">
                                         <?=$formErrors['billing_surname'] ?? ''?>
                                     </div>
                                 </div>
                                 <div class="col-12">
                                     <label for="email" class="form-label">Email *</label>
-                                    <input type="email" name="billing_email" value="<?=htmlspecialchars($_POST['billing_email'] ?? $_SESSION['user_data']['email'] ?? '')?>" class="form-control <?=isset($formErrors['billing_email']) ? 'is-invalid' : ''?>" id="email" placeholder="you@example.com" required maxlength="255">
+                                    <input type="email" name="billing_email" value="<?=htmlspecialchars($_POST['billing_email'] ?? $_SESSION['user_data']['email'] ?? '')?>" class="form-control <?=isset($formErrors['billing_email']) ? 'is-invalid' : ''?>" id="email" placeholder="you@example.com" required>
                                     <div class="invalid-feedback">
                                         <?=$formErrors['billing_email'] ?? ''?>
                                     </div>
                                 </div>
                                 <div class="col-12">
                                     <label for="address" class="form-label">Address *</label>
-                                    <input type="text" name="billing_address" value="<?=htmlspecialchars($_POST['billing_address'] ?? '')?>" class="form-control  <?=isset($formErrors['billing_address']) ? 'is-invalid' : ''?>" id="address" maxlength="255" required>
+                                    <input type="text" name="billing_address" value="<?=htmlspecialchars($_POST['billing_address'] ?? '')?>" class="form-control  <?=isset($formErrors['billing_address']) ? 'is-invalid' : ''?>" id="address" required>
                                     <div class="invalid-feedback">
                                         <?=$formErrors['billing_address'] ?? ''?>
                                     </div>
                                 </div>
                                 <div class="col-lg-4">
                                     <label for="country" class="form-label">Country *</label>
-                                    <input type="text" name="billing_country" value="<?=htmlspecialchars($_POST['billing_country'] ?? '')?>" class="form-control <?=isset($formErrors['billing_country']) ? 'is-invalid' : ''?>" id="country" placeholder="" required maxlength="255">
+                                    <input type="text" name="billing_country" value="<?=htmlspecialchars($_POST['billing_country'] ?? '')?>" class="form-control <?=isset($formErrors['billing_country']) ? 'is-invalid' : ''?>" id="country" placeholder="" required>
                                     <div class="invalid-feedback">
                                         <?=$formErrors['billing_country'] ?? ''?>
                                     </div>
                                 </div>
                                 <div class="col-lg-4">
                                     <label for="city" class="form-label">City *</label>
-                                    <input type="text" name="billing_city" value="<?=$_POST['billing_city'] ?? ''?>" class="form-control <?=isset($formErrors['billing_city']) ? 'is-invalid' : ''?>" id="city" placeholder="" required maxlength="255">
+                                    <input type="text" name="billing_city" value="<?=$_POST['billing_city'] ?? ''?>" class="form-control <?=isset($formErrors['billing_city']) ? 'is-invalid' : ''?>" id="city" placeholder="" required>
                                     <div class="invalid-feedback">
                                         <?=$formErrors['billing_city'] ?? ''?>
                                     </div>
                                 </div>
                                 <div class="col-lg-4">
                                     <label for="phone" class="form-label">Phone number *</label>
-                                    <input type="tel" name="billing_phone" value="<?=$_POST['billing_phone'] ?? $_SESSION['user_data']['phoneNr'] ?? ''?>" class="form-control <?=isset($formErrors['billing_phone']) ? 'is-invalid' : ''?>" id="phone" placeholder="" required maxlength="31" minlength="1">
+                                    <input type="tel" name="billing_phone" value="<?=$_POST['billing_phone'] ?? $_SESSION['user_data']['phoneNr'] ?? ''?>" class="form-control <?=isset($formErrors['billing_phone']) ? 'is-invalid' : ''?>" id="phone" placeholder="" required>
                                     <div class="invalid-feedback">
                                         <?=$formErrors['billing_phone'] ?? ''?>
                                     </div>
@@ -435,7 +435,7 @@ function clean_input($input) {
                         } else if ($checkoutStage == 3) {
                             if (!$checkoutError) {
                         ?>
-                                <div class="fs-4 text-center my-4 text-success"><i class="far fa-check-circle"></i> Order successfully placed!</div><?php
+                                <div class="fs-4 text-center my-4 text-success"><i class="far fa-check-circle"></i> Order successfully placed!</div><?=((isset($orderId) && !empty($orderId)) ? '<div class="text-center"><a href="order.php?id='.htmlspecialchars($orderId).'" class="btn btn-primary" style="">View order</a></div>' : '')?><?php
                             } else {?>
                                 <div class="fs-4 text-center my-4 text-danger"><i class="far fa-times-circle"></i> Something went wrong, try again later!</div>
                             <?php
