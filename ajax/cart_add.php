@@ -4,6 +4,12 @@ session_start();
 include_once "../conn.php";
 $response_array = array();
 try {
+    // Check CSRF token
+    if (!isset($_SESSION['user_token']) || !hash_equals($_SESSION['user_token'], $_POST['token'] ?? '')) {
+        $responseArray['status'] = 'error';
+        echo json_encode($responseArray);
+        exit;
+    }
     if (isset($_POST['cart_product_id'], $_POST['cart_quantity']) && is_numeric($_POST['cart_product_id']) && is_numeric($_POST['cart_quantity'])) {
         $productId = (int)$_POST['cart_product_id'];
         $quantity = (int)$_POST['cart_quantity'];

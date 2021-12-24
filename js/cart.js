@@ -108,6 +108,7 @@ function deleteCartItem(productId, userToken, cartId) {
             if (data['status'] === 'success') {
                 getCart();
             }
+            hideLoadingOverlay();
         },
         error: function () {
             hideLoadingOverlay();

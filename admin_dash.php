@@ -158,7 +158,7 @@ function getProductForm($isCreateForm, $formErrors) {
             </div>
         </div>
         <div class="row mt-2">
-            <div class="text-danger text-center <?=isset($formErrors['specs']) ? 'd-inline-block' : 'd-none'?>">
+            <div class="spec-error text-danger text-center <?=isset($formErrors['specs']) ? 'd-inline-block' : 'd-none'?>">
                 <?=$formErrors['specs'] ?? ''?>
             </div>
         </div>
@@ -179,7 +179,6 @@ function getProductForm($isCreateForm, $formErrors) {
             <?=$formErrors['prodImg'] ?? ''?>
         </div>
     </div>
-    <div class="text-danger text-center <?=(isset($formErrors['general']) ? 'd-inline-block' : 'd-none')?>"><?=$formErrors['general'] ?? ''?></div>
     <?php
     return ob_get_clean();
 }
@@ -211,8 +210,10 @@ function getProductForm($isCreateForm, $formErrors) {
                 <section class="p-4" id="product_create">
                     <h5>Create a new product</h5>
                     <div class="px-3 py-1 mb-3 text-white text-update-success <?=(isset($formSuccessMsg) ? 'feedback-fade-in' : 'd-none')?>"><?=$formSuccessMsg ?? ''?></div>
+                    <div style="width: fit-content" class="bg-danger px-3 py-1 mb-3 text-white <?=(isset($formErrors['general']) ? 'feedback-fade-in' : 'd-none')?>"><?=$formErrors['general'] ?? ''?></div>
                     <form action="" method="post" enctype="multipart/form-data" novalidate>
                         <?=getProductForm(true, $formErrors ?? [])?>
+                        <input type="hidden" name="token" value="<?=htmlspecialchars($_SESSION['user_token'] ?? '')?>" />
                         <button type="submit" class="btn btn-primary w-25">Create</button>
                     </form>
                 </section>
@@ -244,7 +245,7 @@ function getProductForm($isCreateForm, $formErrors) {
                         </div>
                         <div id="edit_product_container" class="d-none">
                             <?=getProductForm(false, $formErrors ?? [])?>
-
+                            <input type="hidden" id="csrf_token" name="token" value="<?=htmlspecialchars($_SESSION['user_token'] ?? '')?>"/>
                             <button id="edit_submit" type="submit" class="btn btn-primary w-25"><span class="save-text">Save</span><i class="d-none fas fa-spinner fa-spin loading"></i></button>
                         </div>
                     </form>
@@ -342,6 +343,10 @@ function getProductForm($isCreateForm, $formErrors) {
                                     <input name="storePrimaryClr" value="<?=$storeSettings['primary_color'] ?? ''?>" type="color" class="form-control" id="inputStorePrimaryClr"  />
                                 </div>
                                 <div class="col-6 col-md-3 mb-2">
+                                    <label for="inputStoreNavigationClr" class="form-label">Navigation color</label>
+                                    <input name="storeNavigationClr" value="<?=$storeSettings['navigation_color'] ?? ''?>" type="color" class="form-control" id="inputStoreNavigationClr"  />
+                                </div>
+                                <div class="col-6 col-md-3 mb-2">
                                     <label for="inputStoreSaleClr" class="form-label">Sale color</label>
                                     <input name="storeSaleClr" value="<?=$storeSettings['sale_color'] ?? ''?>" type="color" class="form-control" id="inputStoreSaleClr"  />
                                 </div>
@@ -356,6 +361,7 @@ function getProductForm($isCreateForm, $formErrors) {
                                 </div>
                             </div>
                         </div>
+                        <input type="hidden" name="token" value="<?=htmlspecialchars($_SESSION['user_token'] ?? '')?>" />
                         <button type="submit" class="float-end my-3 btn btn-primary w-50">Save settings</button>
                     </form>
                 </section>
@@ -365,6 +371,7 @@ function getProductForm($isCreateForm, $formErrors) {
                 <section class="p-4" id="store_orders">
                     <h5 class="mb-4">Store orders</h5>
                     <div class="feedback feedback-hide text-white px-3 py-1 mb-3"></div>
+                    <input type="hidden" id="csrf_token" name="token" value="<?=htmlspecialchars($_SESSION['user_token'] ?? '')?>" />
                     <table class="table table-striped table-bordered text-center">
                         <tr>
                             <th>Number</th>
@@ -509,6 +516,7 @@ function getProductForm($isCreateForm, $formErrors) {
                                     <?=$formErrors['discountEnd'] ?? ''?>
                                 </div>
                             </div>
+                            <input type="hidden" name="token" value="<?=htmlspecialchars($_SESSION['user_token'] ?? '')?>" />
                             <button type="submit" class="btn btn-primary">Add discount</button>
                         </form>
                     </div>

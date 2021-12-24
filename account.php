@@ -78,6 +78,11 @@ if (empty($formErrors)) {
 
 function getFormValidationErrors($conn) {
     $formErrors = array();
+    // Check CSRF token
+    if (!empty($_POST) && !isFormTokenValid($_POST['token'] ?? '')) {
+        $formErrors['general'] = 'Something went wrong, try again later!';
+        return $formErrors;
+    }
     // Account section validation
     if (isset($_POST['account_name'], $_POST['account_surname'], $_POST['account_phonenr'])) {
         $fields = array('account_name' => 'Name', 'account_surname' => 'Surname', 'account_phonenr' => 'Phone number');
@@ -174,6 +179,7 @@ function getFormValidationErrors($conn) {
                     </div>
                     <div class="row g-3 mt-1">
                         <div class="col-md-4 pe-sm-3 d-flex align-items-end">
+                            <input type="hidden" name="token" value="<?=htmlspecialchars($_SESSION['user_token'] ?? '')?>" />
                             <button type="submit" id="submit_account" class="btn w-50 btn-primary fw-bold">Save</button>
                         </div>
                     </div>
@@ -198,6 +204,7 @@ function getFormValidationErrors($conn) {
                         <div class="invalid-feedback"><?=htmlspecialchars($formErrors['account_passconfirm'] ?? '')?></div>
                     </div>
                     <div class="col-md-4 d-flex align-items-end">
+                        <input type="hidden" name="token" value="<?=htmlspecialchars($_SESSION['user_token'] ?? '')?>" />
                         <button type="submit" id="submit_password" class="btn w-50 btn-primary fw-bold">Change</button>
                     </div>
                 </div>
@@ -225,6 +232,7 @@ function getFormValidationErrors($conn) {
                     </div>
                     <div class="row g-3 mt-3">
                         <div class="col-md-4 mt-0 d-flex align-items-end">
+                            <input type="hidden" name="token" value="<?=htmlspecialchars($_SESSION['user_token'] ?? '')?>" />
                             <button type="submit" id="submit_pref" class="btn w-50 btn-primary fw-bold">Save</button>
                         </div>
                     </div>

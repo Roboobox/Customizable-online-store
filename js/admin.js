@@ -48,6 +48,7 @@ function clearEditProductFeedback() {
     $('#product_edit .invalid-feedback').text('');
     $('#product_edit .edit-error').removeClass('feedback-fade-in').addClass('d-none').text('');
     $('#product_edit .edit-success').removeClass('feedback-fade-in').addClass('d-none').text('');
+    $('#product_edit .spec-error').addClass('d-none').text('');
 }
 
 $( document ).ready(function() {
@@ -70,6 +71,7 @@ $( document ).ready(function() {
         // Save order id and new status in variables
         let orderId = $(this).data('id');
         let orderStatus = $(this).val();
+        let token = $('#store_orders #csrf_token').val();
         $('#store_orders .feedback').removeClass('feedback-fade-in').removeClass('bg-danger').removeClass('text-update-success').addClass('feedback-hide');
         // Perform ajax call to update_order.php with order id and new status
         $.ajax({
@@ -79,6 +81,7 @@ $( document ).ready(function() {
             data: {
                 'id': orderId,
                 'status': orderStatus,
+                'token' : token,
             },
             success: function (data) {
                 // Show resulting feedback
@@ -98,7 +101,7 @@ $( document ).ready(function() {
     $('#product_edit .product-edit-select').change(function () {
         // Clear feedback and input fields
         clearEditProductFeedback();
-        $('#product_edit input:not([name="prodEdit"])').val('');
+        $('#product_edit input:not([name="prodEdit"]):not(#csrf_token)').val('');
         // Get selected product
         let productId = $('#product_edit .product-edit-select option:selected').val();
         if (productId === '') {
@@ -146,6 +149,8 @@ $( document ).ready(function() {
                                 tabIndex += 2;
                                 groupIndex++;
                             }
+                            specTabIndex = tabIndex;
+                            specTabGroup = groupIndex;
                         }
                         // Set events on input elements
                         setProductEvents();
@@ -187,7 +192,11 @@ $( document ).ready(function() {
                         // Save first encountered error input field
                         if (firstError === undefined) firstError = errorInput
                         // After finding input search next elements till first invalid-feeback element is found where error message can be shown
-                        errorInput.addClass('is-invalid').nextAll('div.invalid-feedback').first().text(data['formErrors'][error]);
+                        if (error !== 'specs') {
+                            errorInput.addClass('is-invalid').nextAll('div.invalid-feedback').first().text(data['formErrors'][error]);
+                        } else {
+                            $('#product_edit .spec-error').removeClass('d-none').text(data['formErrors'][error]);
+                        }
                     }
                     if (firstError !== undefined) {
                         // Scroll to first error input field
@@ -196,7 +205,9 @@ $( document ).ready(function() {
                         }, 100);
                     }
                 } else if (data['status'] !== undefined && data['status'] === 'success') {
-                    // Fire change event on product selector to refresh form
+                    // Update product name and fire change event on product selector to refresh form
+                    let newProductName = $('#product_edit form input[name="prodName"]').val();
+                    if (newProductName !== undefined) $('#product_edit .product-edit-select option:selected').text(newProductName);
                     $('#product_edit .product-edit-select').change();
                     // Scroll to form top
                     $([document.documentElement, document.body]).animate({

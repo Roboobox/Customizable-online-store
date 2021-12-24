@@ -21,6 +21,7 @@ include_once 'header.php';
             <div class="spec-filters row p-3 me-lg-2 bg-white border"></div>
         </div>
         <div class="col product-container">
+            <input type="hidden" id="csrf_token" name="token" value="<?=htmlspecialchars($_SESSION['user_token'] ?? '')?>" />
             <div id="search_options" style="height: 50px;" class="row mb-2">
                 <div class="col d-flex ms-1 ms-sm-2 ps-2 ps-sm-3 border-start border-top border-bottom bg-white align-items-center">
                     <i class="d-none fas fa-sort fs-5 d-sm-inline-block" style="width: 25px"></i>

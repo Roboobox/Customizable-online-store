@@ -4,7 +4,7 @@ include_once 'head.php';
 include_once 'header.php'
 ?>
 <link href="css/contact.css?<?=time()?>" rel="stylesheet">
-<script src="js/contact.js?v=2" type="text/javascript"></script>
+<script src="js/contact.js?v=3" type="text/javascript"></script>
 <div class="container mb-5">
     <div class="row">
         <h2 class="w-100 mt-5 mb-4">Contact us</h2>
@@ -22,6 +22,7 @@ include_once 'header.php'
                 <div class="invalid-feedback" id="message_error"></div>
             </div>
             <div class="contact-form-footer d-flex flex-column">
+                <input type="hidden" id="csrf_token" name="token" value="<?=htmlspecialchars($_SESSION['user_token'] ?? '')?>" />
                 <button class="btn-contact-send w-50 mb-3 mt-3 m-auto"><span id="button_text">SEND</span><span id="loading" class="d-none fas fa-spinner fa-spin fs-5"></span></button>
                 <div class="invalid-feedback text-center fw-bold" id="general_error"></div>
                 <div class="text-success text-center fw-bold" id="form_success"></div>

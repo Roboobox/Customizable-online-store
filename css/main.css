@@ -193,6 +193,10 @@ nav .cart-container:hover > .cart-icon-container {
   vertical-align: middle;
 }
 
+.nav-bot {
+  background-color: var(--navigation-color);
+}
+
 .nav-bot.transition {
   transition: 0.3s;
 }

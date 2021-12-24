@@ -133,6 +133,10 @@ if (isset($_POST['prodEdit'], $_POST['prodName'], $_POST['prodCat'], $_POST['pro
         echo json_encode(array('status' => 'success', 'formSuccess' => 'Product updated successfully!'));
         exit;
     }
+    if (array_key_exists('general', $formErrors)) {
+        echo json_encode(array('status' => 'error'));
+        exit;
+    }
     echo json_encode(array('formErrors' => $formErrors));
     exit;
 }

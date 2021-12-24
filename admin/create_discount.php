@@ -35,6 +35,11 @@ if (isset($_POST['discountProduct'], $_POST['discountPercent'], $_POST['discount
 
 function validateForm(): array {
     $formErrors = array();
+    // Check CSRF token
+    if (!empty($_POST) && !isFormTokenValid($_POST['token'] ?? '')) {
+        $formErrors['general'] = 'Something went wrong, try again later!';
+        return $formErrors;
+    }
     // Product validation
     $product = $_POST['discountProduct'];
     if (empty($product)) {

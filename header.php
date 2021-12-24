@@ -2,12 +2,25 @@
 if (!isset($_SESSION)) {
     session_start();
 }
+if (!isset($_SESSION['user_token'])) {
+    // Generate CSRF token
+    $_SESSION['user_token'] = bin2hex(random_bytes(16));
+}
 include_once 'conn.php';
 $cartItemCount = 0;
 $cartItems = "";
 // Set tab as empty string if there is no active header tab
 if (!isset($tab)) {
     $tab = '';
+}
+
+// Check if user CSRF token matches
+function isFormTokenValid($token = '') {
+    $userToken = $token ?? '';
+    if (isset($_SESSION['user_token']) && hash_equals($_SESSION['user_token'], $userToken)) {
+        return true;
+    }
+    return false;
 }
 
 // Include script which will set up search bar and header cart information
@@ -51,7 +64,7 @@ if (isset($_SESSION['sign_error']) || (isset($_SESSION['sign_success']) && isset
 ?>
 
 <header>
-    <div class="navbar navbar-expand-lg navbar-light bg-dark nav-bot" role="navigation">
+    <div class="navbar navbar-expand-lg navbar-light nav-bot" role="navigation">
         <nav class="container navbar-expand-lg navbar-dark">
                 <div class="row">
                     <div class="col-md-6 col-7 col-lg-3 d-flex logo-col">

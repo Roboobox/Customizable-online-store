@@ -8,6 +8,12 @@ if ($_SESSION['user_role'] != 1) {
 }
 include_once '../conn.php';
 $responseArray['status'] = 'success';
+// Check CSRF token
+if (!isset($_SESSION['user_token']) || !hash_equals($_SESSION['user_token'], $_POST['token'] ?? '')) {
+    $responseArray['status'] = 'error';
+    echo json_encode($responseArray);
+    exit;
+}
 // Check if order id and new status is set
 if (isset($_POST['id'], $_POST['status']) && !empty($_POST['id']) &&  !empty($_POST['status'])) {
     // Update order status

@@ -38,7 +38,7 @@ $( document ).ready(function() {
                 url: "ajax/send_message.php",
                 method: "POST",
                 dataType: "json",
-                data: {'email': emailInput, 'message': messageInput},
+                data: {'email': emailInput, 'message': messageInput, 'token': $('#contactForm #csrf_token').val()},
                 success: function (data) {
                     if (data['status'] === 'success') {
                         // Check for server validation errors and show them

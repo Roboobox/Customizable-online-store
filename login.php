@@ -27,6 +27,7 @@ try {
                     $userToken = bin2hex(random_bytes(16));
 
                     $_SESSION['user_id'] = $row['id'];
+                    // Generate CSRF token for logged in user
                     $_SESSION['user_token'] = $userToken;
                     $_SESSION['user_role'] = $row['role_id'];
                     $_SESSION['sort'] = $row['product_sort'];

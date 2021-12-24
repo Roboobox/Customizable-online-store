@@ -1,10 +1,17 @@
 <?php
 header('Content-type: application/json');
+session_start();
 
 $email = $_POST['email'] ?? '';
 $message = $_POST['message'] ?? '';
 
 $responseArray['status'] = 'success';
+// Check CSRF token
+if (!isset($_SESSION['user_token']) || !hash_equals($_SESSION['user_token'], $_POST['token'] ?? '')) {
+    $responseArray['status'] = 'error';
+    echo json_encode($responseArray);
+    exit;
+}
 // Validate email address
 if (empty($email)) {
     $responseArray['email'] = 'Email is required!';

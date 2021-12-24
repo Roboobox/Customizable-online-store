@@ -1,6 +1,11 @@
 <?php
 function validateProductForm($createForm = True) {
     $formErrors = array();
+    // Check CSRF token
+    if (!empty($_POST) && (!isset($_SESSION['user_token']) || !hash_equals($_SESSION['user_token'], $_POST['token'] ?? ''))) {
+        $formErrors['general'] = 'Something went wrong, try again later!';
+        return $formErrors;
+    }
     // Product name validation
     $prodName = $_POST['prodName'];
     if (empty($prodName) || strlen($prodName) > 255) {

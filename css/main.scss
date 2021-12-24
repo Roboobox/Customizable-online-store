@@ -229,6 +229,9 @@ nav {
   }
 }
 
+.nav-bot {
+  background-color: var(--navigation-color);
+}
 .nav-bot.transition {
   transition: 0.3s;
 }

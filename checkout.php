@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['checkout_stage'])) {
                 $_SESSION['order_data'] = array('name'=>$_POST['billing_name'], 'surname'=>$_POST['billing_surname'], 'email'=>$_POST['billing_email'], 'address'=>$_POST['billing_address'], 'country'=>$_POST['billing_country'], 'city'=>$_POST['billing_city'], 'phone'=>$_POST['billing_phone'], 'type'=>$_POST['shipping_type']);
             }
         }
-    } else if ($_POST['checkout_stage'] == 2 && isset($_SESSION['order_data'])) {
+    } else if ($_POST['checkout_stage'] == 2 && isset($_SESSION['order_data']) && isFormTokenValid($_POST['token'] ?? '')) {
         // Save shipping information in database
         $stmt = $conn->prepare("INSERT INTO shipping (shipping_type, address, city, country) VALUES (:shippingType, :address, :city, :country)");
         $stmt->bindParam(':shippingType', $_SESSION['order_data']['type']);
@@ -194,7 +194,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['checkout_stage'])) {
 // Form validation function
 function validateForm() {
     $formErrors = array();
-
+    // Check CSRF token
+    if (!empty($_POST) && !isFormTokenValid($_POST['token'] ?? '')) {
+        $formErrors['general'] = 'Something went wrong, try again later!';
+        return $formErrors;
+    }
     // Name validation
     $formErrors = array_merge($formErrors, simpleValidation(255, 'billing_name', 'Name'));
 
@@ -334,6 +338,7 @@ function clean_input($input) {
                                 <div class="order-summary-row-confirm row my-2 mx-2">
                                     <form action="checkout.php" method="POST" class="text-center">
                                         <input type="hidden" name="checkout_stage" value="2"/>
+                                        <input type="hidden" name="token" value="<?=htmlspecialchars($_SESSION['user_token'] ?? '')?>" />
                                         <button type="submit" class="btn btn-primary checkout-continue fs-5 fw-bold">Place an order <i class="fas fa-check"></i></button>
                                     </form>
                                 </div></div>
@@ -429,6 +434,7 @@ function clean_input($input) {
                             </div>
                             <input type="hidden" name="checkout_stage" value="1"/>
                             <div class="text-danger text-center <?=(isset($formErrors['general']) ? 'd-inline-block' : 'd-none')?>"><?=$formErrors['general'] ?? ''?></div>
+                            <input type="hidden" name="token" value="<?=htmlspecialchars($_SESSION['user_token'] ?? '')?>" />
                             <button type="submit" class="mt-4 btn btn-primary float-end checkout-continue fs-5 fw-bold">Continue <i class="fas fa-arrow-right"></i></button>
                         </form>
                         <?php

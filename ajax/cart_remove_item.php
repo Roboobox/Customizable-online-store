@@ -5,7 +5,7 @@ include_once "../conn.php";
 
 $userToken = $_POST['token'] ?? '';
 // Check if user is logged in and using correct token or not logged in
-if (isset($_SESSION['user_id']) && hash_equals($_SESSION['user_token'], $userToken)) {
+if (isset($_SESSION['user_id'], $_SESSION['user_token']) && hash_equals($_SESSION['user_token'], $userToken)) {
     // Check if user owns the cart
     $stmt = $conn->prepare("SELECT user_id FROM `cart` WHERE is_active = :active AND id = :cartId");
     $stmt->bindValue(':active', 1);

@@ -13,10 +13,10 @@ if (isset($_POST['storeEmail'], $_POST['storeAddress'], $_POST['storePhone'], $_
     if (empty($formErrors)) {
         try {
             // Make prepared update statement
-            $stmt = $conn->prepare("UPDATE `store_setting` SET store_name = :name, store_email = :email, store_address = :address, store_phonenr = :phoneNr, primary_color = :primaryColor, sale_color = :saleColor, positive_color = :positiveColor, about_text = :aboutText");
+            $stmt = $conn->prepare("UPDATE `store_setting` SET store_name = :name, store_email = :email, store_address = :address, store_phonenr = :phoneNr, primary_color = :primaryColor, sale_color = :saleColor, positive_color = :positiveColor, navigation_color = :navigationColor, about_text = :aboutText");
             $updateCounter = 0;
 
-            $formPostValues = [':name' => 'storeName', ':email' => 'storeEmail', ':address' => 'storeAddress', ':phoneNr' => 'storePhone', ':primaryColor' => 'storePrimaryClr', ':saleColor' => 'storeSaleClr', ':positiveColor' => 'storePositiveClr', ':aboutText' => 'storeAbout'];
+            $formPostValues = [':name' => 'storeName', ':email' => 'storeEmail', ':address' => 'storeAddress', ':phoneNr' => 'storePhone', ':primaryColor' => 'storePrimaryClr', ':saleColor' => 'storeSaleClr', ':positiveColor' => 'storePositiveClr', ':navigationColor' => 'storeNavigationClr', ':aboutText' => 'storeAbout'];
 
             foreach ($formPostValues as $paramValue => $postValue) {
                 // Bind other values to prepared statement
@@ -77,7 +77,11 @@ if (isset($_POST['storeEmail'], $_POST['storeAddress'], $_POST['storePhone'], $_
 
 function validateForm(): array {
     $formErrors = array();
-
+    // Check CSRF token
+    if (!empty($_POST) && (!isset($_SESSION['user_token']) || !hash_equals($_SESSION['user_token'], $_POST['token'] ?? ''))) {
+        $formErrors['general'] = 'Something went wrong, try again later!';
+        return $formErrors;
+    }
     // Name validation
     $storeName = $_POST['storeName'];
     if (!empty($storeName) && strlen($storeName) > 255) {
@@ -121,10 +125,10 @@ function validateForm(): array {
     }
 
     // Color validation
-    $storeColors = array($_POST['storePrimaryClr'] ?? '', $_POST['storeSaleClr'] ?? '', $_POST['storePrimaryClr'] ?? '');
+    $storeColors = array($_POST['storePrimaryClr'] ?? '', $_POST['storeSaleClr'] ?? '', $_POST['storePrimaryClr'] ?? '', $_POST['storeNavigationClr'] ?? '');
     foreach ($storeColors as $color) {
-        if (!empty($color) && !preg_match('/#[a-zA-Z0-9]{6}/', $color)) {
-            $formErrors['storeColor'] = 'Store colors must match hex format #xxxxxx!';
+        if (!empty($color) && (!ctype_xdigit(str_replace('#', '',$color)) || !preg_match('/#[a-zA-Z0-9]{6}/', $color))) {
+            $formErrors['storeColor'] = 'Store colors must match hex format #RRGGBB!';
             break;
         }
     }

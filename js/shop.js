@@ -131,6 +131,7 @@ function ShopScript()
     {
         var self = this;
         $('.toast .cart-msg').hide();
+        let token = $('.product-container #csrf_token').val();
         self.cartAddLoadShow(productId);
         $.ajax({
             url: "ajax/cart_add.php",
@@ -138,7 +139,8 @@ function ShopScript()
             dataType: "json",
             data: {
             'cart_product_id' : productId,
-            'cart_quantity' : quantity
+            'cart_quantity' : quantity,
+            'token' : token,
             },
             success: function (data) {
                 // Show toast message with result
@@ -158,7 +160,7 @@ function ShopScript()
             {
                 $('.toast .cart-error').show();
                 $('.toast').toast('show');
-                self.cartAddLoadShow(productId);
+                self.cartAddLoadHide(productId);
             }
         });
     }

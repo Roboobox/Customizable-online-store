@@ -33,6 +33,7 @@ function isLightColor(string $hex): bool {
 <style>
     :root {
         --primary-color: <?=$storeSettings['primary_color']?>;
+        --navigation-color: <?=$storeSettings['navigation_color']?>;
         --sale-color: <?=$storeSettings['sale_color']?>;
         --positive-color: <?=$storeSettings['positive_color']?>;
         --primary-element-color: <?=(isLightColor($storeSettings['primary_color']) ? '#343a40' : $storeSettings['primary_color'])?>;
