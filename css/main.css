@@ -111,6 +111,7 @@ nav .search-container input {
 nav .search-container .search-button {
   background: var(--primary-color);
   border-left: 1px solid var(--primary-element-color);
+  z-index: 1;
 }
 nav .search-container .fa-search, nav .search-container .fa-times {
   color: var(--primary-text-color);

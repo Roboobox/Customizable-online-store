@@ -278,7 +278,7 @@ function ShopScript()
         let paramCount = 0;
         for (const entry of searchParams.entries()) {
             if (entry[0] === 'q') {
-                searchQuestion = entry[1];
+                searchQuestion = decodeURI(entry[1]);
             }
             else if (entry[0].startsWith('fs_')) {
                 urlParams.push(entry);
@@ -375,14 +375,14 @@ function ShopScript()
     {
         if ($('.nav-bot .search-button-mobile i').hasClass('fa-search')) {
             $('.nav-bot .logo-col').addClass('d-none');
-            $('.nav-bot .search-col').removeClass('col-2').addClass('col-9');
+            $('.nav-bot .search-col').removeClass('col-2').addClass('col-9').addClass('col-md-9');
             $('.nav-bot .search-container').removeClass('ps-2').removeClass('pe-4').removeClass('d-none').css('width', '90%');
             $('.nav-bot .search-button-mobile i').removeClass('fa-search').addClass('fa-times');
         }
         else {
             $('.nav-bot .logo-col').removeClass('d-none');
-            $('.nav-bot .search-col').addClass('col-2').removeClass('col-9');
-            $('.nav-bot .search-container').addClass('ps-2').addClass('pe-4').addClass('d-none').css('width', '50%');
+            $('.nav-bot .search-col').addClass('col-2').removeClass('col-9').removeClass('col-md-9');
+            $('.nav-bot .search-container').addClass('ps-2').addClass('pe-4').addClass('d-none').css('width', '');
             $('.nav-bot .search-button-mobile i').addClass('fa-search').removeClass('fa-times');
         }
     }

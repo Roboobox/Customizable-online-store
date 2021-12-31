@@ -98,7 +98,7 @@ function getFormValidationErrors($conn) {
                     // Check if phone number is only numbers and its length is valid
                     if (strlen($_POST[$field]) > 31) {
                         $formErrors[$field] = $label . ' cannot be longer than 31 digits';
-                    } else if (!preg_match("/[0-9]/", $_POST[$field])) {
+                    } else if (!preg_match("/^[0-9]{1,31}$/", $_POST[$field])) {
                         $formErrors[$field] = $label . ' can only contain digits';
                     }
                 }
@@ -162,12 +162,12 @@ function getFormValidationErrors($conn) {
                         <input type="text" required name="account_name" value="<?=htmlspecialchars($_POST['account_name'] ?? $_SESSION['user_data']['name'] ?? '')?>" class="form-control <?=(isset($formErrors['account_name']) ? 'is-invalid' : '')?>" id="firstName" placeholder="John">
                         <div class="invalid-feedback"><?=htmlspecialchars($formErrors['account_name'] ?? '')?></div>
                     </div>
-                    <div class="col-md-4 pe-sm-3 ps-sm-3">
+                    <div class="col-md-4 pe-sm-3">
                         <label for="lastName" class="form-label fw-bold">Last name</label>
                         <input type="text" required name="account_surname" value="<?=htmlspecialchars($_POST['account_surname'] ?? $_SESSION['user_data']['surname'] ?? '')?>" class="form-control <?=(isset($formErrors['account_surname']) ? 'is-invalid' : '')?>" id="lastName" placeholder="Smith">
                         <div class="invalid-feedback"><?=htmlspecialchars($formErrors['account_surname'] ?? '')?></div>
                     </div>
-                    <div class="col-md-4 ps-sm-3">
+                    <div class="col-md-4 pe-sm-3">
                         <label for="email" class="form-label fw-bold">Email *</label>
                         <input disabled type="email" name="account_email" value="<?=htmlspecialchars($_SESSION['user_data']['email'] ?? '')?>" class="form-control" id="email" required>
                         <div class="invalid-feedback"></div>

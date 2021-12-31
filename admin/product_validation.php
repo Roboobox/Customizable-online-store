@@ -22,7 +22,9 @@ function validateProductForm($createForm = True) {
     $prodPrice = $_POST['prodPrice'];
     $floatPrice = (float)($prodPrice);
     if (empty($prodPrice) || !((string)($floatPrice) == $prodPrice && $prodPrice > 0)) {
-        $formErrors['prodPrice'] = 'Product price must be a positive number!';
+        $formErrors['prodPrice'] = 'Product price must be a positive number or decimal (dot) with two decimal places!';
+    } else if (!empty($prodPrice) && !ctype_digit($prodPrice) && !preg_match('/^[0-9]+\.[0-9]{2}$/', $prodPrice)) {
+        $formErrors['prodPrice'] = 'Product price must be a positive number or decimal (dot) with two decimal places!';
     }
 
     // Product description validation

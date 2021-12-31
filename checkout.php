@@ -441,7 +441,7 @@ function clean_input($input) {
                         } else if ($checkoutStage == 3) {
                             if (!$checkoutError) {
                         ?>
-                                <div class="fs-4 text-center my-4 text-success"><i class="far fa-check-circle"></i> Order successfully placed!</div><?=((isset($orderId) && !empty($orderId)) ? '<div class="text-center"><a href="order.php?id='.htmlspecialchars($orderId).'" class="btn btn-primary" style="">View order</a></div>' : '')?><?php
+                                <div class="fs-4 text-center my-4 text-success"><i class="far fa-check-circle"></i> Order successfully placed!</div><?=((isset($orderId) && !empty($orderId) && isset($_SESSION['user_id'])) ? '<div class="text-center"><a href="order.php?id='.htmlspecialchars($orderId).'" class="btn btn-primary" style="">View order</a></div>' : '')?><?php
                             } else {?>
                                 <div class="fs-4 text-center my-4 text-danger"><i class="far fa-times-circle"></i> Something went wrong, try again later!</div>
                             <?php

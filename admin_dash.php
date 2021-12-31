@@ -101,7 +101,7 @@ function getProductForm($isCreateForm, $formErrors) {
         <label for="inputProductPrice" class="form-label">Product retail price *</label>
         <div class="input-group has-validation">
             <span class="input-group-text">€</span>
-            <input name="prodPrice" value="<?=htmlspecialchars($_POST['prodPrice'] ?? '')?>" type="number" class="form-control <?=isset($formErrors['prodPrice']) ? 'is-invalid' : ''?>" id="inputProductPrice" placeholder="0.01" min="0.01" step="0.01" required />
+            <input name="prodPrice" lang="en" value="<?=htmlspecialchars($_POST['prodPrice'] ?? '')?>" type="number" class="form-control <?=isset($formErrors['prodPrice']) ? 'is-invalid' : ''?>" id="inputProductPrice" placeholder="0.01" min="0.01" step="0.01" required />
             <div class="invalid-feedback">
                 <?=$formErrors['prodPrice'] ?? ''?>
             </div>

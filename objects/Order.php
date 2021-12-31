@@ -13,7 +13,7 @@ class Order
     public ?int $userId;
     public int $shippingId;
 
-
+    // Get only the order data needed for displaying order history from database row
     public function getOrderSummaryFromRow(array $row): void {
         $this->id = $row['id'];
         $this->total = $row['total'];
@@ -22,6 +22,7 @@ class Order
         $this->createdAt = $row['created_at'];
     }
 
+    // Get all order data from database row
     public function getOrderFromRow(array $row): void {
         $this->id = $row['id'];
         $this->total = $row['total'];

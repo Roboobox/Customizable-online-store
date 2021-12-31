@@ -274,7 +274,7 @@ function generateProductRVHtml(array $products): string
             $productsHtml .= '<input class="form-control quantity-picker-input" data-product-id="' . htmlspecialchars($product->id) . '" name="cart_quantity" type="number" value="1" min="1" onchange="objShop.validateQuantity(' . htmlspecialchars($product->id) . ')">';
             $productsHtml .= '<input type="hidden" value="' . htmlspecialchars($product->id) . '" name="cart_product_id">';
             $productsHtml .= '<div onclick="objShop.changeQuantityPickerAmount(1,' . htmlspecialchars($product->id) . ')" class="plus d-md-flex d-none"><i class="fas fa-plus"></i></div>';
-            $productsHtml .= '</div><div class="total-price-text d-block d-sm-none">' . htmlspecialchars($product->discountPrice()) . ' €</td>';
+            $productsHtml .= '</div><div class="total-price-text d-block d-sm-none">' . htmlspecialchars($product->discountPrice) . ' €</td>';
             $productsHtml .= '</div>';
             $productsHtml .= '</td>';
             $productsHtml .= '<td class="total-price-text fs-6 d-sm-table-cell d-none">' . htmlspecialchars($product->discountPrice) . ' €</td>';

@@ -107,31 +107,18 @@ nav {
       border-radius: 3px;
       width: 100%;
       border: 1px solid var(--primary-color);
-      //color: var(--primary-color);
     }
 
     .search-button {
       background: var(--primary-color);
       border-left: 1px solid var(--primary-element-color);
+      z-index: 1;
     }
 
     .fa-search, .fa-times {
       color: var(--primary-text-color);
     }
 
-    //.fa-search {
-    //  position: absolute;
-    //  top: 0;
-    //  padding-right: 10px;
-    //  font-size: 19px;
-    //  right: 0;
-    //  width: 38px;
-    //  height: 100%;
-    //  display: flex;
-    //  align-items: center;
-    //  color: var(--primary-color);
-    //  justify-content: center;
-    //}
   }
 
   .search-button-mobile {
@@ -301,7 +288,6 @@ nav {
     }
 
     .card {
-      //cursor: pointer;
       border-width: 1px;
       transition: 0.2s;
 
@@ -353,7 +339,6 @@ nav {
     .card:hover {
       box-shadow: 0 0 .25rem var(--primary-color) !important;
       border: 1px solid transparent;
-      //border-color: var(--primary-color);
     }
   }
 }
@@ -440,7 +425,6 @@ nav {
 }
 
 .btn-add-cart {
-  //background: var(--primary-color);
   background-color: #b9b9b9;
   color: white;
   width: 100%;
@@ -482,7 +466,6 @@ table .btn-add-cart {
     text-align: center;
     background: none;
     display: flex;
-    //width: 60px;
     width: 100%;
     border-radius: 0;
     border: 1px solid #ced4da;
@@ -566,15 +549,7 @@ table .btn-add-cart {
 
 /* Tablet properties (md breakpoint) */
 @media only screen and (max-width: 768px) {
-  .card-price {
-
-  }
-
   nav {
-    .navbar-brand {
-
-    }
-
     .cart-container {
       position: relative;
 

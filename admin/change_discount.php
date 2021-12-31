@@ -19,7 +19,7 @@ if (isset($_GET['id']) || !empty($_GET['id'])) {
         // Get discount status and update it with opposite status
         $result = $stmt->fetch()['is_active'];
         $stmt = $conn->prepare("UPDATE `product_discount` SET is_active = :isActive WHERE id = :id");
-        $stmt->bindValue(':isActive', !$result);
+        $stmt->bindValue(':isActive', !$result, PDO::PARAM_BOOL);
         $stmt->bindValue(':id', $_GET['id']);
         $stmt->execute();
         // Check if query successful

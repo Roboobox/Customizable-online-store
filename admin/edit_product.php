@@ -1,4 +1,5 @@
 <?php
+header('Content-type: application/json');
 // Check if user is admin
 session_start();
 if ($_SESSION['user_role'] != 1) {
